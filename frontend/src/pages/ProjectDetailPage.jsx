@@ -435,9 +435,10 @@ export default function ProjectDetailPage() {
 
       {/* New Conversation Dialog */}
       <Dialog open={showNewConv} onOpenChange={setShowNewConv}>
-        <DialogContent data-testid="new-conversation-dialog">
+        <DialogContent data-testid="new-conversation-dialog" aria-describedby="new-conversation-description">
           <DialogHeader>
             <DialogTitle className="font-serif">New Conversation</DialogTitle>
+            <p id="new-conversation-description" className="text-sm text-muted-foreground">Start a conversation with AI using your project's knowledge base</p>
           </DialogHeader>
           <div className="py-4">
             <Label htmlFor="convName">Name (optional)</Label>

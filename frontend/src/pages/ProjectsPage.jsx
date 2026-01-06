@@ -195,9 +195,10 @@ export default function ProjectsPage() {
 
       {/* New Project Dialog */}
       <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
-        <DialogContent data-testid="new-project-dialog">
+        <DialogContent data-testid="new-project-dialog" aria-describedby="new-project-description">
           <DialogHeader>
             <DialogTitle className="font-serif">New Project</DialogTitle>
+            <p id="new-project-description" className="text-sm text-muted-foreground">Create a new project to organize your assessment materials</p>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
