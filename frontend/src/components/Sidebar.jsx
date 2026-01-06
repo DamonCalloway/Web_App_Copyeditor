@@ -1,0 +1,207 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { 
+  Plus, MessageSquare, FolderKanban, Settings, 
+  ChevronLeft, ChevronRight, Star, Sun, Moon
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { useTheme } from "@/components/ThemeProvider";
+import { getRecentConversations, getProjects, createProject, createConversation } from "@/lib/api";
+import { toast } from "sonner";
+
+export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const [recentConversations, setRecentConversations] = useState([]);
+  const [starredConversations, setStarredConversations] = useState([]);
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [convos, projs] = await Promise.all([
+        getRecentConversations(15),
+        getProjects()
+      ]);
+      setRecentConversations(convos.filter(c => !c.starred));
+      setStarredConversations(convos.filter(c => c.starred));
+      setProjects(projs.slice(0, 5));
+    } catch (error) {
+      console.error("Failed to load sidebar data:", error);
+    }
+  };
+
+  const handleNewChat = async () => {
+    try {
+      // Get first project or create one
+      let projectId;
+      if (projects.length > 0) {
+        projectId = projects[0].id;
+      } else {
+        const newProject = await createProject({ 
+          name: "My First Project",
+          description: "Default project for conversations"
+        });
+        projectId = newProject.id;
+      }
+      
+      const conv = await createConversation(projectId, "New conversation");
+      navigate(`/chat/${conv.id}`);
+      loadData();
+    } catch (error) {
+      toast.error("Failed to create new chat");
+    }
+  };
+
+  if (collapsed) {
+    return (
+      <aside className="sidebar sidebar-collapsed" data-testid="sidebar-collapsed">
+        <div className="flex flex-col items-center py-4 gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={onToggle}
+            data-testid="sidebar-expand-btn"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleNewChat}
+            className="text-primary"
+            data-testid="new-chat-btn-collapsed"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate("/projects")}
+            data-testid="projects-btn-collapsed"
+          >
+            <FolderKanban className="h-5 w-5" />
+          </Button>
+        </div>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className="sidebar" data-testid="sidebar">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <h1 className="font-serif text-lg font-semibold">Editor</h1>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={onToggle}
+          data-testid="sidebar-collapse-btn"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* New Chat Button */}
+      <div className="px-3 mb-2">
+        <Button 
+          onClick={handleNewChat}
+          className="w-full justify-start gap-2 bg-primary/10 text-primary hover:bg-primary/20"
+          variant="ghost"
+          data-testid="new-chat-btn"
+        >
+          <Plus className="h-4 w-4" />
+          New chat
+        </Button>
+      </div>
+
+      <ScrollArea className="flex-1 px-2">
+        {/* Navigation */}
+        <nav className="space-y-1 mb-4">
+          <div 
+            className={`nav-item ${currentPath === '/projects' || currentPath === '/' ? 'active' : ''}`}
+            onClick={() => navigate("/projects")}
+            data-testid="nav-projects"
+          >
+            <FolderKanban className="h-4 w-4" />
+            <span>Projects</span>
+          </div>
+        </nav>
+
+        <Separator className="my-3" />
+
+        {/* Starred */}
+        {starredConversations.length > 0 && (
+          <div className="mb-4">
+            <h3 className="px-3 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Starred
+            </h3>
+            <div className="space-y-0.5">
+              {starredConversations.map(conv => (
+                <div
+                  key={conv.id}
+                  className={`conversation-item flex items-center gap-2 ${currentPath === `/chat/${conv.id}` ? 'active' : ''}`}
+                  onClick={() => navigate(`/chat/${conv.id}`)}
+                  data-testid={`starred-conv-${conv.id}`}
+                >
+                  <Star className="h-3 w-3 text-primary flex-shrink-0" fill="currentColor" />
+                  <span className="truncate">{conv.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recent */}
+        <div className="mb-4">
+          <h3 className="px-3 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Recents
+          </h3>
+          <div className="space-y-0.5">
+            {recentConversations.length === 0 ? (
+              <p className="px-3 text-sm text-muted-foreground">No recent chats</p>
+            ) : (
+              recentConversations.map(conv => (
+                <div
+                  key={conv.id}
+                  className={`conversation-item ${currentPath === `/chat/${conv.id}` ? 'active' : ''}`}
+                  onClick={() => navigate(`/chat/${conv.id}`)}
+                  data-testid={`recent-conv-${conv.id}`}
+                >
+                  {conv.name}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </ScrollArea>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-border">
+        <div className="flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            data-testid="theme-toggle-btn"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate("/settings")}
+            data-testid="settings-btn"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </aside>
+  );
+};

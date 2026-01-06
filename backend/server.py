@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException, Form, Query
+from fastapi.responses import StreamingResponse, FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +7,13 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
-
+import aiofiles
+import json
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+import asyncio
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,54 +23,573 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Storage configuration
+STORAGE_PROVIDER = os.environ.get('STORAGE_PROVIDER', 'local')
+LOCAL_STORAGE_PATH = Path(os.environ.get('LOCAL_STORAGE_PATH', '/app/uploads'))
+LOCAL_STORAGE_PATH.mkdir(parents=True, exist_ok=True)
 
-# Create a router with the /api prefix
+# Create the main app
+app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
+# ============== MODELS ==============
+
+class ProjectBase(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    instructions: Optional[str] = ""
+    memory: Optional[str] = ""
+
+class ProjectCreate(ProjectBase):
+    pass
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    instructions: Optional[str] = None
+    memory: Optional[str] = None
+
+class Project(ProjectBase):
+    model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    file_count: int = 0
+    starred: bool = False
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class FileMetadata(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_id: str
+    filename: str
+    original_filename: str
+    file_type: str
+    file_size: int
+    mime_type: str
+    storage_path: str
+    indexed: bool = False
+    content_preview: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
-# Add your routes to the router instead of directly to app
+class ConversationBase(BaseModel):
+    project_id: str
+    name: str = "New conversation"
+
+class Conversation(ConversationBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    starred: bool = False
+
+class Message(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    conversation_id: str
+    role: str  # 'user' or 'assistant'
+    content: str
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ChatRequest(BaseModel):
+    conversation_id: str
+    message: str
+    include_knowledge_base: bool = True
+
+class StorageConfig(BaseModel):
+    provider: str  # 'local' or 's3'
+    s3_bucket_name: Optional[str] = None
+    s3_access_key: Optional[str] = None
+    s3_secret_key: Optional[str] = None
+    s3_region: Optional[str] = "us-east-1"
+
+# ============== STORAGE ABSTRACTION ==============
+
+class StorageProvider:
+    async def save_file(self, file_content: bytes, filename: str, project_id: str) -> str:
+        raise NotImplementedError
+    
+    async def get_file(self, storage_path: str) -> bytes:
+        raise NotImplementedError
+    
+    async def delete_file(self, storage_path: str) -> bool:
+        raise NotImplementedError
+
+class LocalStorageProvider(StorageProvider):
+    def __init__(self, base_path: Path):
+        self.base_path = base_path
+    
+    async def save_file(self, file_content: bytes, filename: str, project_id: str) -> str:
+        project_dir = self.base_path / project_id
+        project_dir.mkdir(parents=True, exist_ok=True)
+        file_path = project_dir / filename
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(file_content)
+        return str(file_path)
+    
+    async def get_file(self, storage_path: str) -> bytes:
+        async with aiofiles.open(storage_path, 'rb') as f:
+            return await f.read()
+    
+    async def delete_file(self, storage_path: str) -> bool:
+        try:
+            os.remove(storage_path)
+            return True
+        except:
+            return False
+
+class S3StorageProvider(StorageProvider):
+    def __init__(self, bucket_name: str, access_key: str, secret_key: str, region: str):
+        import boto3
+        self.bucket_name = bucket_name
+        self.s3_client = boto3.client(
+            's3',
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+            region_name=region
+        )
+    
+    async def save_file(self, file_content: bytes, filename: str, project_id: str) -> str:
+        key = f"{project_id}/{filename}"
+        self.s3_client.put_object(Bucket=self.bucket_name, Key=key, Body=file_content)
+        return key
+    
+    async def get_file(self, storage_path: str) -> bytes:
+        response = self.s3_client.get_object(Bucket=self.bucket_name, Key=storage_path)
+        return response['Body'].read()
+    
+    async def delete_file(self, storage_path: str) -> bool:
+        try:
+            self.s3_client.delete_object(Bucket=self.bucket_name, Key=storage_path)
+            return True
+        except:
+            return False
+
+def get_storage_provider() -> StorageProvider:
+    if STORAGE_PROVIDER == 's3':
+        return S3StorageProvider(
+            bucket_name=os.environ.get('S3_BUCKET_NAME', ''),
+            access_key=os.environ.get('S3_ACCESS_KEY', ''),
+            secret_key=os.environ.get('S3_SECRET_KEY', ''),
+            region=os.environ.get('S3_REGION', 'us-east-1')
+        )
+    return LocalStorageProvider(LOCAL_STORAGE_PATH)
+
+storage = get_storage_provider()
+
+# ============== FILE PROCESSING ==============
+
+def get_mime_type(filename: str) -> str:
+    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    mime_map = {
+        'pdf': 'application/pdf',
+        'txt': 'text/plain',
+        'md': 'text/markdown',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'doc': 'application/msword',
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'bmp': 'image/bmp',
+    }
+    return mime_map.get(ext, 'application/octet-stream')
+
+def get_file_type(filename: str) -> str:
+    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    type_map = {
+        'pdf': 'PDF',
+        'txt': 'TXT',
+        'md': 'MD',
+        'docx': 'DOCX',
+        'doc': 'DOC',
+        'png': 'PNG',
+        'jpg': 'JPG',
+        'jpeg': 'JPG',
+        'bmp': 'BMP',
+    }
+    return type_map.get(ext, 'FILE')
+
+async def extract_text_content(file_content: bytes, filename: str, mime_type: str) -> str:
+    """Extract text content from files for indexing"""
+    try:
+        if mime_type == 'text/plain' or mime_type == 'text/markdown':
+            return file_content.decode('utf-8', errors='ignore')[:5000]
+        
+        elif mime_type == 'application/pdf':
+            from PyPDF2 import PdfReader
+            import io
+            reader = PdfReader(io.BytesIO(file_content))
+            text = ""
+            for page in reader.pages[:10]:
+                text += page.extract_text() or ""
+            return text[:5000]
+        
+        elif mime_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            from docx import Document
+            import io
+            doc = Document(io.BytesIO(file_content))
+            text = "\n".join([p.text for p in doc.paragraphs])
+            return text[:5000]
+        
+        return ""
+    except Exception as e:
+        logger.error(f"Error extracting text: {e}")
+        return ""
+
+# ============== PROJECT ROUTES ==============
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Assessment Editor API", "version": "1.0.0"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+@api_router.post("/projects", response_model=Project)
+async def create_project(project: ProjectCreate):
+    project_obj = Project(**project.model_dump())
+    doc = project_obj.model_dump()
+    await db.projects.insert_one(doc)
+    return project_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+@api_router.get("/projects", response_model=List[Project])
+async def get_projects(
+    search: Optional[str] = Query(None),
+    starred_only: bool = Query(False)
+):
+    query = {}
+    if search:
+        query["name"] = {"$regex": search, "$options": "i"}
+    if starred_only:
+        query["starred"] = True
     
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    projects = await db.projects.find(query, {"_id": 0}).sort("updated_at", -1).to_list(100)
     
-    return status_checks
+    # Get file counts
+    for p in projects:
+        count = await db.files.count_documents({"project_id": p["id"]})
+        p["file_count"] = count
+    
+    return projects
 
-# Include the router in the main app
+@api_router.get("/projects/{project_id}", response_model=Project)
+async def get_project(project_id: str):
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    count = await db.files.count_documents({"project_id": project_id})
+    project["file_count"] = count
+    return project
+
+@api_router.put("/projects/{project_id}", response_model=Project)
+async def update_project(project_id: str, update: ProjectUpdate):
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.projects.update_one({"id": project_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    count = await db.files.count_documents({"project_id": project_id})
+    project["file_count"] = count
+    return project
+
+@api_router.put("/projects/{project_id}/star")
+async def toggle_star_project(project_id: str):
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    new_starred = not project.get("starred", False)
+    await db.projects.update_one({"id": project_id}, {"$set": {"starred": new_starred}})
+    return {"starred": new_starred}
+
+@api_router.delete("/projects/{project_id}")
+async def delete_project(project_id: str):
+    # Delete all files
+    files = await db.files.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    for f in files:
+        await storage.delete_file(f["storage_path"])
+    await db.files.delete_many({"project_id": project_id})
+    
+    # Delete conversations and messages
+    convos = await db.conversations.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
+    for c in convos:
+        await db.messages.delete_many({"conversation_id": c["id"]})
+    await db.conversations.delete_many({"project_id": project_id})
+    
+    # Delete project
+    result = await db.projects.delete_one({"id": project_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    return {"success": True}
+
+# ============== FILE ROUTES ==============
+
+@api_router.post("/projects/{project_id}/files", response_model=FileMetadata)
+async def upload_file(project_id: str, file: UploadFile = File(...)):
+    # Verify project exists
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Validate file type
+    allowed_extensions = ['pdf', 'txt', 'md', 'docx', 'doc', 'png', 'jpg', 'jpeg', 'bmp']
+    ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+    if ext not in allowed_extensions:
+        raise HTTPException(status_code=400, detail=f"File type not allowed. Allowed: {', '.join(allowed_extensions)}")
+    
+    # Read and save file
+    content = await file.read()
+    unique_filename = f"{uuid.uuid4()}_{file.filename}"
+    storage_path = await storage.save_file(content, unique_filename, project_id)
+    
+    mime_type = get_mime_type(file.filename)
+    content_preview = await extract_text_content(content, file.filename, mime_type)
+    
+    file_meta = FileMetadata(
+        project_id=project_id,
+        filename=unique_filename,
+        original_filename=file.filename,
+        file_type=get_file_type(file.filename),
+        file_size=len(content),
+        mime_type=mime_type,
+        storage_path=storage_path,
+        indexed=bool(content_preview),
+        content_preview=content_preview
+    )
+    
+    await db.files.insert_one(file_meta.model_dump())
+    
+    # Update project
+    await db.projects.update_one(
+        {"id": project_id}, 
+        {"$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return file_meta
+
+@api_router.get("/projects/{project_id}/files", response_model=List[FileMetadata])
+async def get_project_files(project_id: str):
+    files = await db.files.find({"project_id": project_id}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return files
+
+@api_router.get("/files/{file_id}/download")
+async def download_file(file_id: str):
+    file_meta = await db.files.find_one({"id": file_id}, {"_id": 0})
+    if not file_meta:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    if STORAGE_PROVIDER == 'local':
+        return FileResponse(
+            file_meta["storage_path"],
+            filename=file_meta["original_filename"],
+            media_type=file_meta["mime_type"]
+        )
+    else:
+        content = await storage.get_file(file_meta["storage_path"])
+        return StreamingResponse(
+            iter([content]),
+            media_type=file_meta["mime_type"],
+            headers={"Content-Disposition": f'attachment; filename="{file_meta["original_filename"]}"'}
+        )
+
+@api_router.delete("/files/{file_id}")
+async def delete_file(file_id: str):
+    file_meta = await db.files.find_one({"id": file_id}, {"_id": 0})
+    if not file_meta:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    await storage.delete_file(file_meta["storage_path"])
+    await db.files.delete_one({"id": file_id})
+    
+    return {"success": True}
+
+# ============== CONVERSATION ROUTES ==============
+
+@api_router.post("/conversations", response_model=Conversation)
+async def create_conversation(conv: ConversationBase):
+    # Verify project exists
+    project = await db.projects.find_one({"id": conv.project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    conv_obj = Conversation(**conv.model_dump())
+    await db.conversations.insert_one(conv_obj.model_dump())
+    return conv_obj
+
+@api_router.get("/projects/{project_id}/conversations", response_model=List[Conversation])
+async def get_project_conversations(project_id: str):
+    convos = await db.conversations.find(
+        {"project_id": project_id}, {"_id": 0}
+    ).sort("updated_at", -1).to_list(100)
+    return convos
+
+@api_router.get("/conversations/recent", response_model=List[Dict[str, Any]])
+async def get_recent_conversations(limit: int = Query(10, le=50)):
+    convos = await db.conversations.find({}, {"_id": 0}).sort("updated_at", -1).to_list(limit)
+    
+    # Add project names
+    result = []
+    for c in convos:
+        project = await db.projects.find_one({"id": c["project_id"]}, {"_id": 0, "name": 1})
+        c["project_name"] = project["name"] if project else "Unknown"
+        result.append(c)
+    
+    return result
+
+@api_router.get("/conversations/{conversation_id}", response_model=Conversation)
+async def get_conversation(conversation_id: str):
+    conv = await db.conversations.find_one({"id": conversation_id}, {"_id": 0})
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conv
+
+@api_router.put("/conversations/{conversation_id}/star")
+async def toggle_star_conversation(conversation_id: str):
+    conv = await db.conversations.find_one({"id": conversation_id})
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    new_starred = not conv.get("starred", False)
+    await db.conversations.update_one({"id": conversation_id}, {"$set": {"starred": new_starred}})
+    return {"starred": new_starred}
+
+@api_router.delete("/conversations/{conversation_id}")
+async def delete_conversation(conversation_id: str):
+    await db.messages.delete_many({"conversation_id": conversation_id})
+    result = await db.conversations.delete_one({"id": conversation_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return {"success": True}
+
+# ============== MESSAGE ROUTES ==============
+
+@api_router.get("/conversations/{conversation_id}/messages", response_model=List[Message])
+async def get_messages(conversation_id: str):
+    messages = await db.messages.find(
+        {"conversation_id": conversation_id}, {"_id": 0}
+    ).sort("created_at", 1).to_list(1000)
+    return messages
+
+# ============== CHAT WITH AI ==============
+
+@api_router.post("/chat")
+async def chat_with_ai(request: ChatRequest):
+    # Get conversation
+    conv = await db.conversations.find_one({"id": request.conversation_id}, {"_id": 0})
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Get project
+    project = await db.projects.find_one({"id": conv["project_id"]}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Build system message with project context
+    system_parts = []
+    
+    if project.get("instructions"):
+        system_parts.append(f"# Project Instructions\n{project['instructions']}")
+    
+    if project.get("memory"):
+        system_parts.append(f"# Project Memory/Context\n{project['memory']}")
+    
+    # Include knowledge base content if requested
+    if request.include_knowledge_base:
+        files = await db.files.find(
+            {"project_id": conv["project_id"], "indexed": True}, 
+            {"_id": 0}
+        ).to_list(100)
+        
+        if files:
+            kb_content = "# Knowledge Base Documents\n\n"
+            for f in files:
+                if f.get("content_preview"):
+                    kb_content += f"## {f['original_filename']}\n{f['content_preview']}\n\n"
+            system_parts.append(kb_content)
+    
+    system_message = "\n\n".join(system_parts) if system_parts else "You are a helpful AI assistant for editing assessment materials."
+    
+    # Get chat history
+    history = await db.messages.find(
+        {"conversation_id": request.conversation_id}, {"_id": 0}
+    ).sort("created_at", 1).to_list(50)
+    
+    # Save user message
+    user_msg = Message(
+        conversation_id=request.conversation_id,
+        role="user",
+        content=request.message
+    )
+    await db.messages.insert_one(user_msg.model_dump())
+    
+    # Initialize LLM
+    api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+    chat = LlmChat(
+        api_key=api_key,
+        session_id=request.conversation_id,
+        system_message=system_message
+    ).with_model("anthropic", "claude-sonnet-4-20250514")
+    
+    # Build message history for context
+    for msg in history[-20:]:  # Last 20 messages for context
+        if msg["role"] == "user":
+            await chat.send_message(UserMessage(text=msg["content"]))
+    
+    # Send current message and get response
+    try:
+        response = await chat.send_message(UserMessage(text=request.message))
+        
+        # Save assistant message
+        assistant_msg = Message(
+            conversation_id=request.conversation_id,
+            role="assistant",
+            content=response
+        )
+        await db.messages.insert_one(assistant_msg.model_dump())
+        
+        # Update conversation timestamp
+        await db.conversations.update_one(
+            {"id": request.conversation_id},
+            {"$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return {"response": response, "message_id": assistant_msg.id}
+    
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
+
+# ============== STORAGE CONFIG ==============
+
+@api_router.get("/storage/config")
+async def get_storage_config():
+    return {
+        "provider": STORAGE_PROVIDER,
+        "s3_configured": bool(os.environ.get('S3_BUCKET_NAME')),
+        "local_path": str(LOCAL_STORAGE_PATH) if STORAGE_PROVIDER == 'local' else None
+    }
+
+@api_router.post("/storage/config")
+async def update_storage_config(config: StorageConfig):
+    """Update storage configuration - requires server restart to take effect"""
+    # In production, this would update environment variables or config file
+    # For now, return instructions
+    return {
+        "message": "Storage configuration updated. Set these environment variables and restart the server:",
+        "env_vars": {
+            "STORAGE_PROVIDER": config.provider,
+            "S3_BUCKET_NAME": config.s3_bucket_name or "",
+            "S3_ACCESS_KEY": "***" if config.s3_access_key else "",
+            "S3_SECRET_KEY": "***" if config.s3_secret_key else "",
+            "S3_REGION": config.s3_region or "us-east-1"
+        }
+    }
+
+# Include router and middleware
 app.include_router(api_router)
 
 app.add_middleware(
@@ -76,13 +599,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
