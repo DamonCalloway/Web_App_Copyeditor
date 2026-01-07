@@ -3,7 +3,7 @@ RAG (Retrieval-Augmented Generation) Module
 
 Implements contextual retrieval following Anthropic's approach:
 1. Document chunking with overlap
-2. Contextual embeddings using OpenAI
+2. Local embeddings using sentence-transformers (no API calls)
 3. Hybrid search (semantic + keyword)
 4. Relevance-based retrieval for queries
 """
@@ -18,18 +18,30 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import logging
 from motor.motor_asyncio import AsyncIOMotorDatabase
-import httpx
+from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
 
 # Chunk configuration
 CHUNK_SIZE = 400  # tokens per chunk
 CHUNK_OVERLAP = 50  # overlapping tokens between chunks
-EMBEDDING_MODEL = "text-embedding-3-small"
 TOP_K_RESULTS = 5  # Number of chunks to retrieve
 
 # Initialize tokenizer for counting tokens
 tokenizer = tiktoken.get_encoding("cl100k_base")
+
+# Initialize embedding model (local, no API needed)
+# Using a small but effective model
+_embedding_model = None
+
+def get_embedding_model():
+    """Lazy load the embedding model"""
+    global _embedding_model
+    if _embedding_model is None:
+        logger.info("Loading embedding model...")
+        _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        logger.info("Embedding model loaded")
+    return _embedding_model
 
 
 def count_tokens(text: str) -> int:
