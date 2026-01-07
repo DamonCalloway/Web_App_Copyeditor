@@ -276,13 +276,16 @@ async def create_project(project: ProjectCreate):
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects(
     search: Optional[str] = Query(None),
-    starred_only: bool = Query(False)
+    starred_only: bool = Query(False),
+    archived: Optional[bool] = Query(False)
 ):
     query = {}
     if search:
         query["name"] = {"$regex": search, "$options": "i"}
     if starred_only:
         query["starred"] = True
+    if archived is not None:
+        query["archived"] = archived
     
     projects = await db.projects.find(query, {"_id": 0}).sort("updated_at", -1).to_list(100)
     
