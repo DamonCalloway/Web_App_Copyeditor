@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { ProjectsPage } from "@/pages/ProjectsPage";
 import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
 import { ChatPage } from "@/pages/ChatPage";
+import { ChatsPage } from "@/pages/ChatsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
