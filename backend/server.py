@@ -537,6 +537,19 @@ async def chat_with_ai(request: ChatRequest):
         system_message=system_message
     ).with_model("anthropic", "claude-sonnet-4-20250514")
     
+    # Add extended thinking if enabled
+    if request.extended_thinking:
+        chat.with_params(
+            thinking={"type": "enabled", "budget_tokens": request.thinking_budget},
+            max_tokens=max(16000, request.thinking_budget + 4000)  # Ensure max_tokens > budget_tokens
+        )
+    
+    # Add web search if enabled
+    if request.web_search:
+        chat.with_params(
+            web_search_options={"search_context_size": "medium"}
+        )
+    
     # Build message history for context
     for msg in history[-20:]:  # Last 20 messages for context
         if msg["role"] == "user":
