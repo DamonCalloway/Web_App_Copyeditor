@@ -48,7 +48,9 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Projects list page with search
 - [x] Project detail page (Files, Conversations, Memory, Instructions)
 - [x] File upload with indexing status
+- [x] **File viewer** - Click on file to view contents with markdown rendering
 - [x] Chat interface with markdown rendering
+- [x] **Copy button** on messages (hover to reveal)
 - [x] Knowledge base toggle
 - [x] Settings page with storage configuration
 - [x] Dark/light theme toggle
