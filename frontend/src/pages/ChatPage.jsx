@@ -182,11 +182,13 @@ export default function ChatPage() {
         webSearch: featuresAvailable && webSearch
       });
       
-      // Add assistant message
+      // Add assistant message with thinking if present
       const assistantMsg = {
         id: response.message_id,
         role: "assistant",
         content: response.response,
+        thinking: response.thinking || null,
+        thinking_time: response.thinking_time || null,
         created_at: new Date().toISOString()
       };
       setMessages(prev => [...prev, assistantMsg]);
