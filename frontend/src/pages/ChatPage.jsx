@@ -306,6 +306,17 @@ export default function ChatPage() {
     }
   };
 
+  const handleChangeProject = async (projectId) => {
+    try {
+      await updateConversation(conversationId, { project_id: projectId === "none" ? null : projectId });
+      setShowProjectSelector(false);
+      loadChatData();
+      toast.success("Project updated");
+    } catch (error) {
+      toast.error("Failed to update project");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
