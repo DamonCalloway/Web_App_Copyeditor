@@ -43,6 +43,9 @@ class ProjectBase(BaseModel):
     description: Optional[str] = ""
     instructions: Optional[str] = ""
     memory: Optional[str] = ""
+    extended_thinking_enabled: bool = False
+    thinking_budget: int = 10000
+    web_search_enabled: bool = True  # Default to on as user requested
 
 class ProjectCreate(ProjectBase):
     pass
