@@ -55,6 +55,9 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = None
     instructions: Optional[str] = None
     memory: Optional[str] = None
+    extended_thinking_enabled: Optional[bool] = None
+    thinking_budget: Optional[int] = None
+    web_search_enabled: Optional[bool] = None
 
 class Project(ProjectBase):
     model_config = ConfigDict(extra="ignore")
