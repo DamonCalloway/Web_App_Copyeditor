@@ -338,19 +338,22 @@ export default function ChatPage() {
                         variant={extendedThinking ? "default" : "ghost"}
                         size="sm"
                         onClick={() => {
-                          toast.info("Extended Thinking requires direct Anthropic API key (coming soon)");
+                          if (featuresAvailable) {
+                            setExtendedThinking(!extendedThinking);
+                          } else {
+                            toast.info("Extended Thinking requires direct Anthropic API key");
+                          }
                         }}
-                        className={`gap-1.5 h-7 px-2 opacity-50 cursor-not-allowed`}
+                        className={`gap-1.5 h-7 px-2 ${extendedThinking && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${!featuresAvailable ? 'opacity-50' : ''}`}
                         data-testid="extended-thinking-toggle"
-                        disabled
                       >
-                        <Brain className={`h-3.5 w-3.5`} />
+                        <Brain className={`h-3.5 w-3.5 ${extendedThinking && featuresAvailable ? 'animate-pulse' : ''}`} />
                         <span className="text-xs">Think</span>
                       </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Extended Thinking (requires direct Anthropic API key)</p>
+                    <p>{featuresAvailable ? 'Extended Thinking: Claude shows reasoning process' : 'Requires direct Anthropic API key'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -364,11 +367,14 @@ export default function ChatPage() {
                         variant={webSearch ? "default" : "ghost"}
                         size="sm"
                         onClick={() => {
-                          toast.info("Web Search requires direct Anthropic API key (coming soon)");
+                          if (featuresAvailable) {
+                            setWebSearch(!webSearch);
+                          } else {
+                            toast.info("Web Search requires direct Anthropic API key");
+                          }
                         }}
-                        className={`gap-1.5 h-7 px-2 opacity-50 cursor-not-allowed`}
+                        className={`gap-1.5 h-7 px-2 ${webSearch && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${!featuresAvailable ? 'opacity-50' : ''}`}
                         data-testid="web-search-toggle"
-                        disabled
                       >
                         <Globe className={`h-3.5 w-3.5`} />
                         <span className="text-xs">Web</span>
@@ -376,7 +382,7 @@ export default function ChatPage() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Web Search (requires direct Anthropic API key)</p>
+                    <p>{featuresAvailable ? 'Web Search: Claude can search for current information' : 'Requires direct Anthropic API key'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
