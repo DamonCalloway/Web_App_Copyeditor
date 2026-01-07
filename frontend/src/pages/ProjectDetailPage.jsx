@@ -507,6 +507,62 @@ export default function ProjectDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* File Viewer Dialog */}
+      <Dialog open={!!viewingFile} onOpenChange={(open) => !open && closeFileViewer()}>
+        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col" data-testid="file-viewer-dialog" aria-describedby="file-viewer-description">
+          <DialogHeader>
+            <DialogTitle className="font-serif flex items-center gap-2">
+              {viewingFile && <FileIcon type={viewingFile.file_type} />}
+              {viewingFile?.original_filename}
+            </DialogTitle>
+            <p id="file-viewer-description" className="text-sm text-muted-foreground">
+              {viewingFile && formatFileSize(viewingFile.file_size)} • {viewingFile?.file_type}
+              {viewingFile?.indexed && ' • Indexed'}
+            </p>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto min-h-[400px] border rounded-lg bg-secondary/30 p-4">
+            {loadingFileContent ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : fileContent?.type === 'image' ? (
+              <div className="flex items-center justify-center h-full">
+                <img 
+                  src={fileContent.url} 
+                  alt={viewingFile?.original_filename}
+                  className="max-w-full max-h-full object-contain rounded"
+                />
+              </div>
+            ) : fileContent?.type === 'text' ? (
+              <div className="file-content-viewer">
+                {viewingFile?.file_type === 'MD' ? (
+                  <div className="prose-content prose-sm max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {fileContent.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
+                    {fileContent.content}
+                  </pre>
+                )}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center">No preview available</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" asChild>
+              <a href={viewingFile ? getFileDownloadUrl(viewingFile.id) : '#'} download>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </a>
+            </Button>
+            <Button onClick={closeFileViewer}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
