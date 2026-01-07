@@ -135,7 +135,12 @@ export default function ChatPage() {
     setMessages(prev => [...prev, tempUserMsg]);
     
     try {
-      const response = await sendMessage(conversationId, userMessage, includeKB);
+      const response = await sendMessage(conversationId, userMessage, {
+        includeKnowledgeBase: includeKB,
+        extendedThinking,
+        thinkingBudget: project?.thinking_budget || 10000,
+        webSearch
+      });
       
       // Add assistant message
       const assistantMsg = {
