@@ -168,28 +168,70 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleFileSelect = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    const validFiles = selectedFiles.filter(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      return ALLOWED_EXTENSIONS.includes(ext);
+    });
+    
+    if (validFiles.length !== selectedFiles.length) {
+      toast.error("Some files were skipped (unsupported format)");
+    }
+    
+    if (validFiles.length > 0) {
+      setAttachedFiles(prev => [...prev, ...validFiles]);
+    }
+    
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachedFile = (index) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (filename) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const imageExts = ['png', 'jpg', 'jpeg', 'bmp', 'gif'];
+    if (imageExts.includes(ext)) {
+      return <Image className="h-4 w-4" />;
+    }
+    return <File className="h-4 w-4" />;
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || sending) return;
+    if ((!input.trim() && attachedFiles.length === 0) || sending) return;
     
     const userMessage = input.trim();
+    const filesToSend = [...attachedFiles];
     setInput("");
+    setAttachedFiles([]);
     setSending(true);
+    
+    // Build message content display
+    const fileNames = filesToSend.map(f => f.name).join(", ");
+    const displayContent = fileNames 
+      ? (userMessage ? `${userMessage}\n\n📎 ${fileNames}` : `📎 ${fileNames}`)
+      : userMessage;
     
     // Add user message immediately
     const tempUserMsg = {
       id: `temp-${Date.now()}`,
       role: "user",
-      content: userMessage,
+      content: displayContent,
+      attachments: filesToSend.map(f => ({ name: f.name, type: f.type })),
       created_at: new Date().toISOString()
     };
     setMessages(prev => [...prev, tempUserMsg]);
     
     try {
-      const response = await sendMessage(conversationId, userMessage, {
+      const response = await sendMessage(conversationId, userMessage || "Please analyze the attached file(s).", {
         includeKnowledgeBase: includeKB,
         extendedThinking: featuresAvailable && extendedThinking,
         thinkingBudget: project?.thinking_budget || 10000,
-        webSearch: featuresAvailable && webSearch
+        webSearch: featuresAvailable && webSearch,
+        files: filesToSend
       });
       
       // Add assistant message with thinking if present
@@ -207,6 +249,7 @@ export default function ChatPage() {
       // Remove temp message on error
       setMessages(prev => prev.filter(m => m.id !== tempUserMsg.id));
       setInput(userMessage);
+      setAttachedFiles(filesToSend);
     } finally {
       setSending(false);
     }
