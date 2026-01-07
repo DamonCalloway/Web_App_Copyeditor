@@ -116,7 +116,7 @@ async def get_embedding(text: str, api_key: str) -> List[float]:
     """Get embedding for text using OpenAI API via Emergent proxy"""
     try:
         # Use Emergent proxy for embeddings
-        proxy_url = "https://integrations.emergent.sh/llm/v1/embeddings"
+        proxy_url = "https://integrations.emergentagent.com/llm/v1/embeddings"
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
