@@ -3,13 +3,27 @@ import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Send, Loader2, Star, MoreHorizontal, 
   Trash2, FolderKanban, FileText, ChevronDown, Copy, Check,
-  Brain, Globe, ChevronRight, Paperclip, X, File, Image
+  Brain, Globe, ChevronRight, Paperclip, X, File, Image, Edit2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +45,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { 
   getConversation, getMessages, sendMessage, deleteConversation,
-  toggleStarConversation, getProject, getProjectFiles, getFeatureConfig
+  toggleStarConversation, getProject, getProjectFiles, getFeatureConfig,
+  getProjects, updateConversation
 } from "@/lib/api";
 import { toast } from "sonner";
 
