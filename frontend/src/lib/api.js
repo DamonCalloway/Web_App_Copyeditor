@@ -107,7 +107,35 @@ export const getMessages = async (conversationId) => {
 
 // Chat
 export const sendMessage = async (conversationId, message, options = {}) => {
-  const { includeKnowledgeBase = true, extendedThinking = false, thinkingBudget = 10000, webSearch = false } = options;
+  const { 
+    includeKnowledgeBase = true, 
+    extendedThinking = false, 
+    thinkingBudget = 10000, 
+    webSearch = false,
+    files = []
+  } = options;
+  
+  // If there are files, use FormData
+  if (files && files.length > 0) {
+    const formData = new FormData();
+    formData.append("conversation_id", conversationId);
+    formData.append("message", message);
+    formData.append("include_knowledge_base", includeKnowledgeBase);
+    formData.append("extended_thinking", extendedThinking);
+    formData.append("thinking_budget", thinkingBudget);
+    formData.append("web_search", webSearch);
+    
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+    
+    const response = await api.post("/chat/with-files", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  }
+  
+  // Standard JSON request without files
   const response = await api.post("/chat", {
     conversation_id: conversationId,
     message,
