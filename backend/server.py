@@ -88,12 +88,19 @@ class ConversationBase(BaseModel):
     project_id: str
     name: str = "New conversation"
 
+class ConversationUpdate(BaseModel):
+    name: Optional[str] = None
+    project_id: Optional[str] = None
+    starred: Optional[bool] = None
+    archived: Optional[bool] = None
+
 class Conversation(ConversationBase):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     starred: bool = False
+    archived: bool = False
 
 class Message(BaseModel):
     model_config = ConfigDict(extra="ignore")
