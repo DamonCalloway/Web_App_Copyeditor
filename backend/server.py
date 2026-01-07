@@ -101,7 +101,7 @@ class Message(BaseModel):
     content: str
     thinking: Optional[str] = None
     thinking_time: Optional[int] = None
-    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat()))
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class ChatRequest(BaseModel):
     conversation_id: str
