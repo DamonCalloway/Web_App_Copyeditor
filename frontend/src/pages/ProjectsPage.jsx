@@ -28,6 +28,8 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProject, setNewProject] = useState({ name: "", description: "" });
+  const [editingProject, setEditingProject] = useState(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "" });
 
   useEffect(() => {
     loadProjects();
