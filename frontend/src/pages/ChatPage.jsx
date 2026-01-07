@@ -139,25 +139,32 @@ export default function ChatPage() {
 
   const loadChatData = async () => {
     try {
-      const [conv, msgs, featureConfig] = await Promise.all([
+      const [conv, msgs, featureConfig, projList] = await Promise.all([
         getConversation(conversationId),
         getMessages(conversationId),
-        getFeatureConfig()
+        getFeatureConfig(),
+        getProjects()
       ]);
       setConversation(conv);
       setMessages(msgs);
       setFeaturesAvailable(featureConfig.extended_thinking_available);
+      setAllProjects(projList);
       
       // Load project and files
-      const [proj, filesList] = await Promise.all([
-        getProject(conv.project_id),
-        getProjectFiles(conv.project_id)
-      ]);
-      setProject(proj);
-      setFiles(filesList);
-      // Set defaults from project settings
-      setExtendedThinking(proj.extended_thinking_enabled || false);
-      setWebSearch(proj.web_search_enabled || false);
+      if (conv.project_id) {
+        const [proj, filesList] = await Promise.all([
+          getProject(conv.project_id),
+          getProjectFiles(conv.project_id)
+        ]);
+        setProject(proj);
+        setFiles(filesList);
+        // Set defaults from project settings
+        setExtendedThinking(proj.extended_thinking_enabled || false);
+        setWebSearch(proj.web_search_enabled || false);
+      } else {
+        setProject(null);
+        setFiles([]);
+      }
     } catch (error) {
       toast.error("Failed to load conversation");
       navigate("/projects");
