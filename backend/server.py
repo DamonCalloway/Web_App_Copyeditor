@@ -844,16 +844,15 @@ async def chat_with_files(
         file_names.append(file.filename)
         ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
         
-        # Image files - convert to base64 for Claude vision
+        # Image files - convert to base64 for vision (OpenAI format for litellm)
         if ext in ['png', 'jpg', 'jpeg', 'gif', 'bmp']:
             mime_type = f"image/{ext}" if ext != 'jpg' else "image/jpeg"
             b64_content = base64.b64encode(content).decode('utf-8')
+            # Use OpenAI format which litellm will convert to provider format
             file_contents.append({
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": mime_type,
-                    "data": b64_content
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:{mime_type};base64,{b64_content}"
                 }
             })
         # Text-based files - extract content
