@@ -220,7 +220,14 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Chats page with conversation management"
+    - "Projects page edit and archive functionality"
+    - "Chat page project selector and indicator"
+    - "Sidebar Chats navigation and context menus"
+    - "Project update API endpoints for edit/archive"
+    - "Conversation update API endpoints for edit/rename/project association"
+    - "Get all conversations API endpoint"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -230,3 +237,5 @@ agent_communication:
       message: "Starting comprehensive test of file attachment feature. Will test both text (.txt) and image (.png/.jpg) attachments end-to-end from UI to backend response."
     - agent: "testing"
       message: "✅ TESTING COMPLETE - File attachment feature working perfectly end-to-end. Both text and image files successfully uploaded, processed, and analyzed by AI. UI shows proper previews, backend processes files correctly, and AI provides comprehensive responses. The 'Invalid user message' error has been resolved. Feature is production-ready."
+    - agent: "main"
+      message: "Added new GUI features for testing: Chats page, project edit/archive functionality, conversation management, project selector in chat, and sidebar context menus. All features implemented and ready for comprehensive testing."
