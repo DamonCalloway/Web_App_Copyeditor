@@ -367,11 +367,32 @@ async def upload_file(project_id: str, file: UploadFile = File(...)):
         file_size=len(content),
         mime_type=mime_type,
         storage_path=storage_path,
-        indexed=bool(content_preview),
+        indexed=False,  # Will be set to True after RAG indexing
         content_preview=content_preview
     )
     
     await db.files.insert_one(file_meta.model_dump())
+    
+    # RAG indexing (async, non-blocking for text documents)
+    if content_preview:
+        try:
+            api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+            rag_index = RAGIndex(db, project_id)
+            chunks_indexed = await rag_index.index_document(
+                file_id=file_meta.id,
+                filename=file.filename,
+                content=content_preview,
+                api_key=api_key
+            )
+            if chunks_indexed > 0:
+                await db.files.update_one(
+                    {"id": file_meta.id},
+                    {"$set": {"indexed": True, "chunks_count": chunks_indexed}}
+                )
+                file_meta.indexed = True
+                logger.info(f"RAG indexed {chunks_indexed} chunks for {file.filename}")
+        except Exception as e:
+            logger.error(f"RAG indexing failed for {file.filename}: {e}")
     
     # Update project
     await db.projects.update_one(
