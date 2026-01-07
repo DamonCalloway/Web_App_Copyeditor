@@ -445,6 +445,46 @@ export default function ChatPage() {
         {/* Input Area */}
         <div className="message-input-area">
           <div className="max-w-3xl mx-auto">
+            {/* Project Indicator */}
+            {project && (
+              <div className="flex items-center justify-center mb-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowProjectSelector(true)}
+                        data-testid="project-indicator-btn"
+                      >
+                        <FolderKanban className="h-3.5 w-3.5 text-primary" />
+                        <span>{project.name}</span>
+                        <Edit2 className="h-3 w-3 opacity-50" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Click to change project
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+            {!project && (
+              <div className="flex items-center justify-center mb-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowProjectSelector(true)}
+                  data-testid="add-project-btn"
+                >
+                  <FolderKanban className="h-3.5 w-3.5" />
+                  <span>Add to project</span>
+                </Button>
+              </div>
+            )}
+            
             {/* Feature Toggles */}
             <div className="flex items-center gap-4 mb-3 text-sm flex-wrap">
               {/* KB Toggle */}
