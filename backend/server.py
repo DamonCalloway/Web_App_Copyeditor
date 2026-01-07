@@ -99,7 +99,9 @@ class Message(BaseModel):
     conversation_id: str
     role: str  # 'user' or 'assistant'
     content: str
-    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    thinking: Optional[str] = None
+    thinking_time: Optional[int] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat()))
 
 class ChatRequest(BaseModel):
     conversation_id: str
