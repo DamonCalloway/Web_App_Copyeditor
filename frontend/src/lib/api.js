@@ -125,6 +125,12 @@ export const getStorageConfig = async () => {
   return response.data;
 };
 
+// Feature Config
+export const getFeatureConfig = async () => {
+  const response = await api.get("/config/features");
+  return response.data;
+};
+
 export const updateStorageConfig = async (config) => {
   const response = await api.post("/storage/config", config);
   return response.data;
