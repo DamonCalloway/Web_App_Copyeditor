@@ -201,6 +201,14 @@ export default function ProjectsPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleEditClick(project, e)}>
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Edit details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleArchive(project.id, e)}>
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive
+                      </DropdownMenuItem>
                       <DropdownMenuItem 
                         className="text-destructive"
                         onClick={(e) => handleDeleteProject(project.id, e)}
