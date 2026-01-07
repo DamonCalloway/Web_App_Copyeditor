@@ -459,9 +459,13 @@ async def reindex_project_files(project_id: str):
     rag_index = RAGIndex(db, project_id)
     
     indexed_count = 0
+    total_chunks = 0
     for f in files:
         if f.get("content_preview"):
             try:
+                # Force re-index by removing existing chunks first
+                await rag_index.remove_document(f["id"])
+                
                 chunks = await rag_index.index_document(
                     file_id=f["id"],
                     filename=f["original_filename"],
@@ -474,6 +478,8 @@ async def reindex_project_files(project_id: str):
                         {"$set": {"indexed": True, "chunks_count": chunks}}
                     )
                     indexed_count += 1
+                    total_chunks += chunks
+                    logger.info(f"Indexed {f['original_filename']}: {chunks} chunks")
             except Exception as e:
                 logger.error(f"Failed to index {f['original_filename']}: {e}")
     
