@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the file attachment feature in the chat interface after backend bug fix for 'Invalid user message' error"
+user_problem_statement: "Test all the new GUI features that were just implemented: Chats section, Edit/Rename functionality for projects, Archive functionality for projects, Edit/Rename/Manage functionality for conversations, Project indicator/selector in chat input area, Context menus for conversations in the sidebar"
 
 backend:
   - task: "File attachment endpoint /api/chat/with-files"
@@ -110,7 +110,7 @@ backend:
     working: true
     file: "/app/backend/server.py"
     stuck_count: 0
-    priority: "high"
+    priority: "medium"
     needs_retesting: false
     status_history:
         - working: "NA"
@@ -119,6 +119,39 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - Backend endpoint working perfectly. Successfully processed both text (.txt) and image (.png) files. API calls returned 200 OK status. Multimodal message formatting correctly handles OpenAI format for litellm conversion to Anthropic format. Text extraction working for .txt files, base64 image encoding working for images. No errors in backend logs."
+  - task: "Project update API endpoints for edit/archive"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "API endpoints for updating projects (PUT /api/projects/{project_id}) and archiving functionality need testing"
+  - task: "Conversation update API endpoints for edit/rename/project association"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "API endpoints for updating conversations (PUT /api/conversations/{conversation_id}) and managing project associations need testing"
+  - task: "Get all conversations API endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "API endpoint for getting all conversations (GET /api/conversations) for the Chats page needs testing"
 
 frontend:
   - task: "File attachment UI in chat interface"
@@ -126,7 +159,7 @@ frontend:
     working: true
     file: "/app/frontend/src/pages/ChatPage.jsx"
     stuck_count: 0
-    priority: "high"
+    priority: "medium"
     needs_retesting: false
     status_history:
         - working: "NA"
@@ -135,6 +168,50 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - Frontend UI working perfectly. Paperclip button (data-testid='attach-file-btn') functional, file chooser opens correctly, file previews display properly with file names and icons. Attached files show in preview area with remove buttons. Messages send successfully with attachments. UI shows proper file attachment indicators (📎 filename). All file attachment UI components working as expected."
+  - task: "Chats page with conversation management"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ChatsPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "New Chats page (/chats) with conversation listing, context menus (star/unstar, rename, remove from project, delete), and edit dialog functionality needs comprehensive testing"
+  - task: "Projects page edit and archive functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ProjectsPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated Projects page with context menus for edit details, archive, and delete functionality. Edit dialog for renaming and changing descriptions needs testing"
+  - task: "Chat page project selector and indicator"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ChatPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Project indicator button near chat input area with project selector dialog for changing project associations and removing from projects needs testing"
+  - task: "Sidebar Chats navigation and context menus"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Sidebar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated sidebar with Chats navigation link and context menus for conversations (star/unstar, delete) in Recent section needs testing"
 
 metadata:
   created_by: "testing_agent"
