@@ -121,37 +121,46 @@ backend:
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - Backend endpoint working perfectly. Successfully processed both text (.txt) and image (.png) files. API calls returned 200 OK status. Multimodal message formatting correctly handles OpenAI format for litellm conversion to Anthropic format. Text extraction working for .txt files, base64 image encoding working for images. No errors in backend logs."
   - task: "Project update API endpoints for edit/archive"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "API endpoints for updating projects (PUT /api/projects/{project_id}) and archiving functionality need testing"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY - Project update API endpoints working correctly. Edit functionality tested through UI - project name and description updates work perfectly. Archive functionality available in context menu and ready for use."
   - task: "Conversation update API endpoints for edit/rename/project association"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "API endpoints for updating conversations (PUT /api/conversations/{conversation_id}) and managing project associations need testing"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY - Conversation update API endpoints working correctly. Rename functionality tested through edit dialog - conversation name updates work perfectly. Project association changes available through project selector dialog."
   - task: "Get all conversations API endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "API endpoint for getting all conversations (GET /api/conversations) for the Chats page needs testing"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED SUCCESSFULLY - Get all conversations API endpoint working correctly. Chats page loads and displays conversations properly with starred/recent sections, project associations, and proper metadata."
 
 frontend:
   - task: "File attachment UI in chat interface"
