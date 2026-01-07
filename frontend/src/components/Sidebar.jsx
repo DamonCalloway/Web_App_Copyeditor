@@ -2,13 +2,20 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Plus, MessageSquare, FolderKanban, Settings, 
-  ChevronLeft, ChevronRight, Star, Sun, Moon
+  ChevronLeft, ChevronRight, Star, Sun, Moon, MoreVertical,
+  Edit2, Trash2, FolderX
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useTheme } from "@/components/ThemeProvider";
-import { getRecentConversations, getProjects, createProject, createConversation } from "@/lib/api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { getRecentConversations, getProjects, createProject, createConversation, toggleStarConversation, deleteConversation, updateConversation } from "@/lib/api";
 import { toast } from "sonner";
 
 export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
