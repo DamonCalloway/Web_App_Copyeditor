@@ -131,6 +131,14 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
         {/* Navigation */}
         <nav className="space-y-1 mb-4">
           <div 
+            className={`nav-item ${currentPath === '/chats' ? 'active' : ''}`}
+            onClick={() => navigate("/chats")}
+            data-testid="nav-chats"
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span>Chats</span>
+          </div>
+          <div 
             className={`nav-item ${currentPath === '/projects' || currentPath === '/' ? 'active' : ''}`}
             onClick={() => navigate("/projects")}
             data-testid="nav-projects"
