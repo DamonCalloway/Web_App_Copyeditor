@@ -551,6 +551,39 @@ async def get_conversation(conversation_id: str):
         raise HTTPException(status_code=404, detail="Conversation not found")
     return conv
 
+@api_router.put("/conversations/{conversation_id}", response_model=Conversation)
+async def update_conversation(conversation_id: str, update: ConversationUpdate):
+    """Update conversation (rename, change project, etc.)"""
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.conversations.update_one({"id": conversation_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    conv = await db.conversations.find_one({"id": conversation_id}, {"_id": 0})
+    return conv
+
+@api_router.get("/conversations", response_model=List[Dict[str, Any]])
+async def get_all_conversations(starred: Optional[bool] = Query(None), archived: Optional[bool] = Query(False)):
+    """Get all conversations with optional filtering"""
+    query = {}
+    if starred is not None:
+        query["starred"] = starred
+    if archived is not None:
+        query["archived"] = archived
+        
+    convos = await db.conversations.find(query, {"_id": 0}).sort("updated_at", -1).to_list(1000)
+    
+    # Add project names
+    result = []
+    for c in convos:
+        project = await db.projects.find_one({"id": c.get("project_id")}, {"_id": 0, "name": 1})
+        c["project_name"] = project["name"] if project else "No Project"
+        result.append(c)
+    
+    return result
+
 @api_router.put("/conversations/{conversation_id}/star")
 async def toggle_star_conversation(conversation_id: str):
     conv = await db.conversations.find_one({"id": conversation_id})
