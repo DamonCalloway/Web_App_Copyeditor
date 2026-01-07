@@ -698,8 +698,10 @@ async def chat_with_ai(request: ChatRequest):
             use_web_search = request.web_search or project.get("web_search_enabled", False)
             
             if use_extended_thinking:
-                params["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
-                params["max_tokens"] = max(16000, thinking_budget + 4000)
+                # Minimum budget is 1024 tokens per Anthropic API
+                actual_budget = max(1024, thinking_budget)
+                params["thinking"] = {"type": "enabled", "budget_tokens": actual_budget}
+                params["max_tokens"] = max(16000, actual_budget + 4000)
             
             if use_web_search:
                 params["web_search_options"] = {"search_context_size": "medium"}
