@@ -296,7 +296,12 @@ export default function ProjectDetailPage() {
             ) : (
               <div className="file-grid">
                 {files.map(file => (
-                  <div key={file.id} className="file-card group" data-testid={`file-${file.id}`}>
+                  <div 
+                    key={file.id} 
+                    className="file-card group cursor-pointer" 
+                    onClick={() => handleViewFile(file)}
+                    data-testid={`file-${file.id}`}
+                  >
                     <div className="flex items-start gap-3">
                       <FileIcon type={file.file_type} />
                       <div className="flex-1 min-w-0">
@@ -315,6 +320,7 @@ export default function ProjectDetailPage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
+                        onClick={(e) => { e.stopPropagation(); }}
                         asChild
                       >
                         <a href={getFileDownloadUrl(file.id)} download data-testid={`download-file-${file.id}`}>
@@ -325,7 +331,7 @@ export default function ProjectDetailPage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-destructive"
-                        onClick={() => handleDeleteFile(file.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDeleteFile(file.id); }}
                         data-testid={`delete-file-${file.id}`}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
