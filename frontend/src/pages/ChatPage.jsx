@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Send, Loader2, Star, MoreHorizontal, 
-  Trash2, FolderKanban, FileText, ChevronDown
+  Trash2, FolderKanban, FileText, ChevronDown, Copy, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,37 @@ import {
   toggleStarConversation, getProject, getProjectFiles
 } from "@/lib/api";
 import { toast } from "sonner";
+
+// Copy button component for messages
+const CopyButton = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy");
+    }
+  };
+  
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+      onClick={handleCopy}
+      data-testid="copy-message-btn"
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-green-500" />
+      ) : (
+        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+      )}
+    </Button>
+  );
+};
 
 export default function ChatPage() {
   const { conversationId } = useParams();
@@ -238,7 +269,7 @@ export default function ChatPage() {
               messages.map((msg) => (
                 <div 
                   key={msg.id} 
-                  className={`message ${msg.role === 'user' ? 'message-user' : 'message-assistant'}`}
+                  className={`message group ${msg.role === 'user' ? 'message-user' : 'message-assistant'}`}
                   data-testid={`message-${msg.id}`}
                 >
                   <div className="message-content">
@@ -249,8 +280,15 @@ export default function ChatPage() {
                         </ReactMarkdown>
                       </div>
                     ) : (
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                      <div className="prose-content">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
                     )}
+                  </div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <CopyButton text={msg.content} />
                   </div>
                 </div>
               ))
