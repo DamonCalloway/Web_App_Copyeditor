@@ -65,6 +65,28 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
     }
   };
 
+  const handleToggleStarConv = async (convId, e) => {
+    e.stopPropagation();
+    try {
+      await toggleStarConversation(convId);
+      loadData();
+    } catch (error) {
+      toast.error("Failed to update conversation");
+    }
+  };
+
+  const handleDeleteConv = async (convId, e) => {
+    e.stopPropagation();
+    if (!window.confirm("Delete this conversation?")) return;
+    try {
+      await deleteConversation(convId);
+      loadData();
+      toast.success("Conversation deleted");
+    } catch (error) {
+      toast.error("Failed to delete conversation");
+    }
+  };
+
   if (collapsed) {
     return (
       <aside className="sidebar sidebar-collapsed" data-testid="sidebar-collapsed">
