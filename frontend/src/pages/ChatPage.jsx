@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Send, Loader2, Star, MoreHorizontal, 
-  Trash2, FolderKanban, FileText, ChevronDown, Copy, Check
+  Trash2, FolderKanban, FileText, ChevronDown, Copy, Check,
+  Brain, Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
