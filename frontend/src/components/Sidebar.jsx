@@ -182,12 +182,37 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
               {starredConversations.map(conv => (
                 <div
                   key={conv.id}
-                  className={`conversation-item flex items-center gap-2 ${currentPath === `/chat/${conv.id}` ? 'active' : ''}`}
+                  className={`conversation-item group flex items-center gap-2 ${currentPath === `/chat/${conv.id}` ? 'active' : ''}`}
                   onClick={() => navigate(`/chat/${conv.id}`)}
                   data-testid={`starred-conv-${conv.id}`}
                 >
                   <Star className="h-3 w-3 text-primary flex-shrink-0" fill="currentColor" />
-                  <span className="truncate">{conv.name}</span>
+                  <span className="truncate flex-1">{conv.name}</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        data-testid={`conv-menu-${conv.id}`}
+                      >
+                        <MoreVertical className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleToggleStarConv(conv.id, e)}>
+                        <Star className="h-4 w-4 mr-2" />
+                        Unstar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={(e) => handleDeleteConv(conv.id, e)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))}
             </div>
