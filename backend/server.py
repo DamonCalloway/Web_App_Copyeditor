@@ -535,17 +535,39 @@ async def chat_with_ai(request: ChatRequest):
     )
     await db.messages.insert_one(user_msg.model_dump())
     
-    # Initialize LLM
-    api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+    # Initialize LLM - use direct Anthropic key if available for extended features
+    anthropic_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    emergent_key = os.environ.get('EMERGENT_LLM_KEY', '')
+    
+    # Prefer direct Anthropic key for full feature support
+    use_direct_anthropic = bool(anthropic_key)
+    api_key = anthropic_key if use_direct_anthropic else emergent_key
+    
     chat = LlmChat(
         api_key=api_key,
         session_id=request.conversation_id,
         system_message=system_message
     ).with_model("anthropic", "claude-sonnet-4-20250514")
     
-    # Note: Extended thinking and web search require direct Anthropic API access
-    # They are not currently supported via the Emergent proxy
-    # These features will be enabled when using a direct Anthropic API key
+    # Extended features only work with direct Anthropic API key
+    if use_direct_anthropic:
+        # Get settings from request or project defaults
+        use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
+        thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
+        use_web_search = request.web_search or project.get("web_search_enabled", False)
+        
+        # Add extended thinking if enabled
+        if use_extended_thinking:
+            chat.with_params(
+                thinking={"type": "enabled", "budget_tokens": thinking_budget},
+                max_tokens=max(16000, thinking_budget + 4000)
+            )
+        
+        # Add web search if enabled
+        if use_web_search:
+            chat.with_params(
+                web_search_options={"search_context_size": "medium"}
+            )
     
     # Build message history for context
     for msg in history[-20:]:  # Last 20 messages for context
