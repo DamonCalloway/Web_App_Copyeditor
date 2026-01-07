@@ -528,24 +528,37 @@ async def chat_with_ai(request: ChatRequest):
     if project.get("memory"):
         system_parts.append(f"# Project Memory/Context\n{project['memory']}")
     
-    # Include knowledge base content if requested (limit to avoid rate limits)
+    # Use RAG to retrieve relevant knowledge base content
+    retrieved_sources = []
     if request.include_knowledge_base:
-        files = await db.files.find(
-            {"project_id": conv["project_id"], "indexed": True}, 
-            {"_id": 0}
-        ).to_list(100)
-        
-        if files:
-            kb_content = "# Knowledge Base Documents\n\n"
-            total_chars = 0
-            max_chars = 15000  # Limit KB content to ~15k chars to avoid rate limits
-            for f in files:
-                if f.get("content_preview"):
-                    preview = f['content_preview'][:2000]  # Limit each file to 2k chars
-                    if total_chars + len(preview) < max_chars:
-                        kb_content += f"## {f['original_filename']}\n{preview}\n\n"
-                        total_chars += len(preview)
-            system_parts.append(kb_content)
+        try:
+            api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+            context, sources = await retrieve_context_for_query(
+                db=db,
+                project_id=conv["project_id"],
+                query=request.message,
+                api_key=api_key,
+                max_tokens=4000,  # Limit context to ~4k tokens
+                top_k=5  # Top 5 most relevant chunks
+            )
+            
+            if context:
+                system_parts.append(f"# Relevant Knowledge Base Content\n\n{context}")
+                retrieved_sources = sources
+                logger.info(f"RAG retrieved {len(sources)} relevant chunks")
+        except Exception as e:
+            logger.error(f"RAG retrieval failed: {e}")
+            # Fallback to old method if RAG fails
+            files = await db.files.find(
+                {"project_id": conv["project_id"], "indexed": True}, 
+                {"_id": 0}
+            ).to_list(10)
+            if files:
+                kb_content = "# Knowledge Base (fallback)\n\n"
+                for f in files[:3]:
+                    if f.get("content_preview"):
+                        kb_content += f"## {f['original_filename']}\n{f['content_preview'][:1000]}\n\n"
+                system_parts.append(kb_content)
     
     system_message = "\n\n".join(system_parts) if system_parts else "You are a helpful AI assistant for editing assessment materials."
     
