@@ -14,6 +14,7 @@ import aiofiles
 import json
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 import asyncio
+from rag import RAGIndex, retrieve_context_for_query
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
