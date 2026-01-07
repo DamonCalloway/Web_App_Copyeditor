@@ -84,6 +84,38 @@ export default function ProjectsPage() {
     }
   };
 
+  const handleEditClick = (project, e) => {
+    e.stopPropagation();
+    setEditingProject(project);
+    setEditForm({ name: project.name, description: project.description || "" });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editForm.name.trim()) {
+      toast.error("Project name is required");
+      return;
+    }
+    try {
+      await updateProject(editingProject.id, editForm);
+      setEditingProject(null);
+      loadProjects();
+      toast.success("Project updated");
+    } catch (error) {
+      toast.error("Failed to update project");
+    }
+  };
+
+  const handleArchive = async (projectId, e) => {
+    e.stopPropagation();
+    try {
+      await updateProject(projectId, { archived: true });
+      loadProjects();
+      toast.success("Project archived");
+    } catch (error) {
+      toast.error("Failed to archive project");
+    }
+  };
+
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const now = new Date();
