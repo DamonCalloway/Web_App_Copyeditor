@@ -68,6 +68,7 @@ class Project(ProjectBase):
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     file_count: int = 0
     starred: bool = False
+    archived: bool = False
 
 class FileMetadata(BaseModel):
     model_config = ConfigDict(extra="ignore")
