@@ -672,21 +672,75 @@ async def chat_with_ai(request: ChatRequest):
             )
     
     # Build message history for context
+    messages_for_llm = [{"role": "system", "content": system_message}]
     for msg in history[-20:]:  # Last 20 messages for context
-        if msg["role"] == "user":
-            await chat.send_message(UserMessage(text=msg["content"]))
+        messages_for_llm.append({"role": msg["role"], "content": msg["content"]})
+    messages_for_llm.append({"role": "user", "content": request.message})
     
     # Send current message and get response
     try:
-        response = await chat.send_message(UserMessage(text=request.message))
+        import litellm
         
-        # Save assistant message
-        assistant_msg = Message(
-            conversation_id=request.conversation_id,
-            role="assistant",
-            content=response
-        )
-        await db.messages.insert_one(assistant_msg.model_dump())
+        # Build params
+        params = {
+            "model": "anthropic/claude-sonnet-4-20250514",
+            "messages": messages_for_llm,
+            "api_key": api_key,
+        }
+        
+        # Add extended features if using direct Anthropic key
+        thinking_content = None
+        thinking_time = None
+        
+        if use_direct_anthropic:
+            use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
+            thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
+            use_web_search = request.web_search or project.get("web_search_enabled", False)
+            
+            if use_extended_thinking:
+                params["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
+                params["max_tokens"] = max(16000, thinking_budget + 4000)
+            
+            if use_web_search:
+                params["web_search_options"] = {"search_context_size": "medium"}
+        
+        # Make the API call
+        import time
+        start_time = time.time()
+        llm_response = await litellm.acompletion(**params)
+        elapsed_time = time.time() - start_time
+        
+        # Extract response and thinking content
+        response_text = ""
+        if llm_response.choices:
+            choice = llm_response.choices[0]
+            message = choice.message
+            
+            # Check for thinking content in the response
+            if hasattr(message, 'thinking') and message.thinking:
+                thinking_content = message.thinking
+                thinking_time = round(elapsed_time)
+            elif hasattr(message, 'reasoning_content') and message.reasoning_content:
+                thinking_content = message.reasoning_content
+                thinking_time = round(elapsed_time)
+            
+            # Get main response content
+            response_text = message.content or ""
+        
+        # Save assistant message (include thinking in metadata if present)
+        msg_data = {
+            "id": str(uuid.uuid4()),
+            "conversation_id": request.conversation_id,
+            "role": "assistant",
+            "content": response_text,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        if thinking_content:
+            msg_data["thinking"] = thinking_content
+            msg_data["thinking_time"] = thinking_time
+        
+        await db.messages.insert_one(msg_data)
         
         # Update conversation timestamp
         await db.conversations.update_one(
@@ -694,7 +748,16 @@ async def chat_with_ai(request: ChatRequest):
             {"$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
         )
         
-        return {"response": response, "message_id": assistant_msg.id}
+        result = {
+            "response": response_text, 
+            "message_id": msg_data["id"]
+        }
+        
+        if thinking_content:
+            result["thinking"] = thinking_content
+            result["thinking_time"] = thinking_time
+        
+        return result
     
     except Exception as e:
         logger.error(f"Chat error: {e}")
