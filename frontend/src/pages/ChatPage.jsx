@@ -116,6 +116,16 @@ export default function ChatPage() {
   const [webSearch, setWebSearch] = useState(false);
   const [featuresAvailable, setFeaturesAvailable] = useState(false);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState([]);
+  const fileInputRef = useRef(null);
+
+  // Allowed file types for chat attachments
+  const ALLOWED_EXTENSIONS = [
+    'md', 'txt', 'pdf', 'docx', 'json', 'xls', 'xlsx', 'csv',
+    'png', 'jpg', 'jpeg', 'bmp', 'gif',
+    'zip', 'rtf',
+    'mpeg', 'mp3', 'mp4', 'mov', 'wav'
+  ];
 
   useEffect(() => {
     loadChatData();
