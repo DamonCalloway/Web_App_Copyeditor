@@ -66,6 +66,38 @@ const CopyButton = ({ text }) => {
   );
 };
 
+// Thinking block component - collapsible like Claude.ai
+const ThinkingBlock = ({ thinking, thinkingTime }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  if (!thinking) return null;
+  
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-3">
+      <CollapsibleTrigger asChild>
+        <button 
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1 px-2 rounded-md hover:bg-secondary/50"
+          data-testid="thinking-toggle"
+        >
+          <ChevronRight className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+          <Brain className="h-4 w-4" />
+          <span>Thought process</span>
+          {thinkingTime && (
+            <span className="text-xs opacity-70">{thinkingTime}s</span>
+          )}
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-2 p-3 rounded-lg bg-secondary/30 border border-border/50 text-sm text-muted-foreground thinking-content">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {thinking}
+          </ReactMarkdown>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
+
 export default function ChatPage() {
   const { conversationId } = useParams();
   const navigate = useNavigate();
