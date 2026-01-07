@@ -98,6 +98,9 @@ class ChatRequest(BaseModel):
     conversation_id: str
     message: str
     include_knowledge_base: bool = True
+    extended_thinking: bool = False
+    thinking_budget: int = 10000  # Default thinking budget tokens
+    web_search: bool = False
 
 class StorageConfig(BaseModel):
     provider: str  # 'local' or 's3'
