@@ -26,7 +26,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { 
   getConversation, getMessages, sendMessage, deleteConversation,
-  toggleStarConversation, getProject, getProjectFiles
+  toggleStarConversation, getProject, getProjectFiles, getFeatureConfig
 } from "@/lib/api";
 import { toast } from "sonner";
 
