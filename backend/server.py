@@ -433,10 +433,66 @@ async def delete_file(file_id: str):
     if not file_meta:
         raise HTTPException(status_code=404, detail="File not found")
     
+    # Remove from RAG index
+    try:
+        rag_index = RAGIndex(db, file_meta["project_id"])
+        await rag_index.remove_document(file_id)
+    except Exception as e:
+        logger.error(f"Failed to remove from RAG index: {e}")
+    
     await storage.delete_file(file_meta["storage_path"])
     await db.files.delete_one({"id": file_id})
     
     return {"success": True}
+
+
+@api_router.post("/projects/{project_id}/reindex")
+async def reindex_project_files(project_id: str):
+    """Re-index all files in a project for RAG"""
+    project = await db.projects.find_one({"id": project_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    files = await db.files.find({"project_id": project_id}, {"_id": 0}).to_list(100)
+    
+    api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+    rag_index = RAGIndex(db, project_id)
+    
+    indexed_count = 0
+    for f in files:
+        if f.get("content_preview"):
+            try:
+                chunks = await rag_index.index_document(
+                    file_id=f["id"],
+                    filename=f["original_filename"],
+                    content=f["content_preview"],
+                    api_key=api_key
+                )
+                if chunks > 0:
+                    await db.files.update_one(
+                        {"id": f["id"]},
+                        {"$set": {"indexed": True, "chunks_count": chunks}}
+                    )
+                    indexed_count += 1
+            except Exception as e:
+                logger.error(f"Failed to index {f['original_filename']}: {e}")
+    
+    # Get stats
+    stats = await rag_index.get_stats()
+    
+    return {
+        "success": True,
+        "files_indexed": indexed_count,
+        "total_chunks": stats["total_chunks"]
+    }
+
+
+@api_router.get("/projects/{project_id}/rag-stats")
+async def get_rag_stats(project_id: str):
+    """Get RAG index statistics for a project"""
+    rag_index = RAGIndex(db, project_id)
+    stats = await rag_index.get_stats()
+    return stats
 
 # ============== CONVERSATION ROUTES ==============
 
