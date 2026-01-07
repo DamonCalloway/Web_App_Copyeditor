@@ -101,3 +101,49 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the file attachment feature in the chat interface after backend bug fix for 'Invalid user message' error"
+
+backend:
+  - task: "File attachment endpoint /api/chat/with-files"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Backend endpoint exists at line 791, needs testing to verify multimodal message formatting works correctly"
+
+frontend:
+  - task: "File attachment UI in chat interface"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ChatPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "UI has paperclip button, file preview, and attachment handling. Needs end-to-end testing with text and image files"
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "File attachment UI in chat interface"
+    - "File attachment endpoint /api/chat/with-files"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "Starting comprehensive test of file attachment feature. Will test both text (.txt) and image (.png/.jpg) attachments end-to-end from UI to backend response."
