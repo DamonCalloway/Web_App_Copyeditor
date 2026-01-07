@@ -334,17 +334,20 @@ export default function ChatPage() {
                       <Button
                         variant={extendedThinking ? "default" : "ghost"}
                         size="sm"
-                        onClick={() => setExtendedThinking(!extendedThinking)}
-                        className={`gap-1.5 h-7 px-2 ${extendedThinking ? 'bg-primary text-primary-foreground' : ''}`}
+                        onClick={() => {
+                          toast.info("Extended Thinking requires direct Anthropic API key (coming soon)");
+                        }}
+                        className={`gap-1.5 h-7 px-2 opacity-50 cursor-not-allowed`}
                         data-testid="extended-thinking-toggle"
+                        disabled
                       >
-                        <Brain className={`h-3.5 w-3.5 ${extendedThinking ? 'animate-pulse' : ''}`} />
+                        <Brain className={`h-3.5 w-3.5`} />
                         <span className="text-xs">Think</span>
                       </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Extended Thinking: Claude shows reasoning process</p>
+                    <p>Extended Thinking (requires direct Anthropic API key)</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -357,9 +360,12 @@ export default function ChatPage() {
                       <Button
                         variant={webSearch ? "default" : "ghost"}
                         size="sm"
-                        onClick={() => setWebSearch(!webSearch)}
-                        className={`gap-1.5 h-7 px-2 ${webSearch ? 'bg-primary text-primary-foreground' : ''}`}
+                        onClick={() => {
+                          toast.info("Web Search requires direct Anthropic API key (coming soon)");
+                        }}
+                        className={`gap-1.5 h-7 px-2 opacity-50 cursor-not-allowed`}
                         data-testid="web-search-toggle"
+                        disabled
                       >
                         <Globe className={`h-3.5 w-3.5`} />
                         <span className="text-xs">Web</span>
@@ -367,7 +373,7 @@ export default function ChatPage() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Web Search: Claude can search for current information</p>
+                    <p>Web Search (requires direct Anthropic API key)</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
