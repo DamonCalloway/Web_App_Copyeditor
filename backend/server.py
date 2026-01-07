@@ -906,7 +906,7 @@ async def chat_with_files(
     
     # Add images first (for vision)
     for fc in file_contents:
-        if fc["type"] == "image":
+        if fc["type"] == "image_url":
             user_content.append(fc)
     
     # Add text content from files
