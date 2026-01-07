@@ -417,7 +417,9 @@ export default function ChatPage() {
             </div>
             
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Claude Sonnet 4.5 • Powered by Emergent
+              Claude Sonnet 4.5 {featuresAvailable ? '• Direct API' : '• Emergent'}
+              {extendedThinking && featuresAvailable && ' • Extended Thinking'}
+              {webSearch && featuresAvailable && ' • Web Search'}
             </p>
           </div>
         </div>
