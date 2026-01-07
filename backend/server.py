@@ -712,20 +712,40 @@ async def chat_with_ai(request: ChatRequest):
         
         # Extract response and thinking content
         response_text = ""
+        thinking_content = None
+        thinking_time = None
+        
         if llm_response.choices:
             choice = llm_response.choices[0]
             message = choice.message
             
-            # Check for thinking content in the response
-            if hasattr(message, 'thinking') and message.thinking:
-                thinking_content = message.thinking
-                thinking_time = round(elapsed_time)
-            elif hasattr(message, 'reasoning_content') and message.reasoning_content:
-                thinking_content = message.reasoning_content
-                thinking_time = round(elapsed_time)
-            
             # Get main response content
             response_text = message.content or ""
+            
+            # Check for thinking content - litellm returns it in different places
+            # 1. Check reasoning_content (litellm normalized field)
+            if hasattr(message, 'reasoning_content') and message.reasoning_content:
+                thinking_content = message.reasoning_content
+                thinking_time = round(elapsed_time)
+                logger.info(f"Found thinking in reasoning_content")
+            
+            # 2. Check thinking_blocks
+            elif hasattr(message, 'thinking_blocks') and message.thinking_blocks:
+                thinking_blocks = message.thinking_blocks
+                if thinking_blocks and len(thinking_blocks) > 0:
+                    thinking_content = thinking_blocks[0].get('thinking', '')
+                    thinking_time = round(elapsed_time)
+                    logger.info(f"Found thinking in thinking_blocks")
+            
+            # 3. Check provider_specific_fields
+            elif hasattr(message, 'provider_specific_fields') and message.provider_specific_fields:
+                psf = message.provider_specific_fields
+                if psf.get('thinking_blocks'):
+                    tb = psf['thinking_blocks']
+                    if tb and len(tb) > 0:
+                        thinking_content = tb[0].get('thinking', '')
+                        thinking_time = round(elapsed_time)
+                        logger.info(f"Found thinking in provider_specific_fields")
         
         # Save assistant message (include thinking in metadata if present)
         msg_data = {
