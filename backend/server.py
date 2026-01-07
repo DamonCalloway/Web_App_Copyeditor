@@ -543,15 +543,20 @@ async def chat_with_ai(request: ChatRequest):
         system_message=system_message
     ).with_model("anthropic", "claude-sonnet-4-20250514")
     
+    # Get settings from request or project defaults
+    use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
+    thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
+    use_web_search = request.web_search or project.get("web_search_enabled", True)
+    
     # Add extended thinking if enabled
-    if request.extended_thinking:
+    if use_extended_thinking:
         chat.with_params(
-            thinking={"type": "enabled", "budget_tokens": request.thinking_budget},
-            max_tokens=max(16000, request.thinking_budget + 4000)  # Ensure max_tokens > budget_tokens
+            thinking={"type": "enabled", "budget_tokens": thinking_budget},
+            max_tokens=max(16000, thinking_budget + 4000)  # Ensure max_tokens > budget_tokens
         )
     
     # Add web search if enabled
-    if request.web_search:
+    if use_web_search:
         chat.with_params(
             web_search_options={"search_context_size": "medium"}
         )
