@@ -506,7 +506,7 @@ async def chat_with_ai(request: ChatRequest):
     if project.get("memory"):
         system_parts.append(f"# Project Memory/Context\n{project['memory']}")
     
-    # Include knowledge base content if requested
+    # Include knowledge base content if requested (limit to avoid rate limits)
     if request.include_knowledge_base:
         files = await db.files.find(
             {"project_id": conv["project_id"], "indexed": True}, 
@@ -515,9 +515,14 @@ async def chat_with_ai(request: ChatRequest):
         
         if files:
             kb_content = "# Knowledge Base Documents\n\n"
+            total_chars = 0
+            max_chars = 15000  # Limit KB content to ~15k chars to avoid rate limits
             for f in files:
                 if f.get("content_preview"):
-                    kb_content += f"## {f['original_filename']}\n{f['content_preview']}\n\n"
+                    preview = f['content_preview'][:2000]  # Limit each file to 2k chars
+                    if total_chars + len(preview) < max_chars:
+                        kb_content += f"## {f['original_filename']}\n{preview}\n\n"
+                        total_chars += len(preview)
             system_parts.append(kb_content)
     
     system_message = "\n\n".join(system_parts) if system_parts else "You are a helpful AI assistant for editing assessment materials."
