@@ -325,6 +325,10 @@ export default function ChatPage() {
                   className={`message group ${msg.role === 'user' ? 'message-user' : 'message-assistant'}`}
                   data-testid={`message-${msg.id}`}
                 >
+                  {/* Thinking block for assistant messages */}
+                  {msg.role === 'assistant' && msg.thinking && (
+                    <ThinkingBlock thinking={msg.thinking} thinkingTime={msg.thinking_time} />
+                  )}
                   <div className="message-content">
                     {msg.role === 'assistant' ? (
                       <div className="prose-content">
