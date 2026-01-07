@@ -76,7 +76,8 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [includeKB, setIncludeKB] = useState(true);
   const [extendedThinking, setExtendedThinking] = useState(false);
-  const [webSearch, setWebSearch] = useState(true);  // Default on as user requested
+  const [webSearch, setWebSearch] = useState(false);
+  const [featuresAvailable, setFeaturesAvailable] = useState(false);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
 
   useEffect(() => {
