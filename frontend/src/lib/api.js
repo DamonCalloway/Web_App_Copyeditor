@@ -89,6 +89,19 @@ export const getConversation = async (conversationId) => {
   return response.data;
 };
 
+export const updateConversation = async (conversationId, data) => {
+  const response = await api.put(`/conversations/${conversationId}`, data);
+  return response.data;
+};
+
+export const getAllConversations = async (starred = null, archived = false) => {
+  const params = new URLSearchParams();
+  if (starred !== null) params.append("starred", starred);
+  if (archived !== null) params.append("archived", archived);
+  const response = await api.get(`/conversations?${params.toString()}`);
+  return response.data;
+};
+
 export const deleteConversation = async (conversationId) => {
   const response = await api.delete(`/conversations/${conversationId}`);
   return response.data;
