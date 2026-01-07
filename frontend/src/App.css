@@ -127,7 +127,8 @@
 
 .message-user {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 .message-user .message-content {
@@ -136,6 +137,12 @@
     border-radius: 1rem 1rem 0.25rem 1rem;
     max-width: 70%;
     padding: 0.875rem 1rem;
+}
+
+.message-assistant {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .message-assistant .message-content {
@@ -194,6 +201,72 @@
     background: linear-gradient(90deg, hsl(var(--primary)), hsl(15 65% 50%));
     border-radius: 2px;
     transition: width 0.3s ease;
+}
+
+/* File content viewer */
+.file-content-viewer {
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+.file-content-viewer .prose-content {
+    font-family: 'Source Serif 4', serif;
+}
+
+.file-content-viewer .prose-content h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.file-content-viewer .prose-content h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.file-content-viewer .prose-content h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.file-content-viewer .prose-content ul,
+.file-content-viewer .prose-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.file-content-viewer .prose-content li {
+    margin-bottom: 0.25rem;
+}
+
+.file-content-viewer .prose-content blockquote {
+    border-left: 3px solid hsl(var(--primary));
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+}
+
+.file-content-viewer .prose-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.file-content-viewer .prose-content th,
+.file-content-viewer .prose-content td {
+    border: 1px solid hsl(var(--border));
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.file-content-viewer .prose-content th {
+    background: hsl(var(--secondary));
+    font-weight: 600;
 }
 
 /* Modal backdrop */
