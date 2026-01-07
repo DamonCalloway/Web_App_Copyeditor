@@ -103,6 +103,9 @@ export default function ChatPage() {
       ]);
       setProject(proj);
       setFiles(filesList);
+      // Set defaults from project settings
+      setExtendedThinking(proj.extended_thinking_enabled || false);
+      setWebSearch(proj.web_search_enabled !== false);  // Default true
     } catch (error) {
       toast.error("Failed to load conversation");
       navigate("/projects");
