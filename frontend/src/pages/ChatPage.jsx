@@ -484,32 +484,88 @@ export default function ChatPage() {
               </TooltipProvider>
             </div>
             
-            {/* Input */}
-            <div className="relative">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Message..."
-                className="chat-input pr-12"
-                rows={1}
-                disabled={sending}
-                data-testid="chat-input"
+            {/* Attached Files Preview */}
+            {attachedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {attachedFiles.map((file, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center gap-1.5 px-2 py-1 bg-secondary rounded-md text-sm"
+                  >
+                    {getFileIcon(file.name)}
+                    <span className="truncate max-w-[150px]">{file.name}</span>
+                    <button
+                      onClick={() => removeAttachedFile(index)}
+                      className="hover:text-destructive transition-colors"
+                      data-testid={`remove-attachment-${index}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Input with Paperclip */}
+            <div className="relative flex items-end gap-2">
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                multiple
+                accept=".md,.txt,.pdf,.docx,.json,.xls,.xlsx,.csv,.png,.jpg,.jpeg,.bmp,.gif,.zip,.rtf,.mpeg,.mp3,.mp4,.mov,.wav"
+                className="hidden"
               />
-              <Button
-                size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
-                onClick={handleSend}
-                disabled={!input.trim() || sending}
-                data-testid="send-message-btn"
-              >
-                {sending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
+              
+              {/* Paperclip button */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 flex-shrink-0"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={sending}
+                      data-testid="attach-file-btn"
+                    >
+                      <Paperclip className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Attach files</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {/* Text input */}
+              <div className="relative flex-1">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Message..."
+                  className="chat-input pr-12"
+                  rows={1}
+                  disabled={sending}
+                  data-testid="chat-input"
+                />
+                <Button
+                  size="icon"
+                  className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
+                  onClick={handleSend}
+                  disabled={(!input.trim() && attachedFiles.length === 0) || sending}
+                  data-testid="send-message-btn"
+                >
+                  {sending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             
             <p className="text-xs text-muted-foreground mt-2 text-center">
