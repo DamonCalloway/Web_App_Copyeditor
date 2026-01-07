@@ -600,6 +600,16 @@ async def chat_with_ai(request: ChatRequest):
 
 # ============== STORAGE CONFIG ==============
 
+@api_router.get("/config/features")
+async def get_feature_config():
+    """Check which features are available based on API key configuration"""
+    has_direct_anthropic = bool(os.environ.get('ANTHROPIC_API_KEY', ''))
+    return {
+        "extended_thinking_available": has_direct_anthropic,
+        "web_search_available": has_direct_anthropic,
+        "using_direct_anthropic_key": has_direct_anthropic
+    }
+
 @api_router.get("/storage/config")
 async def get_storage_config():
     return {
