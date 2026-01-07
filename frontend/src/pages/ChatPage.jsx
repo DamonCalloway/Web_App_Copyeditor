@@ -311,17 +311,66 @@ export default function ChatPage() {
         {/* Input Area */}
         <div className="message-input-area">
           <div className="max-w-3xl mx-auto">
-            {/* KB Toggle */}
-            <div className="flex items-center gap-2 mb-3 text-sm">
-              <Switch
-                id="include-kb"
-                checked={includeKB}
-                onCheckedChange={setIncludeKB}
-                data-testid="include-kb-toggle"
-              />
-              <Label htmlFor="include-kb" className="text-muted-foreground cursor-pointer">
-                Include knowledge base ({files.filter(f => f.indexed).length} files)
-              </Label>
+            {/* Feature Toggles */}
+            <div className="flex items-center gap-4 mb-3 text-sm flex-wrap">
+              {/* KB Toggle */}
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="include-kb"
+                  checked={includeKB}
+                  onCheckedChange={setIncludeKB}
+                  data-testid="include-kb-toggle"
+                />
+                <Label htmlFor="include-kb" className="text-muted-foreground cursor-pointer">
+                  Knowledge base ({files.filter(f => f.indexed).length})
+                </Label>
+              </div>
+              
+              {/* Extended Thinking Toggle */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={extendedThinking ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setExtendedThinking(!extendedThinking)}
+                        className={`gap-1.5 h-7 px-2 ${extendedThinking ? 'bg-primary text-primary-foreground' : ''}`}
+                        data-testid="extended-thinking-toggle"
+                      >
+                        <Brain className={`h-3.5 w-3.5 ${extendedThinking ? 'animate-pulse' : ''}`} />
+                        <span className="text-xs">Think</span>
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Extended Thinking: Claude shows reasoning process</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              {/* Web Search Toggle */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={webSearch ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setWebSearch(!webSearch)}
+                        className={`gap-1.5 h-7 px-2 ${webSearch ? 'bg-primary text-primary-foreground' : ''}`}
+                        data-testid="web-search-toggle"
+                      >
+                        <Globe className={`h-3.5 w-3.5`} />
+                        <span className="text-xs">Web</span>
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Web Search: Claude can search for current information</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             
             {/* Input */}
@@ -354,6 +403,8 @@ export default function ChatPage() {
             
             <p className="text-xs text-muted-foreground mt-2 text-center">
               Claude Sonnet 4.5 • Powered by Emergent
+              {extendedThinking && ' • Extended Thinking'}
+              {webSearch && ' • Web Search'}
             </p>
           </div>
         </div>
