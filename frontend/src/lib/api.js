@@ -106,11 +106,15 @@ export const getMessages = async (conversationId) => {
 };
 
 // Chat
-export const sendMessage = async (conversationId, message, includeKnowledgeBase = true) => {
+export const sendMessage = async (conversationId, message, options = {}) => {
+  const { includeKnowledgeBase = true, extendedThinking = false, thinkingBudget = 10000, webSearch = false } = options;
   const response = await api.post("/chat", {
     conversation_id: conversationId,
     message,
     include_knowledge_base: includeKnowledgeBase,
+    extended_thinking: extendedThinking,
+    thinking_budget: thinkingBudget,
+    web_search: webSearch,
   });
   return response.data;
 };
