@@ -787,6 +787,241 @@ async def chat_with_ai(request: ChatRequest):
         logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
 
+
+@api_router.post("/chat/with-files")
+async def chat_with_files(
+    conversation_id: str = Form(...),
+    message: str = Form(...),
+    include_knowledge_base: bool = Form(True),
+    extended_thinking: bool = Form(False),
+    thinking_budget: int = Form(10000),
+    web_search: bool = Form(False),
+    files: List[UploadFile] = File(default=[])
+):
+    """Chat endpoint with file attachments"""
+    import base64
+    import litellm
+    import time
+    
+    # Get conversation
+    conv = await db.conversations.find_one({"id": conversation_id}, {"_id": 0})
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Get project
+    project = await db.projects.find_one({"id": conv["project_id"]}, {"_id": 0})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Build system message
+    system_parts = []
+    if project.get("instructions"):
+        system_parts.append(f"# Project Instructions\n{project['instructions']}")
+    if project.get("memory"):
+        system_parts.append(f"# Project Memory/Context\n{project['memory']}")
+    
+    # Add RAG context if requested
+    if include_knowledge_base:
+        try:
+            api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+            context, sources = await retrieve_context_for_query(
+                db=db, project_id=conv["project_id"], query=message,
+                api_key=api_key, max_tokens=3000, top_k=4
+            )
+            if context:
+                system_parts.append(f"# Relevant Knowledge Base Content\n\n{context}")
+        except Exception as e:
+            logger.error(f"RAG retrieval failed: {e}")
+    
+    system_message = "\n\n".join(system_parts) if system_parts else "You are a helpful AI assistant."
+    
+    # Process file attachments
+    file_contents = []
+    file_names = []
+    
+    for file in files:
+        content = await file.read()
+        file_names.append(file.filename)
+        ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+        
+        # Image files - convert to base64 for Claude vision
+        if ext in ['png', 'jpg', 'jpeg', 'gif', 'bmp']:
+            mime_type = f"image/{ext}" if ext != 'jpg' else "image/jpeg"
+            b64_content = base64.b64encode(content).decode('utf-8')
+            file_contents.append({
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": mime_type,
+                    "data": b64_content
+                }
+            })
+        # Text-based files - extract content
+        elif ext in ['txt', 'md', 'json', 'csv', 'rtf']:
+            text_content = content.decode('utf-8', errors='ignore')[:10000]
+            file_contents.append({
+                "type": "text",
+                "filename": file.filename,
+                "content": text_content
+            })
+        # PDF files
+        elif ext == 'pdf':
+            try:
+                from PyPDF2 import PdfReader
+                import io
+                reader = PdfReader(io.BytesIO(content))
+                text = "\n".join([page.extract_text() or "" for page in reader.pages[:20]])[:10000]
+                file_contents.append({
+                    "type": "text",
+                    "filename": file.filename,
+                    "content": text
+                })
+            except Exception as e:
+                logger.error(f"PDF extraction failed: {e}")
+                file_contents.append({"type": "text", "filename": file.filename, "content": f"[PDF file: {file.filename}]"})
+        # DOCX files
+        elif ext == 'docx':
+            try:
+                from docx import Document
+                import io
+                doc = Document(io.BytesIO(content))
+                text = "\n".join([p.text for p in doc.paragraphs])[:10000]
+                file_contents.append({
+                    "type": "text",
+                    "filename": file.filename,
+                    "content": text
+                })
+            except Exception as e:
+                logger.error(f"DOCX extraction failed: {e}")
+                file_contents.append({"type": "text", "filename": file.filename, "content": f"[DOCX file: {file.filename}]"})
+        # Other files - just note them
+        else:
+            file_contents.append({
+                "type": "text",
+                "filename": file.filename,
+                "content": f"[Attached file: {file.filename}]"
+            })
+    
+    # Build user message content
+    user_content = []
+    
+    # Add images first (for vision)
+    for fc in file_contents:
+        if fc["type"] == "image":
+            user_content.append(fc)
+    
+    # Add text content from files
+    text_parts = []
+    for fc in file_contents:
+        if fc["type"] == "text":
+            text_parts.append(f"--- {fc['filename']} ---\n{fc['content']}")
+    
+    if text_parts:
+        user_content.append({
+            "type": "text",
+            "text": "Attached files:\n\n" + "\n\n".join(text_parts)
+        })
+    
+    # Add user message
+    if message:
+        user_content.append({"type": "text", "text": message})
+    
+    # Get chat history
+    history = await db.messages.find(
+        {"conversation_id": conversation_id}, {"_id": 0}
+    ).sort("created_at", 1).to_list(50)
+    
+    # Build messages for LLM
+    messages_for_llm = [{"role": "system", "content": system_message}]
+    for msg in history[-15:]:
+        messages_for_llm.append({"role": msg["role"], "content": msg["content"]})
+    
+    # Add current message with attachments
+    messages_for_llm.append({"role": "user", "content": user_content})
+    
+    # Save user message
+    user_msg_content = message
+    if file_names:
+        user_msg_content = f"{message}\n\n📎 Attached: {', '.join(file_names)}" if message else f"📎 Attached: {', '.join(file_names)}"
+    
+    user_msg_data = {
+        "id": str(uuid.uuid4()),
+        "conversation_id": conversation_id,
+        "role": "user",
+        "content": user_msg_content,
+        "attachments": file_names,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.messages.insert_one(user_msg_data)
+    
+    # API call
+    anthropic_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    emergent_key = os.environ.get('EMERGENT_LLM_KEY', '')
+    use_direct = bool(anthropic_key)
+    api_key = anthropic_key if use_direct else emergent_key
+    
+    params = {
+        "model": "anthropic/claude-sonnet-4-20250514",
+        "messages": messages_for_llm,
+        "api_key": api_key,
+        "max_tokens": 4096
+    }
+    
+    thinking_content = None
+    thinking_time = None
+    
+    if use_direct and extended_thinking:
+        actual_budget = max(1024, thinking_budget)
+        params["thinking"] = {"type": "enabled", "budget_tokens": actual_budget}
+        params["max_tokens"] = max(16000, actual_budget + 4000)
+    
+    if use_direct and web_search:
+        params["web_search_options"] = {"search_context_size": "medium"}
+    
+    try:
+        start_time = time.time()
+        llm_response = await litellm.acompletion(**params)
+        elapsed = time.time() - start_time
+        
+        response_text = ""
+        if llm_response.choices:
+            msg = llm_response.choices[0].message
+            response_text = msg.content or ""
+            
+            if hasattr(msg, 'reasoning_content') and msg.reasoning_content:
+                thinking_content = msg.reasoning_content
+                thinking_time = round(elapsed)
+        
+        # Save assistant message
+        asst_msg = {
+            "id": str(uuid.uuid4()),
+            "conversation_id": conversation_id,
+            "role": "assistant",
+            "content": response_text,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        if thinking_content:
+            asst_msg["thinking"] = thinking_content
+            asst_msg["thinking_time"] = thinking_time
+        
+        await db.messages.insert_one(asst_msg)
+        
+        await db.conversations.update_one(
+            {"id": conversation_id},
+            {"$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        result = {"response": response_text, "message_id": asst_msg["id"]}
+        if thinking_content:
+            result["thinking"] = thinking_content
+            result["thinking_time"] = thinking_time
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Chat with files error: {e}")
+        raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
+
 # ============== STORAGE CONFIG ==============
 
 @api_router.get("/config/features")
