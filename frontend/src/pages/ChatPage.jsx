@@ -703,6 +703,39 @@ export default function ChatPage() {
           </ScrollArea>
         </aside>
       )}
+
+      {/* Project Selector Dialog */}
+      <Dialog open={showProjectSelector} onOpenChange={setShowProjectSelector}>
+        <DialogContent data-testid="project-selector-dialog" aria-describedby="project-selector-description">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Change Project</DialogTitle>
+            <p id="project-selector-description" className="text-sm text-muted-foreground">
+              Associate this conversation with a different project
+            </p>
+          </DialogHeader>
+          <div className="py-4">
+            <Select
+              value={project?.id || "none"}
+              onValueChange={handleChangeProject}
+            >
+              <SelectTrigger data-testid="project-selector">
+                <SelectValue placeholder="Select project" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Project</SelectItem>
+                {allProjects.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowProjectSelector(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
