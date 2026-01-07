@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Star, MoreHorizontal, Trash2 } from "lucide-react";
+import { Plus, Search, Star, MoreHorizontal, Trash2, Edit2, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { getProjects, createProject, deleteProject, toggleStarProject } from "@/lib/api";
+import { getProjects, createProject, deleteProject, toggleStarProject, updateProject } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function ProjectsPage() {
