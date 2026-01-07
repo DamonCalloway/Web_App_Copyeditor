@@ -124,44 +124,30 @@ def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, overlap: int = CHUNK_OVE
     return chunks
 
 
-async def get_embedding(text: str, api_key: str) -> List[float]:
-    """Get embedding for text using OpenAI API via Emergent proxy"""
+async def get_embedding(text: str, api_key: str = None) -> List[float]:
+    """Get embedding for text using local sentence-transformers model"""
     try:
-        # Use Emergent proxy for embeddings
-        proxy_url = "https://integrations.emergentagent.com/llm/v1/embeddings"
-        
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                proxy_url,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": EMBEDDING_MODEL,
-                    "input": text[:8000]  # Limit input length
-                },
-                timeout=30.0
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                return data["data"][0]["embedding"]
-            else:
-                logger.error(f"Embedding API error: {response.status_code} - {response.text}")
-                return []
+        model = get_embedding_model()
+        # Limit text length
+        text = text[:4000]
+        embedding = model.encode(text, convert_to_numpy=True)
+        return embedding.tolist()
     except Exception as e:
         logger.error(f"Error getting embedding: {e}")
         return []
 
 
-async def get_embeddings_batch(texts: List[str], api_key: str) -> List[List[float]]:
-    """Get embeddings for multiple texts"""
-    embeddings = []
-    for text in texts:
-        emb = await get_embedding(text, api_key)
-        embeddings.append(emb)
-    return embeddings
+async def get_embeddings_batch(texts: List[str], api_key: str = None) -> List[List[float]]:
+    """Get embeddings for multiple texts using local model"""
+    try:
+        model = get_embedding_model()
+        # Limit text lengths
+        texts = [t[:4000] for t in texts]
+        embeddings = model.encode(texts, convert_to_numpy=True)
+        return [e.tolist() for e in embeddings]
+    except Exception as e:
+        logger.error(f"Error getting batch embeddings: {e}")
+        return [[] for _ in texts]
 
 
 def compute_content_hash(content: str) -> str:
