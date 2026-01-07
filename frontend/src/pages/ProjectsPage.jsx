@@ -275,6 +275,49 @@ export default function ProjectsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Project Dialog */}
+      <Dialog open={!!editingProject} onOpenChange={() => setEditingProject(null)}>
+        <DialogContent data-testid="edit-project-dialog" aria-describedby="edit-project-description">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Edit Project</DialogTitle>
+            <p id="edit-project-description" className="text-sm text-muted-foreground">
+              Update your project details
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Name</Label>
+              <Input
+                id="edit-name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                placeholder="Project name"
+                data-testid="edit-project-name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                placeholder="Brief description of this project"
+                rows={3}
+                data-testid="edit-project-description-input"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingProject(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} data-testid="save-project-edit">
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
