@@ -136,10 +136,7 @@ export default function ChatPage() {
     
     try {
       const response = await sendMessage(conversationId, userMessage, {
-        includeKnowledgeBase: includeKB,
-        extendedThinking,
-        thinkingBudget: project?.thinking_budget || 10000,
-        webSearch
+        includeKnowledgeBase: includeKB
       });
       
       // Add assistant message
