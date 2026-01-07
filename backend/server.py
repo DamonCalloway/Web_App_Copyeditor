@@ -59,6 +59,7 @@ class ProjectUpdate(BaseModel):
     extended_thinking_enabled: Optional[bool] = None
     thinking_budget: Optional[int] = None
     web_search_enabled: Optional[bool] = None
+    archived: Optional[bool] = None
 
 class Project(ProjectBase):
     model_config = ConfigDict(extra="ignore")
