@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Plus, Upload, FileText, Image, File, Trash2, 
-  Download, Edit2, Save, X, MessageSquare, Loader2
+  Download, Edit2, Save, X, MessageSquare, Loader2, Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,8 @@ import {
   getProjectConversations, createConversation, getFileDownloadUrl
 } from "@/lib/api";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const FileIcon = ({ type }) => {
   const iconMap = {
@@ -65,6 +67,11 @@ export default function ProjectDetailPage() {
   // New conversation dialog
   const [showNewConv, setShowNewConv] = useState(false);
   const [newConvName, setNewConvName] = useState("");
+  
+  // File viewer
+  const [viewingFile, setViewingFile] = useState(null);
+  const [fileContent, setFileContent] = useState(null);
+  const [loadingFileContent, setLoadingFileContent] = useState(false);
 
   useEffect(() => {
     loadProjectData();
@@ -151,6 +158,39 @@ export default function ProjectDetailPage() {
     } catch (error) {
       toast.error("Failed to create conversation");
     }
+  };
+
+  const handleViewFile = async (file) => {
+    // Don't open viewer for images - show them directly
+    const isImage = ['PNG', 'JPG', 'BMP'].includes(file.file_type);
+    
+    setViewingFile(file);
+    setFileContent(null);
+    
+    if (isImage) {
+      // For images, we'll display them using the download URL
+      setFileContent({ type: 'image', url: getFileDownloadUrl(file.id) });
+    } else if (file.content_preview) {
+      // Use the indexed content preview
+      setFileContent({ type: 'text', content: file.content_preview });
+    } else {
+      // Try to fetch the file content
+      setLoadingFileContent(true);
+      try {
+        const response = await fetch(getFileDownloadUrl(file.id));
+        const text = await response.text();
+        setFileContent({ type: 'text', content: text });
+      } catch (error) {
+        setFileContent({ type: 'text', content: 'Unable to load file content' });
+      } finally {
+        setLoadingFileContent(false);
+      }
+    }
+  };
+
+  const closeFileViewer = () => {
+    setViewingFile(null);
+    setFileContent(null);
   };
 
   const calculateCapacity = () => {
