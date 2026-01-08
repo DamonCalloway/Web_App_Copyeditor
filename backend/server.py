@@ -699,7 +699,12 @@ def get_llm_config(project: dict):
             f"bedrock/{bedrock_model}",
             None,
             "bedrock-claude",
-            {"aws_access_key_id": aws_access_key, "aws_secret_access_key": aws_secret_key, "aws_region_name": aws_region}
+            {
+                "aws_access_key_id": aws_access_key,
+                "aws_secret_access_key": aws_secret_key,
+                "aws_region_name": aws_region,
+                "bedrock_model_id": bedrock_model
+            }
         )
     elif llm_provider == "bedrock-mistral":
         # AWS Bedrock with Mistral
@@ -718,7 +723,12 @@ def get_llm_config(project: dict):
             f"bedrock/{mistral_model}",
             None,
             "bedrock-mistral",
-            {"aws_access_key_id": aws_access_key, "aws_secret_access_key": aws_secret_key, "aws_region_name": aws_region}
+            {
+                "aws_access_key_id": aws_access_key,
+                "aws_secret_access_key": aws_secret_key,
+                "aws_region_name": aws_region,
+                "bedrock_model_id": mistral_model
+            }
         )
     else:
         # Anthropic Direct API (default)
