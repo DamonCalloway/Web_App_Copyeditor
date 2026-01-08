@@ -580,7 +580,7 @@ export default function ChatPage() {
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Label htmlFor="llm-provider" className="text-xs text-muted-foreground">LLM Provider:</Label>
                 <Select value={llmProvider} onValueChange={handleProviderChange}>
-                  <SelectTrigger className="w-[200px] h-8 text-xs" data-testid="llm-provider-selector">
+                  <SelectTrigger className="w-[220px] h-8 text-xs" data-testid="llm-provider-selector">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -590,18 +590,30 @@ export default function ChatPage() {
                         <span>Anthropic Direct API</span>
                       </div>
                     </SelectItem>
-                    {availableProviders.includes("bedrock") && (
-                      <SelectItem value="bedrock">
+                    {availableProviders.includes("bedrock-claude") && (
+                      <SelectItem value="bedrock-claude">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                          <span>Amazon Bedrock</span>
+                          <span>AWS Bedrock (Claude)</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                    {availableProviders.includes("bedrock-mistral") && (
+                      <SelectItem value="bedrock-mistral">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                          <span>AWS Bedrock (Mistral)</span>
                         </div>
                       </SelectItem>
                     )}
                   </SelectContent>
                 </Select>
-                <span className={`text-xs px-2 py-1 rounded ${llmProvider === "bedrock" ? "bg-orange-500/20 text-orange-500" : "bg-blue-500/20 text-blue-500"}`}>
-                  {llmProvider === "bedrock" ? "AWS" : "Direct"}
+                <span className={`text-xs px-2 py-1 rounded ${
+                  llmProvider === "bedrock-claude" ? "bg-orange-500/20 text-orange-500" :
+                  llmProvider === "bedrock-mistral" ? "bg-purple-500/20 text-purple-500" :
+                  "bg-blue-500/20 text-blue-500"
+                }`}>
+                  {llmProvider.startsWith("bedrock") ? "AWS" : "Direct"}
                 </span>
               </div>
             )}
