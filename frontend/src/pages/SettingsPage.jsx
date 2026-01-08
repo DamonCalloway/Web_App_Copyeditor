@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/components/ThemeProvider";
-import { getStorageConfig, updateStorageConfig } from "@/lib/api";
+import { getStorageConfig, updateStorageConfig, getFeatureConfig } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
