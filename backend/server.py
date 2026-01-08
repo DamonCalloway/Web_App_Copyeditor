@@ -47,6 +47,7 @@ class ProjectBase(BaseModel):
     extended_thinking_enabled: bool = False
     thinking_budget: int = 10000
     web_search_enabled: bool = True  # Default to on as user requested
+    llm_provider: str = "anthropic"  # "anthropic" or "bedrock"
 
 class ProjectCreate(ProjectBase):
     pass
@@ -60,6 +61,7 @@ class ProjectUpdate(BaseModel):
     thinking_budget: Optional[int] = None
     web_search_enabled: Optional[bool] = None
     archived: Optional[bool] = None
+    llm_provider: Optional[str] = None
 
 class Project(ProjectBase):
     model_config = ConfigDict(extra="ignore")
