@@ -118,6 +118,8 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const fileInputRef = useRef(null);
   
   const [conversation, setConversation] = useState(null);
   const [project, setProject] = useState(null);
@@ -132,7 +134,6 @@ export default function ChatPage() {
   const [featuresAvailable, setFeaturesAvailable] = useState(false);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState([]);
-  const fileInputRef = useRef(null);
   const [allProjects, setAllProjects] = useState([]);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [editingInstructions, setEditingInstructions] = useState(false);
@@ -140,8 +141,6 @@ export default function ChatPage() {
   const [instructionsText, setInstructionsText] = useState("");
   const [memoryText, setMemoryText] = useState("");
   const [showFullMemory, setShowFullMemory] = useState(false);
-  const messagesEndRef = useRef(null);
-  const scrollContainerRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   // Allowed file types for chat attachments
