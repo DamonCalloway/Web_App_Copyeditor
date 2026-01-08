@@ -157,6 +157,21 @@ export default function ChatPage() {
   }, [conversationId]);
 
   useEffect(() => {
+    // Auto-scroll to bottom when messages load or update
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = (smooth = false) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
+  };
+
+  const handleScroll = (e) => {
+    const element = e.target;
+    const isAtBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 50;
+    setShowScrollButton(!isAtBottom);
+  };
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
