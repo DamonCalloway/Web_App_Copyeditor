@@ -149,7 +149,7 @@ export const sendMessage = async (conversationId, message, options = {}) => {
   }
   
   // Standard JSON request without files
-  const response = await api.post("/chat", {
+  const response = await api.post("/chat/send", {
     conversation_id: conversationId,
     message,
     include_knowledge_base: includeKnowledgeBase,
