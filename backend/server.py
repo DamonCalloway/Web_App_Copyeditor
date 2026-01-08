@@ -1113,12 +1113,16 @@ async def get_feature_config():
     has_direct_anthropic = bool(os.environ.get('ANTHROPIC_API_KEY', ''))
     has_bedrock = bool(os.environ.get('AWS_ACCESS_KEY_ID', '')) and bool(os.environ.get('AWS_SECRET_ACCESS_KEY', ''))
     
+    available = ["anthropic"]
+    if has_bedrock:
+        available.extend(["bedrock-claude", "bedrock-mistral"])
+    
     return {
         "extended_thinking_available": has_direct_anthropic,
         "web_search_available": has_direct_anthropic,
         "using_direct_anthropic_key": has_direct_anthropic,
         "bedrock_configured": has_bedrock,
-        "available_providers": ["anthropic"] + (["bedrock"] if has_bedrock else [])
+        "available_providers": available
     }
 
 @api_router.post("/config/bedrock")
