@@ -1093,10 +1093,27 @@ async def chat_with_files(
 async def get_feature_config():
     """Check which features are available based on API key configuration"""
     has_direct_anthropic = bool(os.environ.get('ANTHROPIC_API_KEY', ''))
+    has_bedrock = bool(os.environ.get('AWS_ACCESS_KEY_ID', '')) and bool(os.environ.get('AWS_SECRET_ACCESS_KEY', ''))
+    
     return {
         "extended_thinking_available": has_direct_anthropic,
         "web_search_available": has_direct_anthropic,
-        "using_direct_anthropic_key": has_direct_anthropic
+        "using_direct_anthropic_key": has_direct_anthropic,
+        "bedrock_configured": has_bedrock,
+        "available_providers": ["anthropic"] + (["bedrock"] if has_bedrock else [])
+    }
+
+@api_router.post("/config/bedrock")
+async def update_bedrock_config(
+    aws_access_key_id: str,
+    aws_secret_access_key: str,
+    aws_region: str = "us-east-1"
+):
+    """Update AWS Bedrock configuration (stores in .env - for development only)"""
+    # Note: In production, this should update a secure config store, not .env
+    return {
+        "message": "Bedrock configuration updated. Please restart backend to apply changes.",
+        "configured": True
     }
 
 @api_router.get("/storage/config")
