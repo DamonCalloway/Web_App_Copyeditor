@@ -289,6 +289,20 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - Auto-scroll and scroll-to-bottom button features working correctly! Successfully tested: ✅ Auto-scroll to bottom when chat loads (last message visible), ✅ Scroll-to-bottom button appears when scrolled up using mouse wheel, ✅ Button has correct styling (rounded-full, shadow-lg, positioned bottom-right), ✅ Button click functionality scrolls smoothly to bottom and button disappears, ✅ Auto-scroll works after sending new messages (button stays hidden), ✅ Multiple scroll cycles work correctly. Minor: Button visibility logic works with mouse wheel scrolling but not with keyboard/programmatic scrolling (scroll event handler limitation with ScrollArea component). Core functionality confirmed working as expected for real user interactions."
+  - task: "Amazon Bedrock LLM provider integration in chat interface"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ChatPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "Testing Amazon Bedrock LLM provider integration. Backend has AWS credentials configured (AKIAW4AZMYOWU42WZHEO) with Bedrock model us.anthropic.claude-3-5-sonnet-20241022-v2:0 in us-east-1 region. Need to test: LLM Provider dropdown visibility, switching between Anthropic Direct API and Amazon Bedrock, badge color changes (blue/orange), message sending with both providers, and error handling."
+        - working: true
+          agent: "testing"
+          comment: "🎉 COMPREHENSIVE AMAZON BEDROCK TESTING COMPLETED SUCCESSFULLY - All features working perfectly! ✅ Successfully navigated to 'First Chat - PIB ELA Items' conversation, ✅ LLM Provider dropdown visible with 'LLM Provider:' label, ✅ Both provider options available: Anthropic Direct API (blue dot) and Amazon Bedrock (orange dot), ✅ Badge color changes correctly: 'AWS' (orange) for Bedrock, 'Direct' (blue) for Anthropic, ✅ Provider switching works flawlessly with toast confirmations ('Switched to Anthropic Direct API', 'Switched to Amazon Bedrock'), ✅ Messages send successfully with both providers (tested 'Say Testing Bedrock in exactly 3 words' and 'Confirm you are working correctly'), ✅ AI responses received from both providers with proper content, ✅ No console errors or authentication issues detected, ✅ No 401/403/404/500 network errors found. Amazon Bedrock integration is production-ready and fully functional!"
 
 metadata:
   created_by: "testing_agent"
