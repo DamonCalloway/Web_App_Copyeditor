@@ -187,6 +187,7 @@ export default function ChatPage() {
       setConversation(conv);
       setMessages(msgs);
       setFeaturesAvailable(featureConfig.extended_thinking_available);
+      setAvailableProviders(featureConfig.available_providers || ["anthropic"]);
       setAllProjects(projList);
       
       // Load project and files
@@ -199,6 +200,7 @@ export default function ChatPage() {
         setFiles(filesList);
         setInstructionsText(proj.instructions || "");
         setMemoryText(proj.memory || "");
+        setLlmProvider(proj.llm_provider || "anthropic");
         // Set defaults from project settings
         setExtendedThinking(proj.extended_thinking_enabled || false);
         setWebSearch(proj.web_search_enabled || false);
@@ -207,6 +209,7 @@ export default function ChatPage() {
         setFiles([]);
         setInstructionsText("");
         setMemoryText("");
+        setLlmProvider("anthropic");
       }
     } catch (error) {
       toast.error("Failed to load conversation");
