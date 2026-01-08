@@ -732,32 +732,6 @@ async def chat_with_ai(request: ChatRequest):
     model_name, api_key, provider_type, extra_config = get_llm_config(project)
     supports_extended_features = extra_config.get("supports_extended_features", False) if provider_type == "anthropic" else False
     
-    chat = LlmChat(
-        api_key=api_key,
-        session_id=request.conversation_id,
-        system_message=system_message
-    ).with_model("anthropic", "claude-sonnet-4-20250514")
-    
-    # Extended features only work with direct Anthropic API key
-    if use_direct_anthropic:
-        # Get settings from request or project defaults
-        use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
-        thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
-        use_web_search = request.web_search or project.get("web_search_enabled", False)
-        
-        # Add extended thinking if enabled
-        if use_extended_thinking:
-            chat.with_params(
-                thinking={"type": "enabled", "budget_tokens": thinking_budget},
-                max_tokens=max(16000, thinking_budget + 4000)
-            )
-        
-        # Add web search if enabled
-        if use_web_search:
-            chat.with_params(
-                web_search_options={"search_context_size": "medium"}
-            )
-    
     # Build message history for context
     messages_for_llm = [{"role": "system", "content": system_message}]
     for msg in history[-20:]:  # Last 20 messages for context
@@ -768,18 +742,25 @@ async def chat_with_ai(request: ChatRequest):
     try:
         import litellm
         
-        # Build params
+        # Build params based on provider
         params = {
-            "model": "anthropic/claude-sonnet-4-20250514",
+            "model": model_name,
             "messages": messages_for_llm,
-            "api_key": api_key,
         }
         
-        # Add extended features if using direct Anthropic key
+        # Add provider-specific configuration
+        if provider_type == "bedrock":
+            # Add AWS credentials for Bedrock
+            params.update(extra_config)
+        else:
+            # Add API key for Anthropic
+            params["api_key"] = api_key
+        
+        # Add extended features if supported (Anthropic Direct API only)
         thinking_content = None
         thinking_time = None
         
-        if use_direct_anthropic:
+        if supports_extended_features:
             use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
             thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
             use_web_search = request.web_search or project.get("web_search_enabled", False)
