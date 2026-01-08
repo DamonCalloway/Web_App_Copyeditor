@@ -94,7 +94,7 @@ export const updateConversation = async (conversationId, data) => {
   return response.data;
 };
 
-export const getAllConversations = async (starred = null, archived = false) => {
+export const getAllConversations = async (starred = null, archived = null) => {
   const params = new URLSearchParams();
   if (starred !== null) params.append("starred", starred);
   if (archived !== null) params.append("archived", archived);
