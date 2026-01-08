@@ -728,13 +728,9 @@ async def chat_with_ai(request: ChatRequest):
     )
     await db.messages.insert_one(user_msg.model_dump())
     
-    # Initialize LLM - use direct Anthropic key if available for extended features
-    anthropic_key = os.environ.get('ANTHROPIC_API_KEY', '')
-    emergent_key = os.environ.get('EMERGENT_LLM_KEY', '')
-    
-    # Prefer direct Anthropic key for full feature support
-    use_direct_anthropic = bool(anthropic_key)
-    api_key = anthropic_key if use_direct_anthropic else emergent_key
+    # Get LLM configuration based on project's provider setting
+    model_name, api_key, provider_type, extra_config = get_llm_config(project)
+    supports_extended_features = extra_config.get("supports_extended_features", False) if provider_type == "anthropic" else False
     
     chat = LlmChat(
         api_key=api_key,
