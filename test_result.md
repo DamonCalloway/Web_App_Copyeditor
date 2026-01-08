@@ -267,3 +267,5 @@ agent_communication:
       message: "Added new GUI features for testing: Chats page, project edit/archive functionality, conversation management, project selector in chat, and sidebar context menus. All features implemented and ready for comprehensive testing."
     - agent: "testing"
       message: "✅ COMPREHENSIVE GUI FEATURES TESTING COMPLETED - All new GUI features working perfectly! Tested: Chats page navigation and conversation management, Projects page edit/archive functionality, Chat page project selector, Sidebar context menus and navigation. Created test data (project and conversation) to verify all functionality. All context menus, dialogs, forms, and interactions working correctly. Only minor cosmetic UI overlay issue found when closing project selector dialog. All major functionality is production-ready."
+    - agent: "testing"
+      message: "Starting comprehensive test of updated right sidebar features in chat page: editable Instructions and Memory fields with edit buttons, line break preservation, memory truncation with show more/less toggle, and placeholder text for empty fields."
