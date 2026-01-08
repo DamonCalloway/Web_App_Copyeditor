@@ -214,10 +214,6 @@ export default function ChatPage() {
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files);
     const validFiles = selectedFiles.filter(file => {
