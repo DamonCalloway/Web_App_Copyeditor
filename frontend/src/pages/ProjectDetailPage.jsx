@@ -424,8 +424,25 @@ export default function ProjectDetailPage() {
                 data-testid="memory-textarea"
               />
             ) : (
-              <div className="p-3 rounded-md bg-secondary/50 text-sm min-h-[100px]">
-                {project.memory || <span className="text-muted-foreground">No memory set</span>}
+              <div className="p-3 rounded-md bg-secondary/50 text-sm whitespace-pre-wrap min-h-[100px] max-h-64 overflow-auto">
+                {project.memory ? (
+                  <>
+                    {showFullMemory ? project.memory : truncateMemory(project.memory, 20)}
+                    {project.memory.split('\n').length > 20 && (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 mt-2 text-xs"
+                        onClick={() => setShowFullMemory(!showFullMemory)}
+                        data-testid="toggle-memory-btn"
+                      >
+                        {showFullMemory ? 'Show less' : 'Show more...'}
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">No memory set</span>
+                )}
               </div>
             )}
           </div>
