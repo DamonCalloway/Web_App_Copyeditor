@@ -135,6 +135,11 @@ export default function ChatPage() {
   const fileInputRef = useRef(null);
   const [allProjects, setAllProjects] = useState([]);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [editingInstructions, setEditingInstructions] = useState(false);
+  const [editingMemory, setEditingMemory] = useState(false);
+  const [instructionsText, setInstructionsText] = useState("");
+  const [memoryText, setMemoryText] = useState("");
+  const [showFullMemory, setShowFullMemory] = useState(false);
 
   // Allowed file types for chat attachments
   const ALLOWED_EXTENSIONS = [
