@@ -1,0 +1,19 @@
+# PIB Mock Passage EL531471839
+
+from "On Noise"
+
+by Arthur Schopenhauer
+
+1 But to pass from genus to species, the truly infernal cracking of whips in the narrow resounding streets of a town must be denounced as the most unwarrantable and disgraceful of all noises. It deprives life of all peace and sensibility. Nothing gives me so clear a grasp of the stupidity and thoughtlessness of mankind as the tolerance of the cracking of whips. This sudden, sharp crack which paralyses the brain, destroys all meditation, and murders thought, must cause pain to any one who has anything like an idea in his head.
+
+2 Hence every crack must disturb a hundred people applying their minds to some activity, however trivial it may be; while it disjoints and renders painful the meditations of the thinker; just like the executioner's axe when it severs the head from the body. No sound cuts so sharply into the brain as this cursed cracking of whips; one feels the prick of the whip-cord in one's brain, which is affected in the same way as the mimosa pudica is by touch, and which lasts the same length of time. With all respect for the most holy doctrine of utility, I do not see why a fellow who is removing a load of sand or manure should obtain the privilege of killing in the bud the thoughts that are springing up in the heads of about ten thousand people successively. (He is only half-an-hour on the road.)
+
+3 Hammering, the barking of dogs, and the screaming of children are abominable; but it is only the cracking of a whip that is the true murderer of thought. Its object is to destroy every favourable moment that one now and then may have for reflection. If there were no other means of urging on an animal than by making this most disgraceful of all noises, one would forgive its existence. But it is quite the contrary: this cursed cracking of whips is not only unnecessary but even useless. The effect that it is intended to have on the horse mentally becomes quite blunted and ineffective; since the constant abuse of it has accustomed the horse to the crack, he does not quicken his pace for it.
+
+4 This is especially noticeable in the unceasing crack of the whip which comes from an empty vehicle as it is being driven at its slowest rate to pick up a fare. The slightest touch with the whip would be more effective. Allowing, however, that it were absolutely necessary to remind the horse of the presence of the whip by continually cracking it, a crack that made one hundredth part of the noise would be sufficient. It is well known that animals in regard to hearing and seeing notice the slightest indications, even indications that are scarcely perceptible to ourselves. Trained dogs and canary birds furnish astonishing examples of this. Accordingly, this cracking of whips must be regarded as something purely wanton; nay, as an impudent defiance, on the part of those who work with their hands, offered to those who work with their heads.
+
+5 That such infamy is endured in a town is a piece of barbarity and injustice, the more so as it could be easily removed by a police notice requiring every whip cord to have a knot at the end of it. It would do no harm to draw the proletariat's attention to the classes above him who work with their heads; for he has unbounded fear of any kind of head work.
+
+6 A fellow who rides through the narrow streets of a populous town with unemployed post-horses or cart-horses, unceasingly cracking with all his strength a whip several yards long, instantly deserves to dismount and receive five really good blows with a stick. If all the philanthropists in the world, together with all the legislators, met in order to bring forward their reasons for the total abolition of corporal punishment, I would not be persuaded to the contrary.
+
+From ON NOISE by Arthur Schopenhauer—Public Domain
