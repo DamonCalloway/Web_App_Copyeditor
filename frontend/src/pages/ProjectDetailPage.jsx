@@ -454,16 +454,17 @@ export default function ProjectDetailPage() {
               <h3 className="text-sm font-medium">Instructions</h3>
               {editingInstructions ? (
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingInstructions(false)}>
-                    <X className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-accent" onClick={() => setEditingInstructions(false)}>
+                    <X className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleSaveInstructions} data-testid="save-instructions-btn">
-                    <Save className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-accent" onClick={handleSaveInstructions} data-testid="save-instructions-btn">
+                    <Save className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingInstructions(true)} data-testid="edit-instructions-btn">
-                  <Edit2 className="h-3.5 w-3.5" />
+                <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => setEditingInstructions(true)} data-testid="edit-instructions-btn">
+                  <Edit2 className="h-3.5 w-3.5 mr-1" />
+                  <span className="text-xs">Edit</span>
                 </Button>
               )}
             </div>
