@@ -140,6 +140,9 @@ export default function ChatPage() {
   const [instructionsText, setInstructionsText] = useState("");
   const [memoryText, setMemoryText] = useState("");
   const [showFullMemory, setShowFullMemory] = useState(false);
+  const messagesEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   // Allowed file types for chat attachments
   const ALLOWED_EXTENSIONS = [
