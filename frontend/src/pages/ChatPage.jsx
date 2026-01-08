@@ -46,7 +46,7 @@ import remarkGfm from "remark-gfm";
 import { 
   getConversation, getMessages, sendMessage, deleteConversation,
   toggleStarConversation, getProject, getProjectFiles, getFeatureConfig,
-  getProjects, updateConversation
+  getProjects, updateConversation, updateProject
 } from "@/lib/api";
 import { toast } from "sonner";
 
