@@ -120,6 +120,89 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* AWS Bedrock Configuration */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Cloud className="h-5 w-5 text-orange-500" />
+              AWS Bedrock (LLM Provider)
+            </CardTitle>
+            <CardDescription>
+              Configure Amazon Bedrock access for Claude Sonnet 3.5 via AWS
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Current Status */}
+            <Alert className={bedrockConfigured ? "border-green-500/50" : ""}>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Status</AlertTitle>
+              <AlertDescription>
+                {bedrockConfigured ? (
+                  <span className="text-green-500 font-medium">✓ AWS Bedrock is configured and available</span>
+                ) : (
+                  <span className="text-muted-foreground">AWS credentials not configured. Add them below to enable Bedrock.</span>
+                )}
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="aws-access-key">AWS Access Key ID</Label>
+                <Input
+                  id="aws-access-key"
+                  type="text"
+                  placeholder="AKIAIOSFODNN7EXAMPLE"
+                  value={awsBedrockConfig.access_key_id}
+                  onChange={(e) => setAwsBedrockConfig({...awsBedrockConfig, access_key_id: e.target.value})}
+                  data-testid="aws-access-key-input"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="aws-secret-key">AWS Secret Access Key</Label>
+                <Input
+                  id="aws-secret-key"
+                  type="password"
+                  placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                  value={awsBedrockConfig.secret_access_key}
+                  onChange={(e) => setAwsBedrockConfig({...awsBedrockConfig, secret_access_key: e.target.value})}
+                  data-testid="aws-secret-key-input"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="aws-region">AWS Region</Label>
+                <Input
+                  id="aws-region"
+                  type="text"
+                  placeholder="us-east-1"
+                  value={awsBedrockConfig.region}
+                  onChange={(e) => setAwsBedrockConfig({...awsBedrockConfig, region: e.target.value})}
+                  data-testid="aws-region-input"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Region where Bedrock is available (e.g., us-east-1, us-west-2)
+                </p>
+              </div>
+
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  <strong>Note:</strong> These credentials are stored in your backend .env file. 
+                  You'll need to manually add them to <code>/app/backend/.env</code> and restart the backend service.
+                  <br/><br/>
+                  Add these lines to your .env file:
+                  <pre className="mt-2 p-2 bg-muted rounded text-xs">
+AWS_ACCESS_KEY_ID=your_access_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_key_here  
+AWS_REGION=us-east-1
+                  </pre>
+                </AlertDescription>
+              </Alert>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Storage Configuration */}
         <Card className="mb-6">
           <CardHeader>
