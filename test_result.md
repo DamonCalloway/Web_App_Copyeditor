@@ -247,6 +247,20 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - Right sidebar editable features working perfectly! Successfully tested: Project Info sidebar opens with folder icon, Instructions field with edit button and textarea editing, Memory field with edit button and textarea editing, Save functionality for both fields, Cancel functionality for both fields, Memory truncation (20 lines) with Show more/less toggle working correctly, Line break preservation (whitespace-pre-wrap CSS), Placeholder text for empty fields ('No instructions'/'No memory'), Toast notifications for save actions. All data-testid attributes present and functional. Minor: Final verification had timeout on attribute checking but all core functionality confirmed working."
+  - task: "ProjectDetailPage Memory field truncation consistency"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ProjectDetailPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated ProjectDetailPage to add Memory field truncation matching ChatPage behavior - truncates to 20 lines with Show more/less toggle button, preserves line breaks with whitespace-pre-wrap CSS"
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE TESTING COMPLETED - ProjectDetailPage Memory truncation working perfectly! Successfully tested: PIB ELA Items project with 20+ lines memory content, Memory section visible in right panel with proper truncation to 20 lines, 'Show more...' button appears and functions correctly, Toggle functionality (Show more → Show less → Show more) working, ChatPage comparison shows identical behavior in right sidebar, Line break preservation with whitespace-pre-wrap CSS confirmed, Consistent behavior between project main view and chat sidebar verified. Both views now behave identically with proper 20-line truncation and toggle functionality."
 
 metadata:
   created_by: "testing_agent"
