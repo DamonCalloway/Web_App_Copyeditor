@@ -849,45 +849,58 @@ async def chat_with_ai(request: ChatRequest):
             if use_web_search:
                 params["web_search_options"] = {"search_context_size": "medium"}
         
-        # Make the API call
+        # Make the API call - route based on provider type
         import time
         start_time = time.time()
-        llm_response = await litellm.acompletion(**params)
-        elapsed_time = time.time() - start_time
         
-        # Extract response and thinking content
-        response_text = ""
-        thinking_content = None
-        thinking_time = None
-        
-        if llm_response.choices:
-            choice = llm_response.choices[0]
-            message = choice.message
+        if provider_type.startswith("bedrock"):
+            # Use Bedrock Converse API (more reliable, no corruption)
+            logger.info(f"Using Bedrock Converse API: model={model_name}")
+            response_text, thinking_content, thinking_time = await call_bedrock_converse(
+                model_id=extra_config.get("bedrock_model_id", model_name.replace("bedrock/", "")),
+                messages=messages_for_llm,
+                aws_config=extra_config,
+                max_tokens=4000
+            )
+        else:
+            # Use litellm for Anthropic Direct API
+            logger.info(f"Using litellm: model={model_name}")
+            llm_response = await litellm.acompletion(**params)
+            elapsed_time = time.time() - start_time
             
-            # Get main response content
-            response_text = message.content or ""
+            # Extract response and thinking content
+            response_text = ""
+            thinking_content = None
+            thinking_time = None
             
-            # Check for thinking content - litellm returns it in different places
-            # 1. Check reasoning_content (litellm normalized field)
-            if hasattr(message, 'reasoning_content') and message.reasoning_content:
-                thinking_content = message.reasoning_content
-                thinking_time = round(elapsed_time)
-                logger.info(f"Found thinking in reasoning_content")
-            
-            # 2. Check thinking_blocks
-            elif hasattr(message, 'thinking_blocks') and message.thinking_blocks:
-                thinking_blocks = message.thinking_blocks
-                if thinking_blocks and len(thinking_blocks) > 0:
-                    thinking_content = thinking_blocks[0].get('thinking', '')
+            if llm_response.choices:
+                choice = llm_response.choices[0]
+                message = choice.message
+                
+                # Get main response content
+                response_text = message.content or ""
+                
+                # Check for thinking content - litellm returns it in different places
+                # 1. Check reasoning_content (litellm normalized field)
+                if hasattr(message, 'reasoning_content') and message.reasoning_content:
+                    thinking_content = message.reasoning_content
                     thinking_time = round(elapsed_time)
-                    logger.info(f"Found thinking in thinking_blocks")
-            
-            # 3. Check provider_specific_fields
-            elif hasattr(message, 'provider_specific_fields') and message.provider_specific_fields:
-                psf = message.provider_specific_fields
-                if psf.get('thinking_blocks'):
-                    tb = psf['thinking_blocks']
-                    if tb and len(tb) > 0:
+                    logger.info(f"Found thinking in reasoning_content")
+                
+                # 2. Check thinking_blocks
+                elif hasattr(message, 'thinking_blocks') and message.thinking_blocks:
+                    thinking_blocks = message.thinking_blocks
+                    if thinking_blocks and len(thinking_blocks) > 0:
+                        thinking_content = thinking_blocks[0].get('thinking', '')
+                        thinking_time = round(elapsed_time)
+                        logger.info(f"Found thinking in thinking_blocks")
+                
+                # 3. Check provider_specific_fields
+                elif hasattr(message, 'provider_specific_fields') and message.provider_specific_fields:
+                    psf = message.provider_specific_fields
+                    if psf.get('thinking_blocks'):
+                        tb = psf['thinking_blocks']
+                        if tb and len(tb) > 0:
                         thinking_content = tb[0].get('thinking', '')
                         thinking_time = round(elapsed_time)
                         logger.info(f"Found thinking in provider_specific_fields")
