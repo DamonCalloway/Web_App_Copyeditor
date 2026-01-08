@@ -699,24 +699,119 @@ export default function ChatPage() {
             <h3 className="font-medium mb-4">Project Info</h3>
             
             {/* Instructions */}
-            {project?.instructions && (
-              <div className="mb-4">
-                <h4 className="text-sm text-muted-foreground mb-2">Instructions</h4>
-                <div className="p-3 rounded-md bg-secondary/50 text-sm whitespace-pre-wrap max-h-48 overflow-auto">
-                  {project.instructions}
-                </div>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm text-muted-foreground">Instructions</h4>
+                {!editingInstructions && project?.instructions && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setEditingInstructions(true)}
+                    data-testid="edit-instructions-btn"
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
-            )}
+              {editingInstructions ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={instructionsText}
+                    onChange={(e) => setInstructionsText(e.target.value)}
+                    className="min-h-[120px] text-sm"
+                    placeholder="Add project instructions..."
+                    data-testid="instructions-textarea"
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleSaveInstructions} data-testid="save-instructions">
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setInstructionsText(project?.instructions || "");
+                        setEditingInstructions(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 rounded-md bg-secondary/50 text-sm whitespace-pre-wrap max-h-48 overflow-auto">
+                  {project?.instructions || <span className="text-muted-foreground italic">No instructions</span>}
+                </div>
+              )}
+            </div>
             
             {/* Memory */}
-            {project?.memory && (
-              <div className="mb-4">
-                <h4 className="text-sm text-muted-foreground mb-2">Memory</h4>
-                <div className="p-3 rounded-md bg-secondary/50 text-sm whitespace-pre-wrap max-h-32 overflow-auto">
-                  {project.memory}
-                </div>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm text-muted-foreground">Memory</h4>
+                {!editingMemory && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setEditingMemory(true)}
+                    data-testid="edit-memory-btn"
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
-            )}
+              {editingMemory ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={memoryText}
+                    onChange={(e) => setMemoryText(e.target.value)}
+                    className="min-h-[120px] text-sm"
+                    placeholder="Add project memory/context..."
+                    data-testid="memory-textarea"
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleSaveMemory} data-testid="save-memory">
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setMemoryText(project?.memory || "");
+                        setEditingMemory(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="p-3 rounded-md bg-secondary/50 text-sm whitespace-pre-wrap max-h-48 overflow-auto">
+                    {project?.memory ? (
+                      <>
+                        {showFullMemory ? project.memory : truncateMemory(project.memory, 20)}
+                        {project.memory.split('\n').length > 20 && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 mt-2 text-xs"
+                            onClick={() => setShowFullMemory(!showFullMemory)}
+                            data-testid="toggle-memory-btn"
+                          >
+                            {showFullMemory ? 'Show less' : 'Show more...'}
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground italic">No memory</span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
             
             {/* Files */}
             <div>
