@@ -575,6 +575,37 @@ export default function ChatPage() {
               </div>
             )}
             
+            {/* LLM Provider Selector */}
+            {availableProviders.length > 1 && project && (
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Label htmlFor="llm-provider" className="text-xs text-muted-foreground">LLM Provider:</Label>
+                <Select value={llmProvider} onValueChange={handleProviderChange}>
+                  <SelectTrigger className="w-[200px] h-8 text-xs" data-testid="llm-provider-selector">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="anthropic">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span>Anthropic Direct API</span>
+                      </div>
+                    </SelectItem>
+                    {availableProviders.includes("bedrock") && (
+                      <SelectItem value="bedrock">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                          <span>Amazon Bedrock</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+                <span className={`text-xs px-2 py-1 rounded ${llmProvider === "bedrock" ? "bg-orange-500/20 text-orange-500" : "bg-blue-500/20 text-blue-500"}`}>
+                  {llmProvider === "bedrock" ? "AWS" : "Direct"}
+                </span>
+              </div>
+            )}
+            
             {/* Feature Toggles */}
             <div className="flex items-center gap-4 mb-3 text-sm flex-wrap">
               {/* KB Toggle */}
