@@ -178,12 +178,16 @@ export default function ChatPage() {
         ]);
         setProject(proj);
         setFiles(filesList);
+        setInstructionsText(proj.instructions || "");
+        setMemoryText(proj.memory || "");
         // Set defaults from project settings
         setExtendedThinking(proj.extended_thinking_enabled || false);
         setWebSearch(proj.web_search_enabled || false);
       } else {
         setProject(null);
         setFiles([]);
+        setInstructionsText("");
+        setMemoryText("");
       }
     } catch (error) {
       toast.error("Failed to load conversation");
