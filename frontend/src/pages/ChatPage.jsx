@@ -455,17 +455,19 @@ export default function ChatPage() {
         </header>
 
         {/* Messages */}
-        <ScrollArea className="flex-1">
-          <div className="messages-area max-w-3xl mx-auto">
-            {messages.length === 0 ? (
-              <div className="text-center py-12">
-                <h2 className="font-serif text-xl mb-2">Start a conversation</h2>
-                <p className="text-muted-foreground text-sm">
-                  Ask questions about your assessment materials or get help editing content.
-                </p>
-              </div>
-            ) : (
-              messages.map((msg) => (
+        <div className="flex-1 relative overflow-hidden">
+          <ScrollArea className="h-full" onScrollCapture={handleScroll}>
+            <div className="messages-area max-w-3xl mx-auto" ref={scrollContainerRef}>
+              {messages.length === 0 ? (
+                <div className="text-center py-12">
+                  <h2 className="font-serif text-xl mb-2">Start a conversation</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Ask questions about your assessment materials or get help editing content.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {messages.map((msg) => (
                 <div 
                   key={msg.id} 
                   className={`message group ${msg.role === 'user' ? 'message-user' : 'message-assistant'}`}
