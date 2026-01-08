@@ -618,6 +618,48 @@ async def get_messages(conversation_id: str):
 
 # ============== CHAT WITH AI ==============
 
+def get_llm_config(project: dict):
+    """
+    Get LLM configuration based on project's provider setting.
+    Returns: (model_name, api_key, provider_type)
+    """
+    llm_provider = project.get("llm_provider", "anthropic")
+    
+    if llm_provider == "bedrock":
+        # AWS Bedrock configuration
+        aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID', '')
+        aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+        aws_region = os.environ.get('AWS_REGION', 'us-east-1')
+        bedrock_model = os.environ.get('BEDROCK_MODEL_ID', 'us.anthropic.claude-3-5-sonnet-20241022-v2:0')
+        
+        if not aws_access_key or not aws_secret_key:
+            raise HTTPException(
+                status_code=400,
+                detail="AWS credentials not configured. Please add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to settings."
+            )
+        
+        # Return Bedrock configuration
+        return (
+            f"bedrock/{bedrock_model}",
+            None,  # API key not used with Bedrock (uses AWS credentials)
+            "bedrock",
+            {"aws_access_key_id": aws_access_key, "aws_secret_access_key": aws_secret_key, "aws_region_name": aws_region}
+        )
+    else:
+        # Anthropic Direct API (default)
+        anthropic_key = os.environ.get('ANTHROPIC_API_KEY', '')
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY', '')
+        
+        api_key = anthropic_key if anthropic_key else emergent_key
+        use_direct_anthropic = bool(anthropic_key)
+        
+        return (
+            "anthropic/claude-sonnet-4-20250514",
+            api_key,
+            "anthropic",
+            {"supports_extended_features": use_direct_anthropic}
+        )
+
 @api_router.post("/chat")
 async def chat_with_ai(request: ChatRequest):
     # Get conversation
