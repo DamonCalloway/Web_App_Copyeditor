@@ -383,8 +383,12 @@ export default function ChatPage() {
     try {
       await updateProject(project.id, { llm_provider: newProvider });
       setLlmProvider(newProvider);
-      toast.success(`Switched to ${newProvider === "bedrock" ? "Amazon Bedrock" : "Anthropic Direct API"}`);
-      loadChatData(); // Reload to get updated config
+      const providerName = 
+        newProvider === "bedrock-claude" ? "AWS Bedrock (Claude)" :
+        newProvider === "bedrock-mistral" ? "AWS Bedrock (Mistral)" :
+        "Anthropic Direct API";
+      toast.success(`Switched to ${providerName}`);
+      loadChatData();
     } catch (error) {
       toast.error("Failed to update provider");
     }
