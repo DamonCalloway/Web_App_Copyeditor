@@ -767,8 +767,8 @@ async def chat_with_ai(request: ChatRequest):
         }
         
         # Add provider-specific configuration
-        if provider_type == "bedrock":
-            # Add AWS credentials for Bedrock
+        if provider_type.startswith("bedrock"):
+            # Add AWS credentials for Bedrock (both Claude and Mistral)
             params.update(extra_config)
         else:
             # Add API key for Anthropic
@@ -778,7 +778,7 @@ async def chat_with_ai(request: ChatRequest):
         thinking_content = None
         thinking_time = None
         
-        if supports_extended_features:
+        if provider_type == "anthropic" and extra_config.get("supports_extended_features", False):
             use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
             thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
             use_web_search = request.web_search or project.get("web_search_enabled", False)
