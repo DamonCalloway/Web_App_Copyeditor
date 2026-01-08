@@ -619,6 +619,62 @@ async def get_messages(conversation_id: str):
 
 # ============== CHAT WITH AI ==============
 
+async def call_bedrock_converse(model_id: str, messages: List[dict], aws_config: dict, max_tokens: int = 4000) -> tuple:
+    """
+    Call AWS Bedrock using the Converse API (newer, more reliable than InvokeModel)
+    Returns: (response_text, None, None) - (content, thinking_content, thinking_time)
+    """
+    try:
+        bedrock_runtime = boto3.client(
+            service_name='bedrock-runtime',
+            region_name=aws_config['aws_region_name'],
+            aws_access_key_id=aws_config['aws_access_key_id'],
+            aws_secret_access_key=aws_config['aws_secret_access_key']
+        )
+        
+        # Convert messages to Bedrock format
+        bedrock_messages = []
+        for msg in messages:
+            if msg['role'] == 'system':
+                continue  # System messages handled separately in Converse API
+            bedrock_messages.append({
+                "role": msg['role'],
+                "content": [{"text": msg['content']}]
+            })
+        
+        # Find system message
+        system_content = None
+        for msg in messages:
+            if msg['role'] == 'system':
+                system_content = [{"text": msg['content']}]
+                break
+        
+        # Call Converse API
+        converse_params = {
+            "modelId": model_id,
+            "messages": bedrock_messages,
+            "inferenceConfig": {
+                "maxTokens": max_tokens,
+                "temperature": 0.7
+            }
+        }
+        
+        if system_content:
+            converse_params["system"] = system_content
+        
+        response = bedrock_runtime.converse(**converse_params)
+        
+        # Extract response text
+        response_text = response['output']['message']['content'][0]['text']
+        
+        logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}")
+        
+        return (response_text, None, None)  # No thinking content for Bedrock
+        
+    except Exception as e:
+        logger.error(f"Bedrock Converse API error: {e}")
+        raise HTTPException(status_code=500, detail=f"Bedrock API error: {str(e)}")
+
 def get_llm_config(project: dict):
     """
     Get LLM configuration based on project's provider setting.
