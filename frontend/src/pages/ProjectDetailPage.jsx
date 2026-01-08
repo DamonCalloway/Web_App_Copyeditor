@@ -150,6 +150,13 @@ export default function ProjectDetailPage() {
     }
   };
 
+  const truncateMemory = (text, maxLines = 20) => {
+    if (!text) return "";
+    const lines = text.split('\n');
+    if (lines.length <= maxLines) return text;
+    return lines.slice(0, maxLines).join('\n');
+  };
+
   const handleCreateConversation = async () => {
     try {
       const conv = await createConversation(projectId, newConvName || "New conversation");
