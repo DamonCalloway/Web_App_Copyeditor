@@ -496,11 +496,26 @@ export default function ChatPage() {
                     <CopyButton text={msg.content} />
                   </div>
                 </div>
-              ))
+              ))}
+              <div ref={messagesEndRef} />
+            </>
             )}
-            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
+        
+        {/* Scroll to Bottom Button */}
+        {showScrollButton && (
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute bottom-4 right-4 h-10 w-10 rounded-full shadow-lg hover:shadow-xl transition-all z-10"
+            onClick={() => scrollToBottom(true)}
+            data-testid="scroll-to-bottom-btn"
+          >
+            <ArrowDown className="h-5 w-5" />
+          </Button>
+        )}
+      </div>
 
         {/* Input Area */}
         <div className="message-input-area">
