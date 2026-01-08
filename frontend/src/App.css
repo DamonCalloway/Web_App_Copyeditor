@@ -54,12 +54,23 @@
     border-left: 1px solid hsl(var(--border));
     background: hsl(var(--card));
     overflow-y: auto;
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    overflow-x: hidden;
 }
 
-.project-panel * {
+/* Ensure text wraps in project panel */
+.project-panel h3,
+.project-panel p,
+.project-panel div {
     word-wrap: break-word;
     overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Specific fix for memory and instructions content */
+.project-panel .whitespace-pre-wrap {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
 }
 
 /* File grid */
