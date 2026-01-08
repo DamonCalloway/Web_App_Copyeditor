@@ -233,6 +233,17 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - Sidebar Chats navigation and context menus working perfectly. Chats navigation link functional and properly highlights when active. Conversation context menus (three-dot) work in both Recent and Starred sections. Star/Unstar functionality tested - conversations move between sections correctly. Delete option available. All hover states and transitions working smoothly."
+  - task: "Right sidebar editable Instructions and Memory fields"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ChatPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated right sidebar (Project Info panel) with editable Instructions and Memory fields. Instructions field has edit button, Memory field has edit button with line break display (whitespace-pre-wrap) and truncation (20 lines) with Show more/less toggle. Both fields show placeholder text when empty. Fixed missing updateProject import."
 
 metadata:
   created_by: "testing_agent"
