@@ -142,6 +142,8 @@ export default function ChatPage() {
   const [memoryText, setMemoryText] = useState("");
   const [showFullMemory, setShowFullMemory] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [llmProvider, setLlmProvider] = useState("anthropic");
+  const [availableProviders, setAvailableProviders] = useState(["anthropic"]);
 
   // Allowed file types for chat attachments
   const ALLOWED_EXTENSIONS = [
