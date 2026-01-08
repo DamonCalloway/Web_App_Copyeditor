@@ -261,6 +261,20 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ COMPREHENSIVE TESTING COMPLETED - ProjectDetailPage Memory truncation working perfectly! Successfully tested: PIB ELA Items project with 20+ lines memory content, Memory section visible in right panel with proper truncation to 20 lines, 'Show more...' button appears and functions correctly, Toggle functionality (Show more → Show less → Show more) working, ChatPage comparison shows identical behavior in right sidebar, Line break preservation with whitespace-pre-wrap CSS confirmed, Consistent behavior between project main view and chat sidebar verified. Both views now behave identically with proper 20-line truncation and toggle functionality."
+  - task: "Chat messaging functionality - resolve 'Failed to send message' error"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ChatPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "User reported 'Failed to send message' errors, 404 on /api/chat endpoint, and WebSocket connection failures. Need to test chat messaging functionality comprehensively."
+        - working: true
+          agent: "testing"
+          comment: "🎉 COMPREHENSIVE TESTING COMPLETED - Chat messaging functionality working perfectly! The 'Failed to send message' error has been RESOLVED. Successfully tested: Navigation to 'First Chat - PIB ELA Items' conversation, Multiple test messages sent without any errors, No 404 errors on /api/chat endpoint, No console or network errors detected, Knowledge Base toggle working correctly, Extended Thinking toggle functional with thinking blocks appearing, Web Search toggle working with current information, AI responses received successfully for all message types, Copy button functionality working, All chat features fully functional. Backend logs confirm successful 200 OK responses. All reported issues have been resolved."
 
 metadata:
   created_by: "testing_agent"
