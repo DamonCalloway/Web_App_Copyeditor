@@ -911,9 +911,9 @@ async def chat_with_ai(request: ChatRequest):
                     if psf.get('thinking_blocks'):
                         tb = psf['thinking_blocks']
                         if tb and len(tb) > 0:
-                        thinking_content = tb[0].get('thinking', '')
-                        thinking_time = round(elapsed_time)
-                        logger.info(f"Found thinking in provider_specific_fields")
+                            thinking_content = tb[0].get('thinking', '')
+                            thinking_time = round(elapsed_time)
+                            logger.info(f"Found thinking in provider_specific_fields")
         
         # Save assistant message (include thinking in metadata if present)
         msg_data = {
