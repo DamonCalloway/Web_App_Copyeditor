@@ -40,11 +40,15 @@ export default function SettingsPage() {
 
   const loadConfig = async () => {
     try {
-      const config = await getStorageConfig();
-      setStorageConfig(config);
-      setProvider(config.provider);
+      const [storageConf, featureConf] = await Promise.all([
+        getStorageConfig(),
+        getFeatureConfig()
+      ]);
+      setStorageConfig(storageConf);
+      setProvider(storageConf.provider);
+      setBedrockConfigured(featureConf.bedrock_configured || false);
     } catch (error) {
-      console.error("Failed to load storage config:", error);
+      console.error("Failed to load config:", error);
     } finally {
       setLoading(false);
     }
