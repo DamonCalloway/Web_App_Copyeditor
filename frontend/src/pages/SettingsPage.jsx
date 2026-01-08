@@ -27,6 +27,12 @@ export default function SettingsPage() {
     secret_key: "",
     region: "us-east-1"
   });
+  const [awsBedrockConfig, setAwsBedrockConfig] = useState({
+    access_key_id: "",
+    secret_access_key: "",
+    region: "us-east-1"
+  });
+  const [bedrockConfigured, setBedrockConfigured] = useState(false);
 
   useEffect(() => {
     loadConfig();
