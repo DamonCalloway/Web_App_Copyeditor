@@ -63,6 +63,7 @@ export default function ProjectDetailPage() {
   const [editingMemory, setEditingMemory] = useState(false);
   const [instructionsText, setInstructionsText] = useState("");
   const [memoryText, setMemoryText] = useState("");
+  const [showFullMemory, setShowFullMemory] = useState(false);
   
   // New conversation dialog
   const [showNewConv, setShowNewConv] = useState(false);
