@@ -568,7 +568,7 @@ async def update_conversation(conversation_id: str, update: ConversationUpdate):
     return conv
 
 @api_router.get("/conversations", response_model=List[Dict[str, Any]])
-async def get_all_conversations(starred: Optional[bool] = Query(None), archived: Optional[bool] = Query(False)):
+async def get_all_conversations(starred: Optional[bool] = Query(None), archived: Optional[bool] = Query(None)):
     """Get all conversations with optional filtering"""
     query = {}
     if starred is not None:
