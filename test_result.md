@@ -275,6 +275,17 @@ frontend:
         - working: true
           agent: "testing"
           comment: "🎉 COMPREHENSIVE TESTING COMPLETED - Chat messaging functionality working perfectly! The 'Failed to send message' error has been RESOLVED. Successfully tested: Navigation to 'First Chat - PIB ELA Items' conversation, Multiple test messages sent without any errors, No 404 errors on /api/chat endpoint, No console or network errors detected, Knowledge Base toggle working correctly, Extended Thinking toggle functional with thinking blocks appearing, Web Search toggle working with current information, AI responses received successfully for all message types, Copy button functionality working, All chat features fully functional. Backend logs confirm successful 200 OK responses. All reported issues have been resolved."
+  - task: "Auto-scroll and scroll-to-bottom button features in ChatPage"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ChatPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented auto-scroll to bottom when chat loads (messagesEndRef.scrollIntoView) and floating scroll-to-bottom button (data-testid='scroll-to-bottom-btn') that appears when user scrolls up. Features include: auto-scroll on message load/update, scroll button visibility logic based on scroll position, smooth scrolling functionality, button positioning in bottom-right corner with proper styling."
 
 metadata:
   created_by: "testing_agent"
