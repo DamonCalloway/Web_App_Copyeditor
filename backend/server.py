@@ -277,7 +277,7 @@ async def create_project(project: ProjectCreate):
 async def get_projects(
     search: Optional[str] = Query(None),
     starred_only: bool = Query(False),
-    archived: Optional[bool] = Query(False)
+    archived: Optional[bool] = Query(None)
 ):
     query = {}
     if search:
