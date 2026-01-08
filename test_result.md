@@ -252,7 +252,8 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Right sidebar editable Instructions and Memory fields"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
