@@ -326,6 +326,37 @@ export default function ChatPage() {
     }
   };
 
+  const handleSaveInstructions = async () => {
+    if (!project) return;
+    try {
+      await updateProject(project.id, { instructions: instructionsText });
+      setEditingInstructions(false);
+      setProject({ ...project, instructions: instructionsText });
+      toast.success("Instructions updated");
+    } catch (error) {
+      toast.error("Failed to update instructions");
+    }
+  };
+
+  const handleSaveMemory = async () => {
+    if (!project) return;
+    try {
+      await updateProject(project.id, { memory: memoryText });
+      setEditingMemory(false);
+      setProject({ ...project, memory: memoryText });
+      toast.success("Memory updated");
+    } catch (error) {
+      toast.error("Failed to update memory");
+    }
+  };
+
+  const truncateMemory = (text, maxLines = 20) => {
+    if (!text) return "";
+    const lines = text.split('\n');
+    if (lines.length <= maxLines) return text;
+    return lines.slice(0, maxLines).join('\n');
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
