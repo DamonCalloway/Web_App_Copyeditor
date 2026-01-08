@@ -653,22 +653,29 @@ export default function ChatPage() {
                         variant={extendedThinking ? "default" : "ghost"}
                         size="sm"
                         onClick={() => {
+                          if (llmProvider.startsWith("bedrock")) {
+                            toast.info("Extended Thinking only available with Anthropic Direct API");
+                            return;
+                          }
                           if (featuresAvailable) {
                             setExtendedThinking(!extendedThinking);
                           } else {
                             toast.info("Extended Thinking requires direct Anthropic API key");
                           }
                         }}
-                        className={`gap-1.5 h-7 px-2 ${extendedThinking && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${!featuresAvailable ? 'opacity-50' : ''}`}
+                        className={`gap-1.5 h-7 px-2 ${extendedThinking && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${llmProvider.startsWith("bedrock") || !featuresAvailable ? 'opacity-50' : ''}`}
+                        disabled={llmProvider.startsWith("bedrock") || !featuresAvailable}
                         data-testid="extended-thinking-toggle"
                       >
-                        <Brain className={`h-3.5 w-3.5 ${extendedThinking && featuresAvailable ? 'animate-pulse' : ''}`} />
+                        <Brain className={`h-3.5 w-3.5 ${extendedThinking && featuresAvailable ? 'animate-pulse' : ''} ${llmProvider.startsWith("bedrock") ? 'opacity-50' : ''}`} />
                         <span className="text-xs">Think</span>
                       </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{featuresAvailable ? 'Extended Thinking: Claude shows reasoning process' : 'Requires direct Anthropic API key'}</p>
+                    <p>{llmProvider.startsWith("bedrock") 
+                      ? "Extended Thinking only available with Anthropic Direct API" 
+                      : (featuresAvailable ? 'Extended Thinking: Claude shows reasoning process' : 'Requires direct Anthropic API key')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -682,22 +689,29 @@ export default function ChatPage() {
                         variant={webSearch ? "default" : "ghost"}
                         size="sm"
                         onClick={() => {
+                          if (llmProvider.startsWith("bedrock")) {
+                            toast.info("Web Search only available with Anthropic Direct API");
+                            return;
+                          }
                           if (featuresAvailable) {
                             setWebSearch(!webSearch);
                           } else {
                             toast.info("Web Search requires direct Anthropic API key");
                           }
                         }}
-                        className={`gap-1.5 h-7 px-2 ${webSearch && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${!featuresAvailable ? 'opacity-50' : ''}`}
+                        className={`gap-1.5 h-7 px-2 ${webSearch && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${llmProvider.startsWith("bedrock") || !featuresAvailable ? 'opacity-50' : ''}`}
+                        disabled={llmProvider.startsWith("bedrock") || !featuresAvailable}
                         data-testid="web-search-toggle"
                       >
-                        <Globe className={`h-3.5 w-3.5`} />
+                        <Globe className={`h-3.5 w-3.5 ${llmProvider.startsWith("bedrock") ? 'opacity-50' : ''}`} />
                         <span className="text-xs">Web</span>
                       </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{featuresAvailable ? 'Web Search: Claude can search for current information' : 'Requires direct Anthropic API key'}</p>
+                    <p>{llmProvider.startsWith("bedrock") 
+                      ? "Web Search only available with Anthropic Direct API" 
+                      : (featuresAvailable ? 'Web Search: Claude can search for current information' : 'Requires direct Anthropic API key')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
