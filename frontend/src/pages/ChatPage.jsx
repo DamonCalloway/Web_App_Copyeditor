@@ -375,6 +375,21 @@ export default function ChatPage() {
     return lines.slice(0, maxLines).join('\n');
   };
 
+  const handleProviderChange = async (newProvider) => {
+    if (!project) {
+      toast.error("Please associate chat with a project first");
+      return;
+    }
+    try {
+      await updateProject(project.id, { llm_provider: newProvider });
+      setLlmProvider(newProvider);
+      toast.success(`Switched to ${newProvider === "bedrock" ? "Amazon Bedrock" : "Anthropic Direct API"}`);
+      loadChatData(); // Reload to get updated config
+    } catch (error) {
+      toast.error("Failed to update provider");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
