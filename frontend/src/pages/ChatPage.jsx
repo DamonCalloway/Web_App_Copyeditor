@@ -383,6 +383,13 @@ export default function ChatPage() {
     try {
       await updateProject(project.id, { llm_provider: newProvider });
       setLlmProvider(newProvider);
+      
+      // Auto-disable Extended Thinking and Web Search for Bedrock providers
+      if (newProvider.startsWith("bedrock")) {
+        setExtendedThinking(false);
+        setWebSearch(false);
+      }
+      
       const providerName = 
         newProvider === "bedrock-claude" ? "AWS Bedrock (Claude)" :
         newProvider === "bedrock-mistral" ? "AWS Bedrock (Mistral)" :
