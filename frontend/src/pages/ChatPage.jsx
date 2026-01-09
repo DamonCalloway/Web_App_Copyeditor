@@ -503,15 +503,15 @@ export default function ChatPage() {
                   {msg.role === 'assistant' && msg.thinking && (
                     <ThinkingBlock thinking={msg.thinking} thinkingTime={msg.thinking_time} />
                   )}
-                  <div className="message-content">
+                  <div className="message-content text-foreground">
                     {msg.role === 'assistant' ? (
-                      <div className="prose-content">
+                      <div className="prose-content text-foreground">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                           {msg.content}
                         </ReactMarkdown>
                       </div>
                     ) : (
-                      <div className="prose-content">
+                      <div className="prose-content text-foreground">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                           {msg.content}
                         </ReactMarkdown>
