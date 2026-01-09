@@ -695,7 +695,12 @@ async def call_bedrock_converse(
             }
             # Set max tokens to allow for thinking + response, capped at model limit
             inference_config["maxTokens"] = 8192  # Model's max limit
-            logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens")
+            # Temperature MUST be 1 when thinking is enabled
+            inference_config["temperature"] = 1.0
+            # Remove topP as it may conflict with temperature=1
+            if "topP" in inference_config:
+                del inference_config["topP"]
+            logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens, temperature=1")
         
         # Call Converse API
         converse_params = {
