@@ -178,18 +178,29 @@ export default function ProjectDetailPage() {
     if (isImage) {
       // For images, we'll display them using the download URL
       setFileContent({ type: 'image', url: getFileDownloadUrl(file.id) });
-    } else if (file.content_preview) {
-      // Use the indexed content preview
-      setFileContent({ type: 'text', content: file.content_preview });
     } else {
-      // Try to fetch the file content
+      // Always fetch the full file content for text-based files
       setLoadingFileContent(true);
       try {
         const response = await fetch(getFileDownloadUrl(file.id));
-        const text = await response.text();
-        setFileContent({ type: 'text', content: text });
+        const blob = await response.blob();
+        
+        // Handle PDFs differently - display in iframe
+        if (file.file_type === 'PDF') {
+          const url = URL.createObjectURL(blob);
+          setFileContent({ type: 'pdf', url: url });
+        } else {
+          // For text files (TXT, MD, DOCX preview as text)
+          const text = await blob.text();
+          setFileContent({ type: 'text', content: text });
+        }
       } catch (error) {
-        setFileContent({ type: 'text', content: 'Unable to load file content' });
+        // Fallback to content_preview if fetch fails
+        if (file.content_preview) {
+          setFileContent({ type: 'text', content: file.content_preview });
+        } else {
+          setFileContent({ type: 'text', content: 'Unable to load file content' });
+        }
       } finally {
         setLoadingFileContent(false);
       }
