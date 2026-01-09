@@ -685,14 +685,16 @@ async def call_bedrock_converse(
         
         if extended_thinking and is_claude_model:
             # Minimum budget is 1024 tokens per Anthropic API
-            actual_budget = max(1024, thinking_budget)
+            # But we need to stay within the model's max token limit (8192 for most Claude models on Bedrock)
+            # Leave room for actual response (at least 2000 tokens)
+            actual_budget = min(max(1024, thinking_budget), 5000)  # Cap at 5000 to leave room for response
             # Thinking parameters go in additionalModelRequestFields for Bedrock
             additional_fields["thinking"] = {
                 "type": "enabled",
                 "budget_tokens": actual_budget
             }
-            # Increase max tokens to accommodate thinking output
-            inference_config["maxTokens"] = max(16000, actual_budget + 4000)
+            # Set max tokens to allow for thinking + response, capped at model limit
+            inference_config["maxTokens"] = 8192  # Model's max limit
             logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens")
         
         # Call Converse API
