@@ -87,6 +87,19 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
     }
   };
 
+  const handleRenameConv = async (convId, currentName, e) => {
+    e.stopPropagation();
+    const newName = window.prompt("Rename conversation:", currentName);
+    if (!newName || newName === currentName) return;
+    try {
+      await updateConversation(convId, { name: newName });
+      loadData();
+      toast.success("Conversation renamed");
+    } catch (error) {
+      toast.error("Failed to rename conversation");
+    }
+  };
+
   if (collapsed) {
     return (
       <aside className="sidebar sidebar-collapsed" data-testid="sidebar-collapsed">
