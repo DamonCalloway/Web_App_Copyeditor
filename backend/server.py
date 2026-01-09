@@ -1242,14 +1242,18 @@ async def chat_with_ai(request: ChatRequest):
             # Extended thinking is only supported for Bedrock Claude, not Mistral
             bedrock_extended_thinking = use_extended_thinking and provider_type == "bedrock-claude"
             
-            logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}")
-            response_text, thinking_content, thinking_time = await call_bedrock_converse(
+            # Web search is supported for Bedrock Claude if Tavily is configured
+            bedrock_web_search = use_web_search and provider_type == "bedrock-claude" and tavily_client is not None
+            
+            logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, web_search={bedrock_web_search}")
+            response_text, thinking_content, thinking_time = await call_bedrock_converse_with_tools(
                 model_id=bedrock_model_id,
                 messages=messages_for_llm,
                 aws_config=extra_config,
                 max_tokens=4000,
                 extended_thinking=bedrock_extended_thinking,
-                thinking_budget=thinking_budget
+                thinking_budget=thinking_budget,
+                enable_web_search=bedrock_web_search
             )
         else:
             # Use litellm for Anthropic Direct API
