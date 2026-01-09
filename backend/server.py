@@ -1245,6 +1245,14 @@ async def chat_with_ai(request: ChatRequest):
             bedrock_web_search = use_web_search and provider_type == "bedrock-claude" and tavily_client is not None
             
             logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, web_search={bedrock_web_search}")
+            
+            # Note: Extended Thinking and Web Search (tool use) cannot be used together on Bedrock
+            # When thinking is enabled, tool use requires special handling of thinking blocks
+            # For now, prioritize web search if both are requested
+            if bedrock_extended_thinking and bedrock_web_search:
+                logger.warning("Both extended thinking and web search requested - disabling extended thinking (they conflict on Bedrock)")
+                bedrock_extended_thinking = False
+            
             response_text, thinking_content, thinking_time = await call_bedrock_converse_with_tools(
                 model_id=bedrock_model_id,
                 messages=messages_for_llm,
