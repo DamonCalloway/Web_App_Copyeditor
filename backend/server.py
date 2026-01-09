@@ -674,6 +674,9 @@ async def call_bedrock_converse(
             "topP": 0.9
         }
         
+        # Additional model request fields for Claude-specific features
+        additional_fields = {}
+        
         # Add extended thinking for Claude models if enabled
         # Note: Extended thinking is only supported for Claude models, not Mistral
         is_claude_model = 'anthropic' in model_id.lower() or 'claude' in model_id.lower()
@@ -683,9 +686,10 @@ async def call_bedrock_converse(
         if extended_thinking and is_claude_model:
             # Minimum budget is 1024 tokens per Anthropic API
             actual_budget = max(1024, thinking_budget)
-            inference_config["thinking"] = {
+            # Thinking parameters go in additionalModelRequestFields for Bedrock
+            additional_fields["thinking"] = {
                 "type": "enabled",
-                "budgetTokens": actual_budget
+                "budget_tokens": actual_budget
             }
             # Increase max tokens to accommodate thinking output
             inference_config["maxTokens"] = max(16000, actual_budget + 4000)
@@ -700,6 +704,10 @@ async def call_bedrock_converse(
         
         if system_content:
             converse_params["system"] = system_content
+        
+        # Add additional model request fields if any
+        if additional_fields:
+            converse_params["additionalModelRequestFields"] = additional_fields
         
         logger.info(f"Bedrock Converse API call: model={model_id}, messages={len(bedrock_messages)}, extended_thinking={extended_thinking and is_claude_model}")
         
