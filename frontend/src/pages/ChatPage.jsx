@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Send, Loader2, Star, MoreHorizontal, 
   Trash2, FolderKanban, FileText, ChevronDown, Copy, Check,
-  Brain, Globe, ChevronRight, Paperclip, X, File, Image, Edit2, ArrowDown
+  Brain, Globe, ChevronRight, ChevronLeft, Paperclip, X, File, Image, Edit2, ArrowDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
