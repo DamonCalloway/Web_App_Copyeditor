@@ -720,10 +720,9 @@ async def call_bedrock_converse(
             else:
                 logger.warning(f"Extended thinking requested but model {model_id} does not support it (requires Claude 3.7 or later)")
         
-        # Add temperature/topP only when NOT using thinking
+        # Only add temperature (not both temp and topP - Claude 4 doesn't allow both)
         if add_temp_params:
             inference_config["temperature"] = 0.7
-            inference_config["topP"] = 0.9
         
         # Call Converse API
         converse_params = {
