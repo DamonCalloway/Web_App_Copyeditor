@@ -667,47 +667,52 @@ async def call_bedrock_converse(
                 system_content = [{"text": str(sys_text)}]
                 break
         
-        # Build inference config
+        # Build inference config - remove temperature/topP when thinking is enabled
         inference_config = {
             "maxTokens": max_tokens,
-            "temperature": 0.7,
-            "topP": 0.9
         }
+        
+        # Only add temperature/topP when NOT using extended thinking
+        # (thinking is not compatible with temperature, top_p, or top_k modifications)
+        add_temp_params = True
         
         # Additional model request fields for Claude-specific features
         additional_fields = {}
         
         # Add extended thinking for Claude models if enabled
-        # Note: Extended thinking is only supported for Claude models, not Mistral
+        # Note: Extended thinking is only supported for Claude 3.7+ and Claude 4 models
         is_claude_model = 'anthropic' in model_id.lower() or 'claude' in model_id.lower()
         thinking_content = None
         thinking_time = None
         
         if extended_thinking and is_claude_model:
             # Check if model supports extended thinking
-            # Extended thinking is only available on Claude 3.7+ models
-            # Claude 3.5 Sonnet (claude-3-5-sonnet-20241022) does NOT support it
-            supports_thinking = any(x in model_id.lower() for x in ['claude-3-7', 'claude-4', 'sonnet-4', 'opus-4', 'haiku-4'])
+            # Claude Sonnet 4.5: anthropic.claude-sonnet-4-5-20250929-v1:0
+            # Claude 3.7 Sonnet: anthropic.claude-3-7-sonnet-20250219-v1:0
+            # Claude 3.5 does NOT support thinking
+            supports_thinking = any(x in model_id.lower() for x in [
+                'claude-3-7', 'claude-4', 'sonnet-4', 'opus-4', 'haiku-4',
+                'claude-sonnet-4', 'claude-opus-4', 'claude-haiku-4'
+            ])
             
             if supports_thinking:
                 # Minimum budget is 1024 tokens per Anthropic API
-                # Cap at 5000 to leave room for response within 8192 limit
-                actual_budget = min(max(1024, thinking_budget), 5000)
+                actual_budget = max(1024, thinking_budget)
                 # Thinking parameters go in additionalModelRequestFields for Bedrock
                 additional_fields["thinking"] = {
                     "type": "enabled",
                     "budget_tokens": actual_budget
                 }
-                # Set max tokens to allow for thinking + response, capped at model limit
-                inference_config["maxTokens"] = 8192  # Model's max limit
-                # Temperature MUST be 1 when thinking is enabled
-                inference_config["temperature"] = 1.0
-                # Remove topP as it may conflict with temperature=1
-                if "topP" in inference_config:
-                    del inference_config["topP"]
-                logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens, temperature=1")
+                # Thinking is NOT compatible with temperature, top_p, top_k
+                add_temp_params = False
+                logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens")
             else:
                 logger.warning(f"Extended thinking requested but model {model_id} does not support it (requires Claude 3.7 or later)")
+        
+        # Add temperature/topP only when NOT using thinking
+        if add_temp_params:
+            inference_config["temperature"] = 0.7
+            inference_config["topP"] = 0.9
         
         # Call Converse API
         converse_params = {
