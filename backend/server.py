@@ -619,11 +619,22 @@ async def get_messages(conversation_id: str):
 
 # ============== CHAT WITH AI ==============
 
-async def call_bedrock_converse(model_id: str, messages: List[dict], aws_config: dict, max_tokens: int = 4000) -> tuple:
+async def call_bedrock_converse(
+    model_id: str, 
+    messages: List[dict], 
+    aws_config: dict, 
+    max_tokens: int = 4000,
+    extended_thinking: bool = False,
+    thinking_budget: int = 10000
+) -> tuple:
     """
     Call AWS Bedrock using the Converse API (newer, more reliable than InvokeModel)
-    Returns: (response_text, None, None) - (content, thinking_content, thinking_time)
+    Supports extended thinking for Claude models on Bedrock.
+    Returns: (response_text, thinking_content, thinking_time)
     """
+    import time
+    start_time = time.time()
+    
     try:
         bedrock_runtime = boto3.client(
             service_name='bedrock-runtime',
@@ -656,25 +667,47 @@ async def call_bedrock_converse(model_id: str, messages: List[dict], aws_config:
                 system_content = [{"text": str(sys_text)}]
                 break
         
-        # Call Converse API with explicit inference config
+        # Build inference config
+        inference_config = {
+            "maxTokens": max_tokens,
+            "temperature": 0.7,
+            "topP": 0.9
+        }
+        
+        # Add extended thinking for Claude models if enabled
+        # Note: Extended thinking is only supported for Claude models, not Mistral
+        is_claude_model = 'anthropic' in model_id.lower() or 'claude' in model_id.lower()
+        thinking_content = None
+        thinking_time = None
+        
+        if extended_thinking and is_claude_model:
+            # Minimum budget is 1024 tokens per Anthropic API
+            actual_budget = max(1024, thinking_budget)
+            inference_config["thinking"] = {
+                "type": "enabled",
+                "budgetTokens": actual_budget
+            }
+            # Increase max tokens to accommodate thinking output
+            inference_config["maxTokens"] = max(16000, actual_budget + 4000)
+            logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens")
+        
+        # Call Converse API
         converse_params = {
             "modelId": model_id,
             "messages": bedrock_messages,
-            "inferenceConfig": {
-                "maxTokens": max_tokens,
-                "temperature": 0.7,
-                "topP": 0.9
-            }
+            "inferenceConfig": inference_config
         }
         
         if system_content:
             converse_params["system"] = system_content
         
-        logger.info(f"Bedrock Converse API call: model={model_id}, messages={len(bedrock_messages)}")
+        logger.info(f"Bedrock Converse API call: model={model_id}, messages={len(bedrock_messages)}, extended_thinking={extended_thinking and is_claude_model}")
         
         response = bedrock_runtime.converse(**converse_params)
         
-        # Extract response text with careful handling
+        elapsed_time = time.time() - start_time
+        
+        # Extract response text and thinking content
         output_message = response.get('output', {}).get('message', {})
         content_blocks = output_message.get('content', [])
         
@@ -682,17 +715,25 @@ async def call_bedrock_converse(model_id: str, messages: List[dict], aws_config:
         for block in content_blocks:
             if 'text' in block:
                 text_content = block['text']
-                # Ensure proper string handling
                 if isinstance(text_content, bytes):
                     text_content = text_content.decode('utf-8', errors='replace')
                 response_text += str(text_content)
+            # Extract thinking content if present (Claude extended thinking)
+            elif 'thinking' in block:
+                thinking_content = block.get('thinking', '')
+                thinking_time = round(elapsed_time)
+                logger.info(f"Found thinking content: {len(thinking_content)} chars")
+            elif block.get('type') == 'thinking':
+                thinking_content = block.get('text', '')
+                thinking_time = round(elapsed_time)
+                logger.info(f"Found thinking block: {len(thinking_content)} chars")
         
         # Log response metadata for debugging
         stop_reason = response.get('stopReason', 'unknown')
         usage = response.get('usage', {})
-        logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}, stop_reason={stop_reason}, usage={usage}")
+        logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}, stop_reason={stop_reason}, usage={usage}, thinking={'yes' if thinking_content else 'no'}")
         
-        return (response_text, None, None)  # No thinking content for Bedrock
+        return (response_text, thinking_content, thinking_time)
         
     except boto3.exceptions.Boto3Error as e:
         logger.error(f"Bedrock boto3 error: {e}")
