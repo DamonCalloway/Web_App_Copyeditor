@@ -559,7 +559,7 @@ export default function ProjectDetailPage() {
               {viewingFile?.indexed && ' • Indexed'}
             </p>
           </DialogHeader>
-          <div className="flex-1 overflow-auto min-h-[400px] border rounded-lg bg-secondary/30 p-4">
+          <div className="flex-1 overflow-auto min-h-[400px] max-h-[70vh] border rounded-lg bg-secondary/30 p-4">
             {loadingFileContent ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -572,8 +572,15 @@ export default function ProjectDetailPage() {
                   className="max-w-full max-h-full object-contain rounded"
                 />
               </div>
+            ) : fileContent?.type === 'pdf' ? (
+              <iframe
+                src={fileContent.url}
+                title={viewingFile?.original_filename}
+                className="w-full h-full min-h-[500px] rounded"
+                style={{ border: 'none' }}
+              />
             ) : fileContent?.type === 'text' ? (
-              <div className="file-content-viewer">
+              <div className="file-content-viewer h-full overflow-auto">
                 {viewingFile?.file_type === 'MD' ? (
                   <div className="prose-content prose-sm max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -588,7 +595,7 @@ export default function ProjectDetailPage() {
               </div>
             ) : (
               <p className="text-muted-foreground text-center">No preview available</p>
-            )}
+            )}}
           </div>
           <DialogFooter>
             <Button variant="outline" asChild>
