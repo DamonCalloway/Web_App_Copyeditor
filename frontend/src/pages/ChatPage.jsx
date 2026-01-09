@@ -680,7 +680,13 @@ export default function ChatPage() {
                             return;
                           }
                           if (featuresAvailable || llmProvider === "bedrock-claude") {
-                            setExtendedThinking(!extendedThinking);
+                            const newValue = !extendedThinking;
+                            setExtendedThinking(newValue);
+                            // On Bedrock Claude, Think and Web Search conflict - disable the other
+                            if (newValue && llmProvider === "bedrock-claude" && webSearch) {
+                              setWebSearch(false);
+                              toast.info("Web Search disabled - cannot use both with Bedrock");
+                            }
                           } else {
                             toast.info("Extended Thinking requires Anthropic API key or Bedrock Claude");
                           }
