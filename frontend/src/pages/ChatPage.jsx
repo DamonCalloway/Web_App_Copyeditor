@@ -728,7 +728,13 @@ export default function ChatPage() {
                             return;
                           }
                           if (canUseWebSearch) {
-                            setWebSearch(!webSearch);
+                            const newValue = !webSearch;
+                            setWebSearch(newValue);
+                            // On Bedrock Claude, Think and Web Search conflict - disable the other
+                            if (newValue && llmProvider === "bedrock-claude" && extendedThinking) {
+                              setExtendedThinking(false);
+                              toast.info("Extended Thinking disabled - cannot use both with Bedrock");
+                            }
                           } else if (llmProvider === "bedrock-claude" && !bedrockWebSearchAvailable) {
                             toast.info("Web Search requires Tavily API key to be configured");
                           } else {
