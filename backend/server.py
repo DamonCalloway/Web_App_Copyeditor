@@ -637,42 +637,68 @@ async def call_bedrock_converse(model_id: str, messages: List[dict], aws_config:
         for msg in messages:
             if msg['role'] == 'system':
                 continue  # System messages handled separately in Converse API
+            # Ensure content is properly encoded as UTF-8 string
+            content_text = msg['content']
+            if isinstance(content_text, bytes):
+                content_text = content_text.decode('utf-8', errors='replace')
             bedrock_messages.append({
                 "role": msg['role'],
-                "content": [{"text": msg['content']}]
+                "content": [{"text": str(content_text)}]
             })
         
         # Find system message
         system_content = None
         for msg in messages:
             if msg['role'] == 'system':
-                system_content = [{"text": msg['content']}]
+                sys_text = msg['content']
+                if isinstance(sys_text, bytes):
+                    sys_text = sys_text.decode('utf-8', errors='replace')
+                system_content = [{"text": str(sys_text)}]
                 break
         
-        # Call Converse API
+        # Call Converse API with explicit inference config
         converse_params = {
             "modelId": model_id,
             "messages": bedrock_messages,
             "inferenceConfig": {
                 "maxTokens": max_tokens,
-                "temperature": 0.7
+                "temperature": 0.7,
+                "topP": 0.9
             }
         }
         
         if system_content:
             converse_params["system"] = system_content
         
+        logger.info(f"Bedrock Converse API call: model={model_id}, messages={len(bedrock_messages)}")
+        
         response = bedrock_runtime.converse(**converse_params)
         
-        # Extract response text
-        response_text = response['output']['message']['content'][0]['text']
+        # Extract response text with careful handling
+        output_message = response.get('output', {}).get('message', {})
+        content_blocks = output_message.get('content', [])
         
-        logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}")
+        response_text = ""
+        for block in content_blocks:
+            if 'text' in block:
+                text_content = block['text']
+                # Ensure proper string handling
+                if isinstance(text_content, bytes):
+                    text_content = text_content.decode('utf-8', errors='replace')
+                response_text += str(text_content)
+        
+        # Log response metadata for debugging
+        stop_reason = response.get('stopReason', 'unknown')
+        usage = response.get('usage', {})
+        logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}, stop_reason={stop_reason}, usage={usage}")
         
         return (response_text, None, None)  # No thinking content for Bedrock
         
+    except boto3.exceptions.Boto3Error as e:
+        logger.error(f"Bedrock boto3 error: {e}")
+        raise HTTPException(status_code=500, detail=f"Bedrock API error: {str(e)}")
     except Exception as e:
-        logger.error(f"Bedrock Converse API error: {e}")
+        logger.error(f"Bedrock Converse API error: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=f"Bedrock API error: {str(e)}")
 
 def get_llm_config(project: dict):
