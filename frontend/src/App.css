@@ -156,6 +156,10 @@
     padding: 0.875rem 1rem;
 }
 
+.message-user .message-content .prose-content {
+    color: hsl(var(--primary-foreground));
+}
+
 .message-assistant {
     display: flex;
     flex-direction: column;
