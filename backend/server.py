@@ -900,11 +900,15 @@ async def chat_with_ai(request: ChatRequest):
         import time
         start_time = time.time()
         
+        # Log the exact provider and model being used
+        logger.info(f"Chat request - provider_type={provider_type}, project_llm_provider={project.get('llm_provider')}, model_name={model_name}")
+        
         if provider_type.startswith("bedrock"):
             # Use Bedrock Converse API (more reliable, no corruption)
-            logger.info(f"Using Bedrock Converse API: model={model_name}")
+            bedrock_model_id = extra_config.get("bedrock_model_id", model_name.replace("bedrock/", ""))
+            logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}")
             response_text, thinking_content, thinking_time = await call_bedrock_converse(
-                model_id=extra_config.get("bedrock_model_id", model_name.replace("bedrock/", "")),
+                model_id=bedrock_model_id,
                 messages=messages_for_llm,
                 aws_config=extra_config,
                 max_tokens=4000
