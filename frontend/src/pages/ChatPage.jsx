@@ -132,6 +132,7 @@ export default function ChatPage() {
   const [extendedThinking, setExtendedThinking] = useState(false);
   const [webSearch, setWebSearch] = useState(false);
   const [featuresAvailable, setFeaturesAvailable] = useState(false);
+  const [bedrockWebSearchAvailable, setBedrockWebSearchAvailable] = useState(false);
   const [showProjectInfo, setShowProjectInfo] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
