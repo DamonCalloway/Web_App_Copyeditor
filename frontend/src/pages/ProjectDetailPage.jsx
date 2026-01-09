@@ -208,6 +208,10 @@ export default function ProjectDetailPage() {
   };
 
   const closeFileViewer = () => {
+    // Clean up blob URL if it was a PDF
+    if (fileContent?.type === 'pdf' && fileContent?.url) {
+      URL.revokeObjectURL(fileContent.url);
+    }
     setViewingFile(null);
     setFileContent(null);
   };
