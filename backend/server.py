@@ -919,15 +919,15 @@ async def chat_with_ai(request: ChatRequest):
             # Add API key for Anthropic
             params["api_key"] = api_key
         
-        # Add extended features if supported (Anthropic Direct API only)
+        # Determine extended thinking settings
         thinking_content = None
         thinking_time = None
+        use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
+        thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
+        use_web_search = request.web_search or project.get("web_search_enabled", False)
         
+        # Add extended features for Anthropic Direct API
         if provider_type == "anthropic" and extra_config.get("supports_extended_features", False):
-            use_extended_thinking = request.extended_thinking or project.get("extended_thinking_enabled", False)
-            thinking_budget = request.thinking_budget if request.extended_thinking else project.get("thinking_budget", 10000)
-            use_web_search = request.web_search or project.get("web_search_enabled", False)
-            
             if use_extended_thinking:
                 # Minimum budget is 1024 tokens per Anthropic API
                 actual_budget = max(1024, thinking_budget)
@@ -945,14 +945,20 @@ async def chat_with_ai(request: ChatRequest):
         logger.info(f"Chat request - provider_type={provider_type}, project_llm_provider={project.get('llm_provider')}, model_name={model_name}")
         
         if provider_type.startswith("bedrock"):
-            # Use Bedrock Converse API (more reliable, no corruption)
+            # Use Bedrock Converse API
             bedrock_model_id = extra_config.get("bedrock_model_id", model_name.replace("bedrock/", ""))
-            logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}")
+            
+            # Extended thinking is only supported for Bedrock Claude, not Mistral
+            bedrock_extended_thinking = use_extended_thinking and provider_type == "bedrock-claude"
+            
+            logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}")
             response_text, thinking_content, thinking_time = await call_bedrock_converse(
                 model_id=bedrock_model_id,
                 messages=messages_for_llm,
                 aws_config=extra_config,
-                max_tokens=4000
+                max_tokens=4000,
+                extended_thinking=bedrock_extended_thinking,
+                thinking_budget=thinking_budget
             )
         else:
             # Use litellm for Anthropic Direct API
