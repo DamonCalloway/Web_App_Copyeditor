@@ -699,7 +699,7 @@ export default function ChatPage() {
                 </Tooltip>
               </TooltipProvider>
               
-              {/* Web Search Toggle - Only available for direct Anthropic API */}
+              {/* Web Search Toggle - Available for Anthropic Direct API or Bedrock Claude with Tavily */}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -708,29 +708,39 @@ export default function ChatPage() {
                         variant={webSearch ? "default" : "ghost"}
                         size="sm"
                         onClick={() => {
-                          if (llmProvider.startsWith("bedrock")) {
-                            toast.info("Web Search only available with Anthropic Direct API");
+                          // Web search available for:
+                          // 1. Direct Anthropic API (featuresAvailable)
+                          // 2. Bedrock Claude with Tavily configured (bedrockWebSearchAvailable)
+                          const canUseWebSearch = featuresAvailable || 
+                            (llmProvider === "bedrock-claude" && bedrockWebSearchAvailable);
+                          
+                          if (llmProvider === "bedrock-mistral") {
+                            toast.info("Web Search not available for Mistral");
                             return;
                           }
-                          if (featuresAvailable) {
+                          if (canUseWebSearch) {
                             setWebSearch(!webSearch);
+                          } else if (llmProvider === "bedrock-claude" && !bedrockWebSearchAvailable) {
+                            toast.info("Web Search requires Tavily API key to be configured");
                           } else {
-                            toast.info("Web Search requires direct Anthropic API key");
+                            toast.info("Web Search requires Anthropic API key or Tavily API key");
                           }
                         }}
-                        className={`gap-1.5 h-7 px-2 ${webSearch && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${llmProvider.startsWith("bedrock") || !featuresAvailable ? 'opacity-50' : ''}`}
-                        disabled={llmProvider.startsWith("bedrock") || !featuresAvailable}
+                        className={`gap-1.5 h-7 px-2 ${webSearch && (featuresAvailable || (llmProvider === "bedrock-claude" && bedrockWebSearchAvailable)) ? 'bg-primary text-primary-foreground' : ''} ${(llmProvider === "bedrock-mistral") || (!featuresAvailable && !(llmProvider === "bedrock-claude" && bedrockWebSearchAvailable)) ? 'opacity-50' : ''}`}
+                        disabled={(llmProvider === "bedrock-mistral") || (!featuresAvailable && !(llmProvider === "bedrock-claude" && bedrockWebSearchAvailable))}
                         data-testid="web-search-toggle"
                       >
-                        <Globe className={`h-3.5 w-3.5 ${llmProvider.startsWith("bedrock") ? 'opacity-50' : ''}`} />
+                        <Globe className={`h-3.5 w-3.5 ${llmProvider === "bedrock-mistral" ? 'opacity-50' : ''}`} />
                         <span className="text-xs">Web</span>
                       </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{llmProvider.startsWith("bedrock") 
-                      ? "Web Search only available with Anthropic Direct API" 
-                      : (featuresAvailable ? 'Web Search: Claude can search for current information' : 'Requires direct Anthropic API key')}</p>
+                    <p>{llmProvider === "bedrock-mistral" 
+                      ? "Web Search not available for Mistral" 
+                      : (llmProvider === "bedrock-claude" 
+                        ? (bedrockWebSearchAvailable ? 'Web Search: Claude can search via Tavily' : 'Requires Tavily API key')
+                        : (featuresAvailable ? 'Web Search: Claude can search for current information' : 'Requires Anthropic or Tavily API key'))}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
