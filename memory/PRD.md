@@ -47,7 +47,7 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Conversations and messages API
 - [x] Multi-provider AI chat:
   - [x] Anthropic Direct API with Extended Thinking & Web Search
-  - [x] AWS Bedrock Claude via Converse API
+  - [x] AWS Bedrock Claude via Converse API with Extended Thinking support
   - [x] AWS Bedrock Mistral via Converse API
 - [x] Storage abstraction (LocalStorageProvider, S3StorageProvider)
 - [x] RAG implementation with sentence-transformers embeddings
@@ -62,8 +62,8 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Chat interface with markdown rendering
 - [x] Copy button on messages
 - [x] Knowledge base toggle
-- [x] Extended Thinking toggle (collapsible thought process display)
-- [x] Web Search toggle
+- [x] Extended Thinking toggle (enabled for Anthropic Direct & Bedrock Claude)
+- [x] Web Search toggle (Anthropic Direct only)
 - [x] LLM Provider selector dropdown
 - [x] Settings page with AWS Bedrock configuration
 - [x] Dark/light theme toggle with proper text visibility
@@ -74,6 +74,8 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 ### Bug Fixes (January 9, 2025)
 - [x] Fixed: Chat message text invisible in light mode
 - [x] Fixed: Mistral response corruption on long messages
+- [x] Fixed: Bedrock Claude model identity confusion when switching providers
+- [x] Added: Extended Thinking support for AWS Bedrock Claude Sonnet 4.5
 
 ## Prioritized Backlog
 
