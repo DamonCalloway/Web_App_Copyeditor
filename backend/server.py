@@ -31,13 +31,6 @@ STORAGE_PROVIDER = os.environ.get('STORAGE_PROVIDER', 'local')
 LOCAL_STORAGE_PATH = Path(os.environ.get('LOCAL_STORAGE_PATH', '/app/uploads'))
 LOCAL_STORAGE_PATH.mkdir(parents=True, exist_ok=True)
 
-# Tavily client for web search (optional)
-tavily_client = None
-TAVILY_API_KEY = os.environ.get('TAVILY_API_KEY')
-if TAVILY_API_KEY:
-    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
-    logger.info("Tavily web search enabled")
-
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -45,6 +38,13 @@ api_router = APIRouter(prefix="/api")
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Tavily client for web search (optional)
+tavily_client = None
+TAVILY_API_KEY = os.environ.get('TAVILY_API_KEY')
+if TAVILY_API_KEY:
+    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
+    logger.info("Tavily web search enabled")
 
 # ============== MODELS ==============
 
