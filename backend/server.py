@@ -16,6 +16,7 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 import asyncio
 from rag import RAGIndex, retrieve_context_for_query
 import boto3
+from tavily import TavilyClient
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -29,6 +30,13 @@ db = client[os.environ['DB_NAME']]
 STORAGE_PROVIDER = os.environ.get('STORAGE_PROVIDER', 'local')
 LOCAL_STORAGE_PATH = Path(os.environ.get('LOCAL_STORAGE_PATH', '/app/uploads'))
 LOCAL_STORAGE_PATH.mkdir(parents=True, exist_ok=True)
+
+# Tavily client for web search (optional)
+tavily_client = None
+TAVILY_API_KEY = os.environ.get('TAVILY_API_KEY')
+if TAVILY_API_KEY:
+    tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
+    logger.info("Tavily web search enabled")
 
 # Create the main app
 app = FastAPI()
