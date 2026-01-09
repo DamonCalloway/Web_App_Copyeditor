@@ -123,8 +123,15 @@ ANTHROPIC_API_KEY=sk-ant-...  # For direct Anthropic API
 AWS_ACCESS_KEY_ID=...         # For Bedrock
 AWS_SECRET_ACCESS_KEY=...     # For Bedrock
 AWS_REGION=us-east-1
+BEDROCK_CLAUDE_MODEL_ID=us.anthropic.claude-sonnet-4-5-20250929-v1:0  # Claude Sonnet 4.5 (cross-region inference profile)
 BEDROCK_MISTRAL_MODEL_ID=mistral.mistral-large-3-675b-instruct
 ```
+
+## Extended Thinking Notes
+- **Supported Models**: Claude 3.7 Sonnet, Claude Sonnet 4, Claude Sonnet 4.5, Claude Opus 4, Claude Haiku 4.5
+- **Web Search**: Only available via direct Anthropic API (not on Bedrock)
+- **Temperature**: Extended thinking is NOT compatible with temperature, top_p, or top_k parameters
+- **Inference Profile**: Claude Sonnet 4.5 requires cross-region inference profile (us.anthropic.* prefix)
 
 ## Key Files Reference
 - `/app/backend/server.py` - Main API, LLM integration
