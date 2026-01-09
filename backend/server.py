@@ -684,23 +684,30 @@ async def call_bedrock_converse(
         thinking_time = None
         
         if extended_thinking and is_claude_model:
-            # Minimum budget is 1024 tokens per Anthropic API
-            # But we need to stay within the model's max token limit (8192 for most Claude models on Bedrock)
-            # Leave room for actual response (at least 2000 tokens)
-            actual_budget = min(max(1024, thinking_budget), 5000)  # Cap at 5000 to leave room for response
-            # Thinking parameters go in additionalModelRequestFields for Bedrock
-            additional_fields["thinking"] = {
-                "type": "enabled",
-                "budget_tokens": actual_budget
-            }
-            # Set max tokens to allow for thinking + response, capped at model limit
-            inference_config["maxTokens"] = 8192  # Model's max limit
-            # Temperature MUST be 1 when thinking is enabled
-            inference_config["temperature"] = 1.0
-            # Remove topP as it may conflict with temperature=1
-            if "topP" in inference_config:
-                del inference_config["topP"]
-            logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens, temperature=1")
+            # Check if model supports extended thinking
+            # Extended thinking is only available on Claude 3.7+ models
+            # Claude 3.5 Sonnet (claude-3-5-sonnet-20241022) does NOT support it
+            supports_thinking = any(x in model_id.lower() for x in ['claude-3-7', 'claude-4', 'sonnet-4', 'opus-4', 'haiku-4'])
+            
+            if supports_thinking:
+                # Minimum budget is 1024 tokens per Anthropic API
+                # Cap at 5000 to leave room for response within 8192 limit
+                actual_budget = min(max(1024, thinking_budget), 5000)
+                # Thinking parameters go in additionalModelRequestFields for Bedrock
+                additional_fields["thinking"] = {
+                    "type": "enabled",
+                    "budget_tokens": actual_budget
+                }
+                # Set max tokens to allow for thinking + response, capped at model limit
+                inference_config["maxTokens"] = 8192  # Model's max limit
+                # Temperature MUST be 1 when thinking is enabled
+                inference_config["temperature"] = 1.0
+                # Remove topP as it may conflict with temperature=1
+                if "topP" in inference_config:
+                    del inference_config["topP"]
+                logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens, temperature=1")
+            else:
+                logger.warning(f"Extended thinking requested but model {model_id} does not support it (requires Claude 3.7 or later)")
         
         # Call Converse API
         converse_params = {
