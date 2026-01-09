@@ -213,6 +213,10 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleRenameConv(conv.id, conv.name, e)}>
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Rename
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={(e) => handleToggleStarConv(conv.id, e)}>
                         <Star className="h-4 w-4 mr-2" />
                         Unstar
