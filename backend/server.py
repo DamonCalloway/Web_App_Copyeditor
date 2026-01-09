@@ -843,8 +843,19 @@ async def chat_with_ai(request: ChatRequest):
     model_name, api_key, provider_type, extra_config = get_llm_config(project)
     supports_extended_features = extra_config.get("supports_extended_features", False) if provider_type == "anthropic" else False
     
+    # Add model identity to system message to prevent confusion when provider changes mid-conversation
+    model_identity = ""
+    if provider_type == "bedrock-claude":
+        model_identity = "\n\n# Important: You are Claude, an AI assistant made by Anthropic, accessed via AWS Bedrock. Always identify yourself as Claude if asked."
+    elif provider_type == "bedrock-mistral":
+        model_identity = "\n\n# Important: You are Mistral, an AI assistant made by Mistral AI, accessed via AWS Bedrock. Always identify yourself as Mistral if asked."
+    elif provider_type == "anthropic":
+        model_identity = "\n\n# Important: You are Claude, an AI assistant made by Anthropic. Always identify yourself as Claude if asked."
+    
+    system_message_with_identity = system_message + model_identity
+    
     # Build message history for context
-    messages_for_llm = [{"role": "system", "content": system_message}]
+    messages_for_llm = [{"role": "system", "content": system_message_with_identity}]
     for msg in history[-20:]:  # Last 20 messages for context
         messages_for_llm.append({"role": msg["role"], "content": msg["content"]})
     messages_for_llm.append({"role": "user", "content": request.message})
