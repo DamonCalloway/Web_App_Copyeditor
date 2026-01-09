@@ -780,6 +780,259 @@ async def call_bedrock_converse(
         logger.error(f"Bedrock Converse API error: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=f"Bedrock API error: {str(e)}")
 
+
+async def perform_web_search(query: str) -> str:
+    """
+    Perform a web search using Tavily API.
+    Returns formatted search results as a string.
+    """
+    if not tavily_client:
+        return "Web search is not available. TAVILY_API_KEY not configured."
+    
+    try:
+        logger.info(f"Performing web search for: {query}")
+        response = tavily_client.search(
+            query=query,
+            search_depth="basic",
+            max_results=5,
+            include_answer=True
+        )
+        
+        # Format results
+        results = []
+        if response.get('answer'):
+            results.append(f"**Summary:** {response['answer']}\n")
+        
+        results.append("**Sources:**")
+        for i, result in enumerate(response.get('results', [])[:5], 1):
+            title = result.get('title', 'No title')
+            url = result.get('url', '')
+            content = result.get('content', '')[:300]
+            results.append(f"\n{i}. **{title}**\n   URL: {url}\n   {content}...")
+        
+        formatted = "\n".join(results)
+        logger.info(f"Web search returned {len(response.get('results', []))} results")
+        return formatted
+        
+    except Exception as e:
+        logger.error(f"Web search error: {e}")
+        return f"Web search failed: {str(e)}"
+
+
+async def call_bedrock_converse_with_tools(
+    model_id: str, 
+    messages: List[dict], 
+    aws_config: dict, 
+    max_tokens: int = 4000,
+    extended_thinking: bool = False,
+    thinking_budget: int = 10000,
+    enable_web_search: bool = False
+) -> tuple:
+    """
+    Call AWS Bedrock using the Converse API with optional tool use (web search).
+    Handles the tool use loop for web search.
+    Returns: (response_text, thinking_content, thinking_time)
+    """
+    import time
+    start_time = time.time()
+    
+    try:
+        bedrock_runtime = boto3.client(
+            service_name='bedrock-runtime',
+            region_name=aws_config['aws_region_name'],
+            aws_access_key_id=aws_config['aws_access_key_id'],
+            aws_secret_access_key=aws_config['aws_secret_access_key']
+        )
+        
+        # Convert messages to Bedrock format
+        bedrock_messages = []
+        for msg in messages:
+            if msg['role'] == 'system':
+                continue
+            content_text = msg['content']
+            if isinstance(content_text, bytes):
+                content_text = content_text.decode('utf-8', errors='replace')
+            bedrock_messages.append({
+                "role": msg['role'],
+                "content": [{"text": str(content_text)}]
+            })
+        
+        # Find system message
+        system_content = None
+        for msg in messages:
+            if msg['role'] == 'system':
+                sys_text = msg['content']
+                if isinstance(sys_text, bytes):
+                    sys_text = sys_text.decode('utf-8', errors='replace')
+                system_content = [{"text": str(sys_text)}]
+                break
+        
+        # Build inference config
+        inference_config = {"maxTokens": max_tokens}
+        add_temp_params = True
+        additional_fields = {}
+        
+        is_claude_model = 'anthropic' in model_id.lower() or 'claude' in model_id.lower()
+        thinking_content = None
+        thinking_time = None
+        
+        # Extended thinking setup (same as before)
+        if extended_thinking and is_claude_model:
+            supports_thinking = any(x in model_id.lower() for x in [
+                'claude-3-7', 'claude-4', 'sonnet-4', 'opus-4', 'haiku-4',
+                'claude-sonnet-4', 'claude-opus-4', 'claude-haiku-4'
+            ])
+            if supports_thinking:
+                actual_budget = max(1024, thinking_budget)
+                additional_fields["thinking"] = {
+                    "type": "enabled",
+                    "budget_tokens": actual_budget
+                }
+                inference_config["maxTokens"] = actual_budget + 4000
+                add_temp_params = False
+                logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens")
+        
+        if add_temp_params:
+            inference_config["temperature"] = 0.7
+            inference_config["topP"] = 0.9
+        
+        # Define web search tool
+        tool_config = None
+        if enable_web_search and tavily_client:
+            tool_config = {
+                "tools": [
+                    {
+                        "toolSpec": {
+                            "name": "web_search",
+                            "description": "Search the web for current information, news, facts, or any topic. Use this when you need up-to-date information or don't have knowledge about something.",
+                            "inputSchema": {
+                                "json": {
+                                    "type": "object",
+                                    "properties": {
+                                        "query": {
+                                            "type": "string",
+                                            "description": "The search query to look up on the web"
+                                        }
+                                    },
+                                    "required": ["query"]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+            logger.info("Web search tool enabled for this request")
+        
+        # Build converse params
+        converse_params = {
+            "modelId": model_id,
+            "messages": bedrock_messages,
+            "inferenceConfig": inference_config
+        }
+        
+        if system_content:
+            converse_params["system"] = system_content
+        if additional_fields:
+            converse_params["additionalModelRequestFields"] = additional_fields
+        if tool_config:
+            converse_params["toolConfig"] = tool_config
+        
+        logger.info(f"Bedrock Converse API call: model={model_id}, messages={len(bedrock_messages)}, web_search={enable_web_search}")
+        
+        # Call Bedrock and handle tool use loop
+        max_iterations = 3  # Prevent infinite loops
+        iteration = 0
+        
+        while iteration < max_iterations:
+            iteration += 1
+            response = bedrock_runtime.converse(**converse_params)
+            
+            stop_reason = response.get('stopReason', 'unknown')
+            output_message = response.get('output', {}).get('message', {})
+            content_blocks = output_message.get('content', [])
+            
+            # Check if model wants to use a tool
+            if stop_reason == 'tool_use':
+                logger.info("Model requested tool use")
+                
+                # Find tool use blocks
+                tool_results = []
+                assistant_content = []
+                
+                for block in content_blocks:
+                    if 'toolUse' in block:
+                        tool_use = block['toolUse']
+                        tool_name = tool_use.get('name')
+                        tool_id = tool_use.get('toolUseId')
+                        tool_input = tool_use.get('input', {})
+                        
+                        assistant_content.append(block)
+                        
+                        if tool_name == 'web_search':
+                            query = tool_input.get('query', '')
+                            logger.info(f"Executing web search: {query}")
+                            search_result = await perform_web_search(query)
+                            
+                            tool_results.append({
+                                "toolResult": {
+                                    "toolUseId": tool_id,
+                                    "content": [{"text": search_result}]
+                                }
+                            })
+                    elif 'text' in block:
+                        assistant_content.append(block)
+                    elif 'thinking' in block:
+                        thinking_content = block.get('thinking', '')
+                        thinking_time = round(time.time() - start_time)
+                        assistant_content.append(block)
+                
+                # Add assistant message with tool use to conversation
+                bedrock_messages.append({
+                    "role": "assistant",
+                    "content": assistant_content
+                })
+                
+                # Add tool results as user message
+                bedrock_messages.append({
+                    "role": "user",
+                    "content": tool_results
+                })
+                
+                # Update converse params for next iteration
+                converse_params["messages"] = bedrock_messages
+                continue
+            
+            # No more tool use, extract final response
+            response_text = ""
+            for block in content_blocks:
+                if 'text' in block:
+                    text_content = block['text']
+                    if isinstance(text_content, bytes):
+                        text_content = text_content.decode('utf-8', errors='replace')
+                    response_text += str(text_content)
+                elif 'thinking' in block:
+                    thinking_content = block.get('thinking', '')
+                    thinking_time = round(time.time() - start_time)
+                elif block.get('type') == 'thinking':
+                    thinking_content = block.get('text', '')
+                    thinking_time = round(time.time() - start_time)
+            
+            usage = response.get('usage', {})
+            logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}, iterations={iteration}, usage={usage}")
+            
+            return (response_text, thinking_content, thinking_time)
+        
+        # Max iterations reached
+        logger.warning(f"Max tool use iterations ({max_iterations}) reached")
+        return ("I encountered an issue processing your request. Please try again.", None, None)
+        
+    except boto3.exceptions.Boto3Error as e:
+        logger.error(f"Bedrock boto3 error: {e}")
+        raise HTTPException(status_code=500, detail=f"Bedrock API error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Bedrock Converse API error: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=f"Bedrock API error: {str(e)}")
+
 def get_llm_config(project: dict):
     """
     Get LLM configuration based on project's provider setting.
