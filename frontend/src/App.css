@@ -168,9 +168,14 @@
 
 .message-assistant .message-content {
     background: hsl(var(--secondary));
+    color: hsl(var(--foreground));
     border-radius: 1rem 1rem 1rem 0.25rem;
     max-width: 85%;
     padding: 1rem 1.25rem;
+}
+
+.message-assistant .message-content .prose-content {
+    color: hsl(var(--foreground));
 }
 
 /* Thinking block styles */
