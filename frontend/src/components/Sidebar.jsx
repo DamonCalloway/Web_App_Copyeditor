@@ -125,7 +125,7 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
     <aside className="sidebar" data-testid="sidebar">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <h1 className="font-serif text-lg font-semibold">Editor</h1>
+        <h1 className="font-garamond text-xl font-semibold tracking-tight">Clod Sarnit</h1>
         <Button 
           variant="ghost" 
           size="icon"
