@@ -653,34 +653,35 @@ export default function ChatPage() {
                         variant={extendedThinking ? "default" : "ghost"}
                         size="sm"
                         onClick={() => {
-                          if (llmProvider.startsWith("bedrock")) {
-                            toast.info("Extended Thinking only available with Anthropic Direct API");
+                          // Extended Thinking is available for Anthropic Direct and Bedrock Claude (not Mistral)
+                          if (llmProvider === "bedrock-mistral") {
+                            toast.info("Extended Thinking not available for Mistral");
                             return;
                           }
-                          if (featuresAvailable) {
+                          if (featuresAvailable || llmProvider === "bedrock-claude") {
                             setExtendedThinking(!extendedThinking);
                           } else {
-                            toast.info("Extended Thinking requires direct Anthropic API key");
+                            toast.info("Extended Thinking requires Anthropic API key or Bedrock Claude");
                           }
                         }}
-                        className={`gap-1.5 h-7 px-2 ${extendedThinking && featuresAvailable ? 'bg-primary text-primary-foreground' : ''} ${llmProvider.startsWith("bedrock") || !featuresAvailable ? 'opacity-50' : ''}`}
-                        disabled={llmProvider.startsWith("bedrock") || !featuresAvailable}
+                        className={`gap-1.5 h-7 px-2 ${extendedThinking && (featuresAvailable || llmProvider === "bedrock-claude") ? 'bg-primary text-primary-foreground' : ''} ${llmProvider === "bedrock-mistral" || (!featuresAvailable && llmProvider !== "bedrock-claude") ? 'opacity-50' : ''}`}
+                        disabled={llmProvider === "bedrock-mistral" || (!featuresAvailable && llmProvider !== "bedrock-claude")}
                         data-testid="extended-thinking-toggle"
                       >
-                        <Brain className={`h-3.5 w-3.5 ${extendedThinking && featuresAvailable ? 'animate-pulse' : ''} ${llmProvider.startsWith("bedrock") ? 'opacity-50' : ''}`} />
+                        <Brain className={`h-3.5 w-3.5 ${extendedThinking && (featuresAvailable || llmProvider === "bedrock-claude") ? 'animate-pulse' : ''} ${llmProvider === "bedrock-mistral" ? 'opacity-50' : ''}`} />
                         <span className="text-xs">Think</span>
                       </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{llmProvider.startsWith("bedrock") 
-                      ? "Extended Thinking only available with Anthropic Direct API" 
-                      : (featuresAvailable ? 'Extended Thinking: Claude shows reasoning process' : 'Requires direct Anthropic API key')}</p>
+                    <p>{llmProvider === "bedrock-mistral" 
+                      ? "Extended Thinking not available for Mistral" 
+                      : ((featuresAvailable || llmProvider === "bedrock-claude") ? 'Extended Thinking: Claude shows reasoning process' : 'Requires Anthropic API key or Bedrock Claude')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               
-              {/* Web Search Toggle */}
+              {/* Web Search Toggle - Only available for direct Anthropic API */}
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
