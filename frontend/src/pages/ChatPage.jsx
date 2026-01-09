@@ -386,12 +386,15 @@ export default function ChatPage() {
       await updateProject(project.id, { llm_provider: newProvider });
       setLlmProvider(newProvider);
       
-      // Auto-disable Web Search for all Bedrock providers (not supported)
-      // Auto-disable Extended Thinking only for Mistral (Claude supports it)
-      if (newProvider.startsWith("bedrock")) {
+      // Auto-disable features based on provider capabilities
+      if (newProvider === "bedrock-mistral") {
+        // Mistral doesn't support thinking or web search
+        setExtendedThinking(false);
         setWebSearch(false);
-        if (newProvider === "bedrock-mistral") {
-          setExtendedThinking(false);
+      } else if (newProvider === "bedrock-claude") {
+        // Bedrock Claude supports thinking, and web search if Tavily is configured
+        if (!bedrockWebSearchAvailable) {
+          setWebSearch(false);
         }
       }
       
