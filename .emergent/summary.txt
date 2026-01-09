@@ -2,46 +2,65 @@
 The user wants to create a clone of the Claude Sonnet 4.5 Projects web application.
 
 **PRODUCT REQUIREMENTS:**
-1.  **Core Functionality:** The app should allow users to edit assessment materials using reference documents (style guides, prompts, grammar rules) stored in a persistent knowledge base. This avoids attaching the same documents repeatedly in a chat.
-2.  **Knowledge Base File Types:** Must support PDF, TXT, MD, Word, PNG, JPG/JPEG, BMP.
-3.  **Chat File Attachments:** The chat input must support attaching a wide range of files, including MD, TXT, PDF, DOCX, JSON, Excel, CSV, various image formats, ZIP, RTF, and various media formats.
-4.  **UI/UX:** The graphical user interface should closely replicate the existing Claude.ai GUI, including options for light/dark mode, sidebars, project folders, and chat layout. User has provided screenshots as a reference.
-5.  **LLM Integration:** Integrate with Claude Sonnet 4.5. The user also requested Extended Thinking and Web Search capabilities, similar to those offered by Claude.
-6.  **Authentication:** A single-user mode is acceptable for the initial version, with the possibility of multi-user authentication later.
-7.  **Separable File Storage:** This is a critical requirement. While the app can use local storage during development, it must be architected to allow file storage to be moved to a separate provider, specifically the user's company's S3 bucket, for security reasons if the project is adopted internally.
-8.  **RAG Implementation:** The application must use Retrieval-Augmented Generation (RAG) to query the knowledge base, preventing token limit and rate-limiting issues that arise from including full document contents in the context.
+1.  **Core Functionality:** The app should allow users to edit assessment materials using reference documents (style guides, prompts, grammar rules) stored in a persistent knowledge base.
+2.  **Knowledge Base File Types:** Must support PDF, TXT, MD, Word, and various image formats.
+3.  **Chat File Attachments:** The chat input must support attaching a wide range of file types.
+4.  **UI/UX:** Replicate the Claude.ai GUI, including light/dark mode, sidebars, project folders, and chat layout.
+5.  **LLM Integration:** Integrate with Claude Sonnet 4.5, with Extended Thinking and Web Search capabilities. The user later requested adding AWS Bedrock as an alternative provider for both Claude and Mistral models.
+6.  **Authentication:** A single-user mode is acceptable for the initial version.
+7.  **Separable File Storage:** Architect the app to allow file storage to be moved to a separate S3 bucket.
+8.  **RAG Implementation:** Use Retrieval-Augmented Generation (RAG) to query the knowledge base.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application cloning the Claude.ai interface has been built.
-- **Backend (FastAPI):** Manages projects, conversations, and files. It uses a local  model for embeddings and MongoDB for a vector store to power a RAG system. It integrates directly with the Anthropic API using the user's provided key to enable Extended Thinking and Web Search features.
-- **Frontend (React):** A detailed UI mimicking Claude.ai, with a dark theme, project navigation, a file viewer, markdown rendering, and a chat interface. The chat interface includes toggles for RAG, Extended Thinking, and Web Search, as well as a paperclip icon for attaching files to messages.
-- **Features:** Projects, knowledge base, chat, file viewer, copy-to-clipboard for messages, markdown rendering, and UI for Extended Thinking and Web Search.
+A full-stack application cloning the Claude.ai interface has been built and significantly enhanced.
+- **Backend (FastAPI):** Manages projects, conversations, and files. It uses a local  model for RAG embeddings. It supports three LLM providers:
+    1.  **Anthropic Direct API:** For Claude, enabling Extended Thinking & Web Search.
+    2.  **AWS Bedrock (Claude):** Integrated via  Converse API, pending user model access.
+    3.  **AWS Bedrock (Mistral):** Integrated via  Converse API. Currently suffers from a response corruption bug on long messages.
+- **Frontend (React):** A detailed UI mimicking Claude.ai, with a dark/light theme, project/chat navigation, file viewer, markdown rendering, and a feature-rich chat interface. The chat interface includes an LLM provider dropdown to switch between the three options.
+- **Features:** Projects (CRUD, archive), conversations (CRUD, archive), knowledge base (RAG), chat with file attachments, a file viewer, markdown rendering, and editable Memory/Instructions fields.
 
 **Last working item**:
-    - Last item agent was working: The agent was fixing a bug that occurred when sending a chat message with a file attachment. The backend was constructing an invalid multimodal message payload for the LLM API.
+    - Last item agent was working: The agent was addressing two new issues reported by the user:
+        1.  The Mistral LLM integration, which was thought to be fixed, is still producing garbled/corrupted responses for longer messages.
+        2.  In the UI's light mode, chat message text is white, rendering it invisible against the white background.
+        The agent had just acknowledged both issues and was about to start fixing the light mode UI bug.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? manual testing by curl
+    - Which testing method agent to use? For the UI bug, use the screenshot tool. For the Mistral corruption bug, create a Python script () to reproduce the issue with a long prompt using the  function, then use backend testing agent for verification after the fix.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Failed to send message error when attaching files to a chat message. (P0)
+  - Issue 1: Mistral responses via Bedrock are garbled for long messages. (P0)
+  - Issue 2: Chat message text is invisible in light mode. (P1)
 
   Issues Detail:
   - Issue 1:
-     - Attempted fixes: The agent correctly identified from the backend logs that the error  is due to a malformed multimodal message structure being sent to the  library. The agent was about to implement a fix.
+     - Attempted fixes: The agent initially fixed a similar corruption issue by switching from 's  to a direct  implementation using the newer **Converse API**. This worked for short messages but failed for longer, more complex user prompts, indicating the fix was incomplete.
      - Next debug checklist:
-        1.  Examine the  endpoint in .
-        2.  Locate the section where the  list for the user message is constructed.
-        3.  Modify the logic to ensure that both text and image parts are formatted as dictionaries according to the required structure. For example, image data should be wrapped in a dictionary like  instead of being a raw string.
-        4.  Restart the backend service.
-        5.  Test by attaching an image file and sending a message through the UI.
-     - Why fix this issue and what will be achieved with the fix? Fixing this will make the chat file attachment feature functional, which is a core user requirement.
+        1.  Isolate the problem: Create a new test script () that directly calls the  function in  with a very long prompt to reliably reproduce the corruption, bypassing the frontend.
+        2.  Investigate the streaming logic: The  function uses response streaming. The corruption (e.g., th seCMOS, yor title) strongly suggests an issue with chunk decoding or reassembly.
+        3.  Temporarily disable streaming in the test script by modifying the  call. If the response is clean, the bug is definitively in our streaming implementation.
+        4.  Log the raw response chunks in  before they are processed to check for malformed data coming from the API.
+        5.  Ensure correct  decoding is happening for each chunk.
+     - Why fix this issue and what will be achieved with the fix? The Mistral integration is a critical requirement for the user, serving as a backup to Claude. It is currently unusable for any meaningful work.
      - Status: IN PROGRESS
-     - Is recurring issue? N
+     - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Backend
+     - Blocked on other issue: None
+  - Issue 2:
+     - Attempted fixes: None. The agent just acknowledged the issue.
+     - Next debug checklist:
+        1.  Locate the CSS for chat messages. This is in , within the  block.
+        2.  The  rendering the message content likely has a hardcoded color class like  or .
+        3.  Replace the hardcoded class with a theme-aware Tailwind CSS class, such as , which automatically adapts to light and dark modes. Alternatively, use explicit classes like .
+        4.  Verify the fix by taking a screenshot of the chat page in light mode.
+     - Why fix this issue and what will be achieved with the fix? It's a basic usability bug that makes the application unusable in light mode.
+     - Status: NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
 
 **In progress Task List**:
@@ -49,7 +68,7 @@ A full-stack application cloning the Claude.ai interface has been built.
 
 **Upcoming and Future Tasks**
 Upcoming Tasks:
--   **Task 1 (P1):** Implement a configurable storage backend to support both local storage and Amazon S3, fulfilling a critical original requirement.
+-   **Task 1 (P1):** Implement a configurable storage backend to support both local storage and Amazon S3. This is a pending critical requirement from the original problem statement.
 -   **Task 2 (P2):** Implement multi-user authentication.
 
 Future Tasks:
@@ -58,33 +77,29 @@ Future Tasks:
 -   **Task 5:** Consider adding a slider in project settings to configure the .
 
 **Completed work in this session**
-- **Initial MVP:**
-  - Built the foundational full-stack application (FastAPI + React) with a Claude-like UI.
-  - Implemented project, conversation, and file CRUD operations.
-- **UI/UX Enhancements:**
-  - Added a copy button to chat messages ().
-  - Implemented markdown rendering for chat messages and the file viewer (, ).
-  - Created a file viewer modal for knowledge base files ().
-  - Fixed CSS for rendering lists and blockquotes in markdown ().
-- **Core Feature Implementation:**
-  - **RAG System:** Implemented a full RAG pipeline to avoid API rate limits. This involved:
-    - Text chunking, local embeddings (), and vector storage/search in MongoDB ().
-    - Integrated RAG into file uploads and chat queries ().
-  - **Direct API Key Integration:**
-    - Enabled use of a direct user-provided  to unlock advanced features (, ).
-  - **Extended Thinking:**
-    - Implemented backend logic to request and process thinking content from the LLM ().
-    - Added a collapsible Thought process block to the chat UI ().
-  - **Web Search:**
-    - Implemented a toggle in the UI and backend logic to enable web search capabilities (, ).
-  - **Chat File Attachments (UI):**
-    - Added a paperclip button and file preview chips to the chat input ().
+- **LLM Provider Flexibility:**
+    - Integrated AWS Bedrock as an LLM provider alongside the existing direct Anthropic API.
+    - Added UI in Settings to configure AWS credentials.
+    - Added a dropdown in the chat UI to switch between **Anthropic**, **Bedrock (Claude)**, and **Bedrock (Mistral)**.
+    - Implemented backend logic using  and the AWS **Converse API** to handle Bedrock requests.
+- **Core Feature Enhancements:**
+    - Implemented full CRUD (Create, Rename, Edit, Archive) for Projects and Conversations.
+    - Created a new Chats page to list all conversations.
+    - Added a project selector to the chat page to associate/disassociate chats with projects.
+- **UI/UX Fixes and Improvements:**
+    - **Fixed Bug:** Resolved the Failed to send message error when attaching files to a chat message.
+    - Made Memory and Instructions fields editable on both the Project Detail page and the Chat page's side panel.
+    - Fixed text truncation and wrapping issues in side panels.
+    - Implemented auto-scroll-to-bottom and a manual scroll to bottom button in the chat view.
+    - UI now correctly disables Extended Thinking and Web Search toggles when a Bedrock provider is selected.
 
 **Earlier issues found/mentioned but not fixed**
 - None
 
 **Known issue recurrence from previous fork**
-- None
+  - **Issue recurrence in previous fork:** The Mistral response corruption bug. It was marked as fixed after switching to the Converse API, but the fix was insufficient and the bug reappeared with longer prompts.
+  - **Recurrence count:** 1
+  - **Status:** IN PROGRESS
 
 **Code Architecture**
 
@@ -92,81 +107,86 @@ Future Tasks:
 **Key Technical Concepts**
 - **Backend:** FastAPI, Pydantic
 - **Frontend:** React, Tailwind CSS, Shadcn/UI
-- **Database:** MongoDB (used as both a document store and a vector database).
-- **LLM Integration:**  library for interacting with the Anthropic API.
-- **RAG:** Retrieval-Augmented Generation implemented locally using  for embeddings and MongoDB for vector search.
-- **Multimodality:** Handling text and image uploads for the LLM.
+- **Database:** MongoDB
+- **LLM Integration:**
+  -  library for direct Anthropic API calls.
+  -  library for AWS Bedrock, specifically using the **Converse API**.
+- **RAG:**  for local embeddings and MongoDB for vector search.
 
 **key DB schema**
 -   **projects**: 
 -   **files**: 
--   **rag_chunks**: 
 -   **conversations**: 
 -   **messages**: 
 
 **changes in tech stack**
--   **Embeddings:** Shifted from a cloud-based embedding API to a locally-run  model () due to API incompatibility and for more reliable performance. This required installing  and other related packages.
+-   Added  to the backend stack to directly interact with the AWS Bedrock Converse API, moving away from  for Bedrock calls to resolve reliability issues.
 
 **All files of reference**
--   : The heart of the backend, containing all API logic, direct  calls, and integration with the RAG system. The current bug resides here.
--   : The self-contained RAG module that handles text chunking, local embedding generation, and vector search against MongoDB.
--   : The most complex frontend component, managing chat state, file attachments, and feature toggles (Think/Web/RAG).
--   : Defines all functions for making requests from the frontend to the backend API.
--   : Contains important global styles, especially for rendering markdown content () and the thinking block.
--   : Now contains the user-provided .
+-   : Contains the logic for the Mistral corruption bug within the  function and the main chat endpoint.
+-   : The file to modify to fix the light mode text color bug.
+-   : Was recently modified to fix text wrapping and add edit buttons.
+-   : Contains the UI for Bedrock credentials.
+-   : Contains the user's API keys for Anthropic and AWS Bedrock.
 
 **Areas that need refactoring**:
-- None identified at this moment.
+- The main chat endpoint in  () has grown very large. It contains complex conditional logic for handling RAG, three different LLM providers, and special features. It should be refactored into smaller, more manageable functions.
 
 **key api endpoints**
--   : Sends a simple text message.
--   : Sends a multimodal message with file attachments (CURRENTLY BUGGED).
--   : Retrieves chat history for a conversation.
--   : Uploads a file to the knowledge base.
--   : Triggers re-indexing of all project files for the RAG system.
--   : Checks if advanced features (Extended Thinking, Web Search) are available based on API key configuration.
+-   : Main chat endpoint, handles provider switching.
+-   : For sending messages with file attachments.
+-   : Updates project details (name, settings).
+-   : Archives or un-archives a project.
+-   : Updates conversation details (name, project association).
+-   : Retrieves all non-archived conversations.
+-   : Returns available LLM providers.
+-   : Saves AWS credentials.
+-   : Sets the LLM provider for a specific project.
 
 **Critical Info for New Agent**
--   **API Keys:** The application now operates in two modes. If  is present in , it uses the direct Anthropic API, enabling Extended Thinking and Web Search. If not, it falls back to the , and these features are disabled. The user has provided their direct key.
--   **RAG Implementation:** The RAG system is crucial. It uses the  library running locally for embeddings. This was a deliberate pivot away from a non-functional cloud API. Do not attempt to revert to an API-based embedding approach without good reason.
--   **LLM Calls:** For Extended Thinking, the backend now calls  directly instead of using the  wrapper to be able to capture the thinking process from the raw response.
+-   **Mistral Corruption Bug:** This is the highest priority. The issue is NOT with the Bedrock connection itself but likely with our implementation of the **streaming response** in the  function in . The fix requires a deep dive into the  streaming logic.
+-   **AWS Bedrock Access:** The user has provided valid credentials for Bedrock. They have access to Mistral models, but are still waiting for approval for Claude models on Bedrock.
+-   **Anthropic-Only Features:** Extended Thinking and Web Search are only supported by the direct Anthropic provider. The UI correctly disables these when a Bedrock provider is active.
 
 **documents and test reports created in this job**
--   /app/memory/PRD.md
--   /app/design_guidelines.json
--   /app/test_reports/iteration_1.json
+- None
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Reports a Failed to send message error after attaching a file, with a screenshot showing a block of text appearing and disappearing. (PENDING)
-2.  **User:** Provides confirmation about purchasing more credits.
-3.  **User:** Asks for a paperclip button to be added to the chat for file attachments, specifying a long list of supported file types. (IMPLEMENTED, BUGGY)
-4.  **User:** Confirms the thinking blocks are now visible in the UI and expresses satisfaction.
-5.  **User:** Reports that while the AI says it's using the thinking feature, the user cannot see the thinking blocks in the chat UI. Asks for this to be added, providing a screenshot. (RESOLVED)
-6.  **User:** Expresses satisfaction with the new RAG implementation.
-7.  **User:** Asks for an explanation of RAG and confirms that it should be implemented to solve the rate-limiting issues. (RESOLVED)
-8.  **User:** Inquires about RAG as a solution to the token limit/rate limit issue. (RESOLVED)
-9.  **User:** Reports the Failed to send message error has returned after enabling the direct API key features. (RESOLVED, was a rate-limit issue)
-10. **User:** Asks if providing a direct API key will enable the Think/Web buttons. (RESOLVED)
+1.  **User:** Reports Mistral is still producing garbled text on long responses and that chat text is invisible in light mode. (PENDING)
+2.  **User:** Provides an example of a good, clean Mistral response, confirming the setup works for short prompts. (RESOLVED)
+3.  **User:** Closes an old tab and provides a screenshot showing a clean HELLO response from Mistral, suggesting the previous issue was due to the old tab. (RESOLVED)
+4.  **Agent:** Asks user to close old tabs and test Mistral in a fresh chat.
+5.  **User:** Reports another garbled response claiming to be Claude, even when Mistral is selected. (RESOLVED - due to old tab)
+6.  **Agent:** Disables Extended Thinking for Bedrock providers, suspecting it as the cause of corruption.
+7.  **User:** Suggests that Extended Thinking being enabled for Mistral might be the cause of the garbled output.
+8.  **Agent:** Asks user if they are testing in multiple tabs/windows.
+9.  **User:** Reports a very garbled response from the model, and asks for help troubleshooting the API routing confusion.
+10. **User:** Provides a different, newer model ID for Mistral Large on Bedrock. (IMPLEMENTED)
 
 **Project Health Check:**
--   **Broken:**
-    -   Chat file attachments ( endpoint).
--   **Mocked:**
-    -   None.
+- **Broken:**
+    - Mistral integration for long messages (response corruption).
+    - Chat UI in light mode (invisible text).
+- **Mocked:**
+    - None.
 
 **3rd Party Integrations**
 -   **Anthropic Claude Sonnet 4.5:** Integrated via . Uses a User-provided API Key.
--   **OpenAI Embeddings:** Initially attempted, but now replaced with a local model.
--   **:** Used for local text embeddings. Installed as a Python package.
+-   **AWS Bedrock (via ):** Uses a User-provided API Key.
+    -   **Claude 3.5 Sonnet:** Integrated but pending user access approval from AWS.
+    -   **Mistral Large 3:** Integrated and accessible, but suffers from a response corruption bug on long messages.
+-   **:** Used for local text embeddings.
 
 **Testing status**
--   Testing agent used after significant changes: YES
--   Troubleshoot agent used after agent stuck in loop: N/A
--   Test files created: []
--   Known regressions: The chat file attachment feature is currently broken.
+  - Testing agent used after significant changes: YES
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: []
+  - Known regressions:
+    - Mistral response corruption has recurred after an initial fix.
 
 **Credentials to test flow:**
-The user's Anthropic API key is stored in  as .
+-   The user's Anthropic API key is stored in  as .
+-   The user's AWS credentials for Bedrock are stored in  as  and .
 
 **What agent forgot to execute**
-- The agent has not yet implemented the S3 storage backend, which was a critical initial requirement for the user. This should be prioritized after the current bug fix.</analysis>
+-   The agent has not yet started work on the **S3 storage backend** or **multi-user authentication**, which were part of the original product requirements and are listed in the upcoming tasks.</analysis>
