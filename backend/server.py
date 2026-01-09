@@ -892,9 +892,9 @@ async def call_bedrock_converse_with_tools(
                 add_temp_params = False
                 logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens")
         
+        # Only add temperature (not both temp and topP - Claude 4 doesn't allow both)
         if add_temp_params:
             inference_config["temperature"] = 0.7
-            inference_config["topP"] = 0.9
         
         # Define web search tool
         tool_config = None
