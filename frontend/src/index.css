@@ -103,6 +103,7 @@ code {
 .prose-content {
     font-family: 'Source Serif 4', serif;
     line-height: 1.7;
+    color: hsl(var(--foreground));
 }
 
 .prose-content h1,
