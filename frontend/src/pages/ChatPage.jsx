@@ -188,6 +188,7 @@ export default function ChatPage() {
       setConversation(conv);
       setMessages(msgs);
       setFeaturesAvailable(featureConfig.extended_thinking_available);
+      setBedrockWebSearchAvailable(featureConfig.bedrock_web_search_available || false);
       setAvailableProviders(featureConfig.available_providers || ["anthropic"]);
       setAllProjects(projList);
       
