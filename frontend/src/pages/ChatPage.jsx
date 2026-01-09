@@ -384,10 +384,13 @@ export default function ChatPage() {
       await updateProject(project.id, { llm_provider: newProvider });
       setLlmProvider(newProvider);
       
-      // Auto-disable Extended Thinking and Web Search for Bedrock providers
+      // Auto-disable Web Search for all Bedrock providers (not supported)
+      // Auto-disable Extended Thinking only for Mistral (Claude supports it)
       if (newProvider.startsWith("bedrock")) {
-        setExtendedThinking(false);
         setWebSearch(false);
+        if (newProvider === "bedrock-mistral") {
+          setExtendedThinking(false);
+        }
       }
       
       const providerName = 
