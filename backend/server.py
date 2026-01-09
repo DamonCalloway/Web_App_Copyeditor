@@ -703,9 +703,12 @@ async def call_bedrock_converse(
                     "type": "enabled",
                     "budget_tokens": actual_budget
                 }
+                # max_tokens must be greater than budget_tokens
+                # Ensure max_tokens allows for thinking + actual response
+                inference_config["maxTokens"] = actual_budget + 4000
                 # Thinking is NOT compatible with temperature, top_p, top_k
                 add_temp_params = False
-                logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens")
+                logger.info(f"Extended thinking enabled with budget: {actual_budget} tokens, maxTokens: {inference_config['maxTokens']}")
             else:
                 logger.warning(f"Extended thinking requested but model {model_id} does not support it (requires Claude 3.7 or later)")
         
