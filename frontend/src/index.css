@@ -111,6 +111,17 @@ code {
     color: hsl(var(--foreground));
 }
 
+/* Hyperlink styling in messages */
+.prose-content a {
+    color: #3366CC;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.prose-content a:hover {
+    color: #1a4a99;
+}
+
 .prose-content h1,
 .prose-content h2,
 .prose-content h3 {
