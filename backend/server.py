@@ -1575,6 +1575,7 @@ async def get_feature_config():
     """Check which features are available based on API key configuration"""
     has_direct_anthropic = bool(os.environ.get('ANTHROPIC_API_KEY', ''))
     has_bedrock = bool(os.environ.get('AWS_ACCESS_KEY_ID', '')) and bool(os.environ.get('AWS_SECRET_ACCESS_KEY', ''))
+    has_tavily = tavily_client is not None
     
     available = ["anthropic"]
     if has_bedrock:
@@ -1585,6 +1586,8 @@ async def get_feature_config():
         "web_search_available": has_direct_anthropic,
         "using_direct_anthropic_key": has_direct_anthropic,
         "bedrock_configured": has_bedrock,
+        "tavily_configured": has_tavily,
+        "bedrock_web_search_available": has_bedrock and has_tavily,
         "available_providers": available
     }
 
