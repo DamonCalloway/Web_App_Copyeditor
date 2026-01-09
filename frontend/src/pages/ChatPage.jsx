@@ -453,16 +453,29 @@ export default function ChatPage() {
             </Tooltip>
           </TooltipProvider>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowProjectInfo(!showProjectInfo)}
-            className="gap-1"
-            data-testid="toggle-project-info"
-          >
-            <FolderKanban className="h-4 w-4" />
-            <ChevronDown className={`h-3 w-3 transition-transform ${showProjectInfo ? 'rotate-180' : ''}`} />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowProjectInfo(!showProjectInfo)}
+                  className="gap-1"
+                  data-testid="toggle-project-info"
+                >
+                  {showProjectInfo ? (
+                    <ChevronRight className="h-3 w-3" />
+                  ) : (
+                    <ChevronLeft className="h-3 w-3" />
+                  )}
+                  <FolderKanban className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {showProjectInfo ? 'Close Project Info' : 'View Project Info'}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
