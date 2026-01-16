@@ -1,6 +1,6 @@
-# eStyle Rules for PIB ELA Item Review
+# Style and Usage Rules for Copyediting ELA Items
 
-## a.m., p.m.&#8203;
+## a.m., p.m.
 
   These abbreviations should be set in lowercase with periods. In order to avoid confusion, references to "12:00 a.m." and "12:00 p.m." should be expressed as "midnight" and "noon."
 
