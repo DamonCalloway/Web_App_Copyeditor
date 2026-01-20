@@ -262,6 +262,11 @@ export default function ChatPage() {
     setAttachedFiles([]);
     setSending(true);
     
+    // Reset textarea height after sending
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+    
     // Build message content display
     const fileNames = filesToSend.map(f => f.name).join(", ");
     const displayContent = fileNames 
