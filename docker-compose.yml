@@ -1,0 +1,86 @@
+# Docker Compose for local development and testing
+version: '3.8'
+
+services:
+  # MongoDB for local development
+  mongodb:
+    image: mongo:7.0
+    container_name: clod-sarnet-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - clod-sarnet-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clod-sarnet-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # MongoDB
+      MONGO_URL: mongodb://admin:password123@mongodb:27017/
+      DB_NAME: clod_sarnet
+
+      # Storage (local for dev, switch to S3 for production)
+      STORAGE_PROVIDER: local
+      LOCAL_STORAGE_PATH: /app/uploads
+
+      # AWS Credentials (for Bedrock)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+
+      # Bedrock Models
+      BEDROCK_CLAUDE_MODEL_ID: ${BEDROCK_CLAUDE_MODEL_ID:-us.anthropic.claude-sonnet-4-20250514-v1:0}
+      BEDROCK_MISTRAL_MODEL_ID: ${BEDROCK_MISTRAL_MODEL_ID:-mistral.mistral-large-2407-v1:0}
+
+      # Optional: Anthropic Direct API (if you want to use direct API instead of Bedrock)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+
+      # Optional: Tavily for web search
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+
+      # Emergent LLM Key (fallback for embeddings)
+      EMERGENT_LLM_KEY: ${EMERGENT_LLM_KEY:-}
+
+      # CORS
+      CORS_ORIGINS: http://localhost:3000,http://localhost
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - mongodb
+    networks:
+      - clod-sarnet-network
+
+  # Frontend (for local testing)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clod-sarnet-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - clod-sarnet-network
+
+networks:
+  clod-sarnet-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
