@@ -816,18 +816,24 @@ export default function ChatPage() {
                 </Tooltip>
               </TooltipProvider>
               
-              {/* Text input */}
+              {/* Text input - auto-expanding */}
               <div className="relative flex-1">
                 <Textarea
                   ref={textareaRef}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    // Auto-resize textarea
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+                  }}
                   onKeyDown={handleKeyDown}
                   placeholder="Message..."
-                  className="chat-input pr-12"
+                  className="chat-input pr-12 min-h-[44px] max-h-[200px] resize-none overflow-y-auto"
                   rows={1}
                   disabled={sending}
                   data-testid="chat-input"
+                  style={{ height: 'auto' }}
                 />
                 <Button
                   size="icon"
