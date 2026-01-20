@@ -160,6 +160,20 @@
     color: hsl(var(--primary-foreground));
 }
 
+/* Blockquote styling for user messages - ensure readable contrast */
+.message-user .message-content blockquote {
+    border-left: 3px solid rgba(255, 255, 255, 0.5);
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+}
+
+.message-user .message-content blockquote p {
+    color: hsl(var(--primary-foreground));
+}
+
 .message-assistant {
     display: flex;
     flex-direction: column;
@@ -175,6 +189,20 @@
 }
 
 .message-assistant .message-content .prose-content {
+    color: hsl(var(--foreground));
+}
+
+/* Blockquote styling for assistant messages */
+.message-assistant .message-content blockquote {
+    border-left: 3px solid hsl(var(--primary));
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+    background: hsl(var(--muted));
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+}
+
+.message-assistant .message-content blockquote p {
     color: hsl(var(--foreground));
 }
 
