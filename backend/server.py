@@ -245,7 +245,11 @@ def get_file_type(filename: str) -> str:
     return type_map.get(ext, 'FILE')
 
 async def extract_text_content(file_content: bytes, filename: str, mime_type: str) -> str:
-    """Extract text content from files for indexing"""
+    """
+    Extract text content from files for RAG INDEXING (not chat attachments).
+    This is intentionally limited to create manageable chunks for vector search.
+    For full document content in chat, see the /chat/with-files endpoint.
+    """
     try:
         if mime_type == 'text/plain' or mime_type == 'text/markdown':
             return file_content.decode('utf-8', errors='ignore')[:5000]
