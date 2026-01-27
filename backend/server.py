@@ -1439,13 +1439,16 @@ When the user asks you to edit something or check against style guides, proactiv
             # Web search is supported for Bedrock Claude if Tavily is configured
             bedrock_web_search = use_web_search and provider_type == "bedrock-claude" and tavily_client is not None
             
-            logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, web_search={bedrock_web_search}")
+            # KB tools are enabled when knowledge base toggle is ON for Bedrock Claude
+            bedrock_kb_tools = request.include_knowledge_base and provider_type == "bedrock-claude" and len(kb_files_list) > 0
             
-            # Note: Extended Thinking and Web Search (tool use) cannot be used together on Bedrock
+            logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, web_search={bedrock_web_search}, kb_tools={bedrock_kb_tools}")
+            
+            # Note: Extended Thinking and tools (web search/KB) cannot be used together on Bedrock
             # When thinking is enabled, tool use requires special handling of thinking blocks
-            # For now, prioritize web search if both are requested
-            if bedrock_extended_thinking and bedrock_web_search:
-                logger.warning("Both extended thinking and web search requested - disabling extended thinking (they conflict on Bedrock)")
+            # Prioritize tools over thinking if both are requested
+            if bedrock_extended_thinking and (bedrock_web_search or bedrock_kb_tools):
+                logger.warning("Extended thinking conflicts with tools - disabling extended thinking")
                 bedrock_extended_thinking = False
             
             response_text, thinking_content, thinking_time = await call_bedrock_converse_with_tools(
@@ -1455,7 +1458,9 @@ When the user asks you to edit something or check against style guides, proactiv
                 max_tokens=4000,
                 extended_thinking=bedrock_extended_thinking,
                 thinking_budget=thinking_budget,
-                enable_web_search=bedrock_web_search
+                enable_web_search=bedrock_web_search,
+                enable_kb_tools=bedrock_kb_tools,
+                project_id=conv["project_id"]
             )
         else:
             # Use litellm for Anthropic Direct API
