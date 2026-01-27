@@ -822,6 +822,133 @@ async def perform_web_search(query: str) -> str:
         return f"Web search failed: {str(e)}"
 
 
+async def retrieve_kb_file_content(project_id: str, filename: str) -> str:
+    """
+    Retrieve the full content of a specific file from the knowledge base.
+    Called by Claude via tool use when it needs to access a file.
+    """
+    try:
+        # Find the file in the database
+        file_record = await db.files.find_one(
+            {"project_id": project_id, "original_filename": {"$regex": filename, "$options": "i"}},
+            {"_id": 0}
+        )
+        
+        if not file_record:
+            # Try partial match
+            all_files = await db.files.find({"project_id": project_id}, {"_id": 0}).to_list(100)
+            for f in all_files:
+                if filename.lower() in f['original_filename'].lower():
+                    file_record = f
+                    break
+        
+        if not file_record:
+            return f"File '{filename}' not found in knowledge base."
+        
+        # Read full content from storage
+        file_path = LOCAL_STORAGE_PATH / file_record['storage_path']
+        if not file_path.exists():
+            return f"File '{filename}' exists in database but file not found on disk."
+        
+        content_bytes = file_path.read_bytes()
+        ext = file_record['file_type'].lower()
+        
+        if ext in ['txt', 'md']:
+            content = content_bytes.decode('utf-8', errors='ignore')
+        elif ext == 'pdf':
+            from PyPDF2 import PdfReader
+            import io
+            reader = PdfReader(io.BytesIO(content_bytes))
+            pages_text = []
+            for i, page in enumerate(reader.pages):
+                page_text = page.extract_text() or ""
+                if page_text.strip():
+                    pages_text.append(f"[Page {i+1}]\n{page_text}")
+            content = "\n\n".join(pages_text)
+        elif ext == 'docx':
+            from docx import Document
+            import io
+            doc = Document(io.BytesIO(content_bytes))
+            content = "\n".join([p.text for p in doc.paragraphs])
+        else:
+            content = f"[Cannot extract text from {ext} files]"
+        
+        logger.info(f"KB file retrieved: {file_record['original_filename']}, {len(content)} chars")
+        return f"# {file_record['original_filename']}\n\n{content}"
+        
+    except Exception as e:
+        logger.error(f"KB file retrieval error: {e}")
+        return f"Error retrieving file: {str(e)}"
+
+
+async def search_within_kb_files(project_id: str, search_term: str) -> str:
+    """
+    Search for a term within all knowledge base files.
+    Returns matching excerpts from files that contain the term.
+    """
+    try:
+        all_files = await db.files.find(
+            {"project_id": project_id, "indexed": True},
+            {"_id": 0}
+        ).to_list(100)
+        
+        results = []
+        for file_record in all_files:
+            try:
+                file_path = LOCAL_STORAGE_PATH / file_record['storage_path']
+                if not file_path.exists():
+                    continue
+                
+                content_bytes = file_path.read_bytes()
+                ext = file_record['file_type'].lower()
+                
+                if ext in ['txt', 'md']:
+                    content = content_bytes.decode('utf-8', errors='ignore')
+                elif ext == 'pdf':
+                    from PyPDF2 import PdfReader
+                    import io
+                    reader = PdfReader(io.BytesIO(content_bytes))
+                    content = "\n".join([page.extract_text() or "" for page in reader.pages])
+                elif ext == 'docx':
+                    from docx import Document
+                    import io
+                    doc = Document(io.BytesIO(content_bytes))
+                    content = "\n".join([p.text for p in doc.paragraphs])
+                else:
+                    continue
+                
+                # Search for term (case-insensitive)
+                if search_term.lower() in content.lower():
+                    # Find excerpts containing the term
+                    lines = content.split('\n')
+                    matching_lines = []
+                    for i, line in enumerate(lines):
+                        if search_term.lower() in line.lower():
+                            # Get context (2 lines before and after)
+                            start = max(0, i - 2)
+                            end = min(len(lines), i + 3)
+                            excerpt = '\n'.join(lines[start:end])
+                            matching_lines.append(excerpt)
+                            if len(matching_lines) >= 3:  # Max 3 excerpts per file
+                                break
+                    
+                    if matching_lines:
+                        results.append(f"## {file_record['original_filename']}\n\n" + "\n\n---\n\n".join(matching_lines))
+            except Exception as e:
+                logger.error(f"Error searching {file_record['original_filename']}: {e}")
+                continue
+        
+        if results:
+            logger.info(f"KB search for '{search_term}' found matches in {len(results)} files")
+            return f"# Search results for '{search_term}'\n\n" + "\n\n===\n\n".join(results)
+        else:
+            return f"No matches found for '{search_term}' in the knowledge base."
+            
+    except Exception as e:
+        logger.error(f"KB search error: {e}")
+        return f"Error searching knowledge base: {str(e)}"
+
+
 async def call_bedrock_converse_with_tools(
     model_id: str, 
     messages: List[dict], 
