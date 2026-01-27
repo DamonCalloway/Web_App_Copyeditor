@@ -264,7 +264,7 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e) => handleRenameConv(conv.id, conv.name, e)}>
+                      <DropdownMenuItem onClick={() => handleRenameConv(conv.id, conv.name)}>
                         <Edit2 className="h-4 w-4 mr-2" />
                         Rename
                       </DropdownMenuItem>
