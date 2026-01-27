@@ -87,8 +87,7 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
     }
   };
 
-  const handleRenameConv = async (convId, currentName, e) => {
-    e.stopPropagation();
+  const handleRenameConv = async (convId, currentName) => {
     const newName = window.prompt("Rename conversation:", currentName);
     if (!newName || newName === currentName) return;
     try {
