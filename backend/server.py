@@ -1029,32 +1029,72 @@ async def call_bedrock_converse_with_tools(
         if add_temp_params:
             inference_config["temperature"] = 0.7
         
-        # Define web search tool
-        tool_config = None
+        # Build tools list
+        tools_list = []
+        
+        # Web search tool
         if enable_web_search and tavily_client:
-            tool_config = {
-                "tools": [
-                    {
-                        "toolSpec": {
-                            "name": "web_search",
-                            "description": "Search the web for current information, news, facts, or any topic. Use this when you need up-to-date information or don't have knowledge about something.",
-                            "inputSchema": {
-                                "json": {
-                                    "type": "object",
-                                    "properties": {
-                                        "query": {
-                                            "type": "string",
-                                            "description": "The search query to look up on the web"
-                                        }
-                                    },
-                                    "required": ["query"]
+            tools_list.append({
+                "toolSpec": {
+                    "name": "web_search",
+                    "description": "Search the web for current information, news, facts, or any topic. Use this when you need up-to-date information or don't have knowledge about something.",
+                    "inputSchema": {
+                        "json": {
+                            "type": "object",
+                            "properties": {
+                                "query": {
+                                    "type": "string",
+                                    "description": "The search query to look up on the web"
                                 }
-                            }
+                            },
+                            "required": ["query"]
                         }
                     }
-                ]
-            }
-            logger.info("Web search tool enabled for this request")
+                }
+            })
+            logger.info("Web search tool enabled")
+        
+        # Knowledge Base tools
+        if enable_kb_tools and project_id:
+            tools_list.append({
+                "toolSpec": {
+                    "name": "get_kb_file",
+                    "description": "Retrieve the complete contents of a specific file from the knowledge base. Use this when you need to reference, check, or quote information from a file in the knowledge base.",
+                    "inputSchema": {
+                        "json": {
+                            "type": "object",
+                            "properties": {
+                                "filename": {
+                                    "type": "string",
+                                    "description": "The name (or partial name) of the file to retrieve from the knowledge base"
+                                }
+                            },
+                            "required": ["filename"]
+                        }
+                    }
+                }
+            })
+            tools_list.append({
+                "toolSpec": {
+                    "name": "search_kb",
+                    "description": "Search for a specific term or phrase across all files in the knowledge base. Use this to find information without loading entire files, or to check if a word/phrase appears in any reference document.",
+                    "inputSchema": {
+                        "json": {
+                            "type": "object",
+                            "properties": {
+                                "search_term": {
+                                    "type": "string",
+                                    "description": "The term or phrase to search for in the knowledge base files"
+                                }
+                            },
+                            "required": ["search_term"]
+                        }
+                    }
+                }
+            })
+            logger.info("Knowledge base tools enabled")
+        
+        tool_config = {"tools": tools_list} if tools_list else None
         
         # Build converse params
         converse_params = {
@@ -1070,10 +1110,10 @@ async def call_bedrock_converse_with_tools(
         if tool_config:
             converse_params["toolConfig"] = tool_config
         
-        logger.info(f"Bedrock Converse API call: model={model_id}, messages={len(bedrock_messages)}, web_search={enable_web_search}")
+        logger.info(f"Bedrock Converse API call: model={model_id}, messages={len(bedrock_messages)}, web_search={enable_web_search}, kb_tools={enable_kb_tools}")
         
         # Call Bedrock and handle tool use loop
-        max_iterations = 3  # Prevent infinite loops
+        max_iterations = 5  # Allow more iterations for KB lookups
         iteration = 0
         
         while iteration < max_iterations:
