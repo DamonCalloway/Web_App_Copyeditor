@@ -956,11 +956,14 @@ async def call_bedrock_converse_with_tools(
     max_tokens: int = 4000,
     extended_thinking: bool = False,
     thinking_budget: int = 10000,
-    enable_web_search: bool = False
+    enable_web_search: bool = False,
+    enable_kb_tools: bool = False,
+    project_id: str = None
 ) -> tuple:
     """
-    Call AWS Bedrock using the Converse API with optional tool use (web search).
-    Handles the tool use loop for web search.
+    Call AWS Bedrock using the Converse API with optional tool use.
+    Supports: web search (Tavily), knowledge base file retrieval.
+    Handles the tool use loop.
     Returns: (response_text, thinking_content, thinking_time)
     """
     import time
