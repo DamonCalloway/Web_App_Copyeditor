@@ -1409,9 +1409,10 @@ async def chat_with_files(
                     "url": f"data:{mime_type};base64,{b64_content}"
                 }
             })
-        # Text-based files - extract content
+        # Text-based files - extract FULL content
         elif ext in ['txt', 'md', 'json', 'csv', 'rtf']:
-            text_content = content.decode('utf-8', errors='ignore')[:10000]
+            text_content = content.decode('utf-8', errors='ignore')
+            logger.info(f"Text file extracted: {file.filename}, {len(text_content)} chars")
             file_contents.append({
                 "type": "text",
                 "filename": file.filename,
