@@ -1322,86 +1322,33 @@ async def chat_with_ai(request: ChatRequest):
     if project.get("memory"):
         system_parts.append(f"# Project Memory/Context\n{project['memory']}")
     
-    # Use RAG to retrieve relevant knowledge base content
-    retrieved_sources = []
+    # Knowledge Base - provide file list and enable tools (not full content)
+    kb_files_list = []
     if request.include_knowledge_base:
         try:
             # Get all indexed files for this project
             project_files = await db.files.find(
                 {"project_id": conv["project_id"], "indexed": True}, 
-                {"_id": 0}
-            ).to_list(50)
+                {"_id": 0, "original_filename": 1, "file_type": 1}
+            ).to_list(100)
             
             if project_files:
-                kb_content_parts = []
-                total_chars = 0
-                max_kb_chars = 500000  # ~125K tokens - Claude 4.5 has 200K context
+                kb_files_list = [f['original_filename'] for f in project_files]
                 
-                for f in project_files:
-                    if total_chars >= max_kb_chars:
-                        logger.warning(f"Knowledge base content limit reached ({total_chars} chars)")
-                        break
-                    
-                    file_content = None
-                    
-                    # Try to get full content from storage
-                    try:
-                        file_path = LOCAL_STORAGE_PATH / f['storage_path']
-                        if file_path.exists():
-                            content_bytes = file_path.read_bytes()
-                            ext = f['file_type'].lower()
-                            
-                            if ext in ['txt', 'md']:
-                                file_content = content_bytes.decode('utf-8', errors='ignore')
-                            elif ext == 'pdf':
-                                from PyPDF2 import PdfReader
-                                import io
-                                reader = PdfReader(io.BytesIO(content_bytes))
-                                pages_text = []
-                                for i, page in enumerate(reader.pages):
-                                    page_text = page.extract_text() or ""
-                                    if page_text.strip():
-                                        pages_text.append(f"[Page {i+1}]\n{page_text}")
-                                file_content = "\n\n".join(pages_text)
-                            elif ext == 'docx':
-                                from docx import Document
-                                import io
-                                doc = Document(io.BytesIO(content_bytes))
-                                file_content = "\n".join([p.text for p in doc.paragraphs])
-                    except Exception as e:
-                        logger.error(f"Failed to read full content for {f['original_filename']}: {e}")
-                    
-                    # Fallback to content_preview if full content not available
-                    if not file_content and f.get("content_preview"):
-                        file_content = f["content_preview"]
-                    
-                    if file_content:
-                        # Trim if this single file would exceed remaining space
-                        remaining = max_kb_chars - total_chars
-                        if len(file_content) > remaining:
-                            file_content = file_content[:remaining] + "\n\n[Content truncated due to size...]"
-                        
-                        kb_content_parts.append(f"## {f['original_filename']}\n\n{file_content}")
-                        total_chars += len(file_content)
-                        retrieved_sources.append(f['original_filename'])
-                
-                if kb_content_parts:
-                    kb_section = "# Knowledge Base Files\n\n" + "\n\n---\n\n".join(kb_content_parts)
-                    system_parts.append(kb_section)
-                    logger.info(f"Knowledge base: {len(retrieved_sources)} files, {total_chars} chars total")
+                # Add file list to system message so Claude knows what's available
+                file_list_text = "\n".join([f"  - {name}" for name in kb_files_list])
+                kb_info = f"""# Knowledge Base
+
+You have access to the following reference files in the knowledge base. Use the `get_kb_file` tool to retrieve the full content of a specific file, or use the `search_kb` tool to search for a term across all files.
+
+**Available Files:**
+{file_list_text}
+
+When the user asks you to edit something or check against style guides, proactively use these tools to look up relevant information."""
+                system_parts.append(kb_info)
+                logger.info(f"Knowledge base: {len(kb_files_list)} files available via tools")
         except Exception as e:
-            logger.error(f"Knowledge base retrieval failed: {e}")
-            # Minimal fallback
-            files = await db.files.find(
-                {"project_id": conv["project_id"], "indexed": True}, 
-                {"_id": 0}
-            ).to_list(10)
-            if files:
-                kb_content = "# Knowledge Base (fallback)\n\n"
-                for f in files[:3]:
-                    if f.get("content_preview"):
-                        kb_content += f"## {f['original_filename']}\n{f['content_preview']}\n\n"
-                system_parts.append(kb_content)
+            logger.error(f"Knowledge base setup failed: {e}")
     
     system_message = "\n\n".join(system_parts) if system_parts else "You are a helpful AI assistant for editing assessment materials."
     
