@@ -1141,17 +1141,42 @@ async def call_bedrock_converse_with_tools(
                         
                         assistant_content.append(block)
                         
+                        # Handle web search tool
                         if tool_name == 'web_search':
                             query = tool_input.get('query', '')
                             logger.info(f"Executing web search: {query}")
                             search_result = await perform_web_search(query)
-                            
                             tool_results.append({
                                 "toolResult": {
                                     "toolUseId": tool_id,
                                     "content": [{"text": search_result}]
                                 }
                             })
+                        
+                        # Handle KB file retrieval tool
+                        elif tool_name == 'get_kb_file':
+                            filename = tool_input.get('filename', '')
+                            logger.info(f"Retrieving KB file: {filename}")
+                            file_content = await retrieve_kb_file_content(project_id, filename)
+                            tool_results.append({
+                                "toolResult": {
+                                    "toolUseId": tool_id,
+                                    "content": [{"text": file_content}]
+                                }
+                            })
+                        
+                        # Handle KB search tool
+                        elif tool_name == 'search_kb':
+                            search_term = tool_input.get('search_term', '')
+                            logger.info(f"Searching KB for: {search_term}")
+                            search_result = await search_within_kb_files(project_id, search_term)
+                            tool_results.append({
+                                "toolResult": {
+                                    "toolUseId": tool_id,
+                                    "content": [{"text": search_result}]
+                                }
+                            })
+                        
                     elif 'text' in block:
                         assistant_content.append(block)
                     elif 'thinking' in block:
