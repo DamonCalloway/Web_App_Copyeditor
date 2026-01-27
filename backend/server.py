@@ -1417,13 +1417,20 @@ async def chat_with_files(
                 "filename": file.filename,
                 "content": text_content
             })
-        # PDF files
+        # PDF files - extract FULL content
         elif ext == 'pdf':
             try:
                 from PyPDF2 import PdfReader
                 import io
                 reader = PdfReader(io.BytesIO(content))
-                text = "\n".join([page.extract_text() or "" for page in reader.pages[:20]])[:10000]
+                # Extract ALL pages, no truncation
+                text_parts = []
+                for i, page in enumerate(reader.pages):
+                    page_text = page.extract_text() or ""
+                    if page_text.strip():
+                        text_parts.append(f"[Page {i+1}]\n{page_text}")
+                text = "\n\n".join(text_parts)
+                logger.info(f"PDF extracted: {file.filename}, {len(reader.pages)} pages, {len(text)} chars")
                 file_contents.append({
                     "type": "text",
                     "filename": file.filename,
@@ -1432,13 +1439,15 @@ async def chat_with_files(
             except Exception as e:
                 logger.error(f"PDF extraction failed: {e}")
                 file_contents.append({"type": "text", "filename": file.filename, "content": f"[PDF file: {file.filename}]"})
-        # DOCX files
+        # DOCX files - extract FULL content
         elif ext == 'docx':
             try:
                 from docx import Document
                 import io
                 doc = Document(io.BytesIO(content))
-                text = "\n".join([p.text for p in doc.paragraphs])[:10000]
+                # Extract ALL paragraphs, no truncation
+                text = "\n".join([p.text for p in doc.paragraphs])
+                logger.info(f"DOCX extracted: {file.filename}, {len(text)} chars")
                 file_contents.append({
                     "type": "text",
                     "filename": file.filename,
