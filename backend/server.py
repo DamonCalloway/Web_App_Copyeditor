@@ -1140,7 +1140,7 @@ async def chat_with_ai(request: ChatRequest):
             if project_files:
                 kb_content_parts = []
                 total_chars = 0
-                max_kb_chars = 150000  # ~37K tokens, leave room for conversation
+                max_kb_chars = 500000  # ~125K tokens - Claude 4.5 has 200K context
                 
                 for f in project_files:
                     if total_chars >= max_kb_chars:
