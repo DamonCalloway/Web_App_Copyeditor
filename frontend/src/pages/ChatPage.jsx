@@ -394,6 +394,15 @@ export default function ChatPage() {
     return lines.slice(0, maxLines).join('\n');
   };
 
+  // Save Think/Web settings to conversation (persisted)
+  const saveConversationSettings = async (settings) => {
+    try {
+      await updateConversation(conversationId, settings);
+    } catch (error) {
+      console.error("Failed to save conversation settings:", error);
+    }
+  };
+
   const handleProviderChange = async (newProvider) => {
     if (!project) {
       toast.error("Please associate chat with a project first");
@@ -404,16 +413,25 @@ export default function ChatPage() {
       setLlmProvider(newProvider);
       
       // Auto-disable features based on provider capabilities
+      let newThinking = extendedThinking;
+      let newWebSearch = webSearch;
+      
       if (newProvider === "bedrock-mistral") {
         // Mistral doesn't support thinking or web search
+        newThinking = false;
+        newWebSearch = false;
         setExtendedThinking(false);
         setWebSearch(false);
       } else if (newProvider === "bedrock-claude") {
         // Bedrock Claude supports thinking, and web search if Tavily is configured
         if (!bedrockWebSearchAvailable) {
+          newWebSearch = false;
           setWebSearch(false);
         }
       }
+      
+      // Save the updated settings
+      await saveConversationSettings({ extended_thinking: newThinking, web_search: newWebSearch });
       
       const providerName = 
         newProvider === "bedrock-claude" ? "AWS Bedrock (Claude)" :
