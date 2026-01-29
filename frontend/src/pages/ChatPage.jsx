@@ -757,7 +757,7 @@ export default function ChatPage() {
                       <Button
                         variant={webSearch ? "default" : "ghost"}
                         size="sm"
-                        onClick={() => {
+                        onClick={async () => {
                           // Web search available for:
                           // 1. Direct Anthropic API (featuresAvailable)
                           // 2. Bedrock Claude with Tavily configured (bedrockWebSearchAvailable)
@@ -770,12 +770,18 @@ export default function ChatPage() {
                           }
                           if (canUseWebSearch) {
                             const newValue = !webSearch;
+                            let newThinking = extendedThinking;
                             setWebSearch(newValue);
+                            
                             // On Bedrock Claude, Think and Web Search conflict - disable the other
                             if (newValue && llmProvider === "bedrock-claude" && extendedThinking) {
+                              newThinking = false;
                               setExtendedThinking(false);
                               toast.info("Extended Thinking disabled - cannot use both with Bedrock");
                             }
+                            
+                            // Save to conversation (persisted)
+                            await saveConversationSettings({ extended_thinking: newThinking, web_search: newValue });
                           } else if (llmProvider === "bedrock-claude" && !bedrockWebSearchAvailable) {
                             toast.info("Web Search requires Tavily API key to be configured");
                           } else {
