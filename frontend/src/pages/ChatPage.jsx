@@ -708,7 +708,7 @@ export default function ChatPage() {
                       <Button
                         variant={extendedThinking ? "default" : "ghost"}
                         size="sm"
-                        onClick={() => {
+                        onClick={async () => {
                           // Extended Thinking is available for Anthropic Direct and Bedrock Claude (not Mistral)
                           if (llmProvider === "bedrock-mistral") {
                             toast.info("Extended Thinking not available for Mistral");
@@ -716,12 +716,18 @@ export default function ChatPage() {
                           }
                           if (featuresAvailable || llmProvider === "bedrock-claude") {
                             const newValue = !extendedThinking;
+                            let newWebSearch = webSearch;
                             setExtendedThinking(newValue);
+                            
                             // On Bedrock Claude, Think and Web Search conflict - disable the other
                             if (newValue && llmProvider === "bedrock-claude" && webSearch) {
+                              newWebSearch = false;
                               setWebSearch(false);
                               toast.info("Web Search disabled - cannot use both with Bedrock");
                             }
+                            
+                            // Save to conversation (persisted)
+                            await saveConversationSettings({ extended_thinking: newValue, web_search: newWebSearch });
                           } else {
                             toast.info("Extended Thinking requires Anthropic API key or Bedrock Claude");
                           }
