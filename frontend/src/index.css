@@ -20,6 +20,30 @@ code {
     font-family: 'EB Garamond', 'Garamond', 'Times New Roman', serif;
 }
 
+/* File content viewer scrollbar - always visible */
+.file-content-viewer {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+}
+
+.file-content-viewer::-webkit-scrollbar {
+    width: 10px;
+}
+
+.file-content-viewer::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 5px;
+}
+
+.file-content-viewer::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 5px;
+}
+
+.file-content-viewer::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
