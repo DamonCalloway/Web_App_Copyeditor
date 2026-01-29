@@ -104,6 +104,8 @@ class ConversationUpdate(BaseModel):
     project_id: Optional[str] = None
     starred: Optional[bool] = None
     archived: Optional[bool] = None
+    extended_thinking: Optional[bool] = None
+    web_search: Optional[bool] = None
 
 class Conversation(ConversationBase):
     model_config = ConfigDict(extra="ignore")
@@ -112,6 +114,8 @@ class Conversation(ConversationBase):
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     starred: bool = False
     archived: bool = False
+    extended_thinking: bool = False
+    web_search: bool = False
 
 class Message(BaseModel):
     model_config = ConfigDict(extra="ignore")
