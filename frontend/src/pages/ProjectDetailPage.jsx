@@ -584,10 +584,17 @@ export default function ProjectDetailPage() {
                 style={{ border: 'none' }}
               />
             ) : fileContent?.type === 'text' ? (
-              <div className="file-content-viewer h-full overflow-auto">
+              <div className="file-content-viewer h-full overflow-y-scroll" style={{ scrollbarWidth: 'thin', scrollbarGutter: 'stable' }}>
                 {viewingFile?.file_type === 'MD' ? (
                   <div className="prose-content prose-sm max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({node, ...props}) => (
+                          <a {...props} target="_blank" rel="noopener noreferrer" />
+                        )
+                      }}
+                    >
                       {fileContent.content}
                     </ReactMarkdown>
                   </div>
