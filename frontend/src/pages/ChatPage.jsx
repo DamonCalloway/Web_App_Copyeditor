@@ -192,6 +192,15 @@ export default function ChatPage() {
       setAvailableProviders(featureConfig.available_providers || ["anthropic"]);
       setAllProjects(projList);
       
+      // Load Think/Web settings from conversation (persisted per conversation)
+      // These override project defaults
+      if (conv.extended_thinking !== undefined) {
+        setExtendedThinking(conv.extended_thinking);
+      }
+      if (conv.web_search !== undefined) {
+        setWebSearch(conv.web_search);
+      }
+      
       // Load project and files
       if (conv.project_id) {
         const [proj, filesList] = await Promise.all([
@@ -203,9 +212,12 @@ export default function ChatPage() {
         setInstructionsText(proj.instructions || "");
         setMemoryText(proj.memory || "");
         setLlmProvider(proj.llm_provider || "anthropic");
-        // Set defaults from project settings
-        setExtendedThinking(proj.extended_thinking_enabled || false);
-        setWebSearch(proj.web_search_enabled || false);
+        
+        // Only use project defaults if conversation doesn't have settings yet
+        if (conv.extended_thinking === undefined && conv.web_search === undefined) {
+          setExtendedThinking(proj.extended_thinking_enabled || false);
+          setWebSearch(proj.web_search_enabled || false);
+        }
       } else {
         setProject(null);
         setFiles([]);
