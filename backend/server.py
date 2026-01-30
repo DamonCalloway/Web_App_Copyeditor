@@ -17,6 +17,9 @@ import asyncio
 from rag import RAGIndex, retrieve_context_for_query
 import boto3
 from tavily import TavilyClient
+from PIL import Image as PILImage
+from io import BytesIO
+import base64
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
