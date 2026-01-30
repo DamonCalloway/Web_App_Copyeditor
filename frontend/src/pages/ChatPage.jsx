@@ -790,12 +790,15 @@ export default function ChatPage() {
                         variant={extendedThinking ? "default" : "ghost"}
                         size="sm"
                         onClick={async () => {
-                          // Extended Thinking is available for Anthropic Direct and Bedrock Claude (not Mistral)
-                          if (llmProvider === "bedrock-mistral") {
-                            toast.info("Extended Thinking not available for Mistral");
+                          // Extended Thinking is only available for Anthropic Direct and Bedrock Claude
+                          const supportsThinking = llmProvider === "anthropic" || llmProvider === "bedrock-claude";
+                          const thinkingEnabled = (featuresAvailable && llmProvider === "anthropic") || llmProvider === "bedrock-claude";
+                          
+                          if (!supportsThinking) {
+                            toast.info("Extended Thinking only available for Claude models");
                             return;
                           }
-                          if (featuresAvailable || llmProvider === "bedrock-claude") {
+                          if (thinkingEnabled) {
                             const newValue = !extendedThinking;
                             let newWebSearch = webSearch;
                             setExtendedThinking(newValue);
@@ -813,18 +816,18 @@ export default function ChatPage() {
                             toast.info("Extended Thinking requires Anthropic API key or Bedrock Claude");
                           }
                         }}
-                        className={`gap-1.5 h-7 px-2 ${extendedThinking && (featuresAvailable || llmProvider === "bedrock-claude") ? 'bg-primary text-primary-foreground' : ''} ${llmProvider === "bedrock-mistral" || (!featuresAvailable && llmProvider !== "bedrock-claude") ? 'opacity-50' : ''}`}
-                        disabled={llmProvider === "bedrock-mistral" || (!featuresAvailable && llmProvider !== "bedrock-claude")}
+                        className={`gap-1.5 h-7 px-2 ${extendedThinking && (featuresAvailable || llmProvider === "bedrock-claude") ? 'bg-primary text-primary-foreground' : ''} ${(llmProvider !== "anthropic" && llmProvider !== "bedrock-claude") || (!featuresAvailable && llmProvider === "anthropic") ? 'opacity-50' : ''}`}
+                        disabled={(llmProvider !== "anthropic" && llmProvider !== "bedrock-claude") || (!featuresAvailable && llmProvider === "anthropic")}
                         data-testid="extended-thinking-toggle"
                       >
-                        <Brain className={`h-3.5 w-3.5 ${extendedThinking && (featuresAvailable || llmProvider === "bedrock-claude") ? 'animate-pulse' : ''} ${llmProvider === "bedrock-mistral" ? 'opacity-50' : ''}`} />
+                        <Brain className={`h-3.5 w-3.5 ${extendedThinking && (featuresAvailable || llmProvider === "bedrock-claude") ? 'animate-pulse' : ''}`} />
                         <span className="text-xs">Think</span>
                       </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{llmProvider === "bedrock-mistral" 
-                      ? "Extended Thinking not available for Mistral" 
+                    <p>{(llmProvider !== "anthropic" && llmProvider !== "bedrock-claude")
+                      ? "Extended Thinking only available for Claude models" 
                       : ((featuresAvailable || llmProvider === "bedrock-claude") ? 'Extended Thinking: Claude shows reasoning process' : 'Requires Anthropic API key or Bedrock Claude')}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -842,11 +845,11 @@ export default function ChatPage() {
                           // Web search available for:
                           // 1. Direct Anthropic API (featuresAvailable)
                           // 2. Bedrock Claude with Tavily configured (bedrockWebSearchAvailable)
-                          const canUseWebSearch = featuresAvailable || 
+                          const canUseWebSearch = (featuresAvailable && llmProvider === "anthropic") || 
                             (llmProvider === "bedrock-claude" && bedrockWebSearchAvailable);
                           
-                          if (llmProvider === "bedrock-mistral") {
-                            toast.info("Web Search not available for Mistral");
+                          if (llmProvider !== "anthropic" && llmProvider !== "bedrock-claude") {
+                            toast.info("Web Search only available for Claude models");
                             return;
                           }
                           if (canUseWebSearch) {
@@ -869,11 +872,11 @@ export default function ChatPage() {
                             toast.info("Web Search requires Anthropic API key or Tavily API key");
                           }
                         }}
-                        className={`gap-1.5 h-7 px-2 ${webSearch && (featuresAvailable || (llmProvider === "bedrock-claude" && bedrockWebSearchAvailable)) ? 'bg-primary text-primary-foreground' : ''} ${(llmProvider === "bedrock-mistral") || (!featuresAvailable && !(llmProvider === "bedrock-claude" && bedrockWebSearchAvailable)) ? 'opacity-50' : ''}`}
-                        disabled={(llmProvider === "bedrock-mistral") || (!featuresAvailable && !(llmProvider === "bedrock-claude" && bedrockWebSearchAvailable))}
+                        className={`gap-1.5 h-7 px-2 ${webSearch && (featuresAvailable || (llmProvider === "bedrock-claude" && bedrockWebSearchAvailable)) ? 'bg-primary text-primary-foreground' : ''} ${(llmProvider !== "anthropic" && llmProvider !== "bedrock-claude") || (!featuresAvailable && !(llmProvider === "bedrock-claude" && bedrockWebSearchAvailable)) ? 'opacity-50' : ''}`}
+                        disabled={(llmProvider !== "anthropic" && llmProvider !== "bedrock-claude") || (!featuresAvailable && !(llmProvider === "bedrock-claude" && bedrockWebSearchAvailable))}
                         data-testid="web-search-toggle"
                       >
-                        <Globe className={`h-3.5 w-3.5 ${llmProvider === "bedrock-mistral" ? 'opacity-50' : ''}`} />
+                        <Globe className="h-3.5 w-3.5" />
                         <span className="text-xs">Web</span>
                       </Button>
                     </div>
