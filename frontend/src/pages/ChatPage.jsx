@@ -699,14 +699,61 @@ export default function ChatPage() {
                         </div>
                       </SelectItem>
                     )}
+                    {availableProviders.includes("bedrock-llama3") && (
+                      <SelectItem value="bedrock-llama3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                          <span>AWS Bedrock (Llama 3)</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                    {availableProviders.includes("bedrock-qwen3") && (
+                      <SelectItem value="bedrock-qwen3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                          <span>AWS Bedrock (Qwen3 VL)</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                    {availableProviders.includes("bedrock-titan") && (
+                      <SelectItem value="bedrock-titan">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                          <span>AWS Bedrock (Titan)</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                    {availableProviders.includes("openai-gpt5") && (
+                      <SelectItem value="openai-gpt5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          <span>OpenAI GPT-5</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                    {availableProviders.includes("gemini") && (
+                      <SelectItem value="gemini">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                          <span>Google Gemini</span>
+                        </div>
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
                 <span className={`text-xs px-2 py-1 rounded ${
                   llmProvider === "bedrock-claude" ? "bg-orange-500/20 text-orange-500" :
                   llmProvider === "bedrock-mistral" ? "bg-purple-500/20 text-purple-500" :
+                  llmProvider === "bedrock-llama3" ? "bg-indigo-500/20 text-indigo-500" :
+                  llmProvider === "bedrock-qwen3" ? "bg-cyan-500/20 text-cyan-500" :
+                  llmProvider === "bedrock-titan" ? "bg-amber-500/20 text-amber-500" :
+                  llmProvider === "openai-gpt5" ? "bg-green-500/20 text-green-500" :
+                  llmProvider === "gemini" ? "bg-red-500/20 text-red-500" :
                   "bg-blue-500/20 text-blue-500"
                 }`}>
-                  {llmProvider.startsWith("bedrock") ? "AWS" : "Direct"}
+                  {llmProvider.startsWith("bedrock") ? "AWS" : 
+                   llmProvider === "openai-gpt5" ? "OpenAI" :
+                   llmProvider === "gemini" ? "Google" : "Direct"}
                 </span>
               </div>
             )}
