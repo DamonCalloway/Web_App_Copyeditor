@@ -92,6 +92,7 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
   - AWS Bedrock: Llama 3 (70B), Qwen3 VL 235B, Amazon Titan Premier
   - Emergent LLM Key: OpenAI GPT-5, Google Gemini 2.5 Pro
 - [x] Added: Deployment files (Dockerfile, docker-compose.yml) for AWS self-hosting
+- [x] Added: Image Crop Tool for Bedrock Claude - allows Claude to request cropped regions of attached images for detailed analysis (uses normalized 0-1 coordinates)
 
 ## Prioritized Backlog
 
