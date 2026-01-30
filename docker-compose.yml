@@ -1,0 +1,98 @@
+# Docker Compose for Clod Sarnit (Claude.ai clone)
+# For local development and testing with Docker
+
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: clod-sarnit-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=clod_sarnit
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Main Application (Frontend + Backend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACKEND_URL=/api
+    container_name: clod-sarnit-app
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    environment:
+      # MongoDB connection
+      - MONGO_URL=mongodb://mongodb:27017
+      - DB_NAME=clod_sarnit
+      
+      # CORS (allow all in development)
+      - CORS_ORIGINS=*
+      
+      # Storage configuration
+      - STORAGE_PROVIDER=local
+      - LOCAL_STORAGE_PATH=/app/uploads
+      
+      # --- API Keys (set these in your environment or .env file) ---
+      # Anthropic Direct API (optional - for Extended Thinking & Web Search)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      
+      # Emergent LLM Key (for GPT-5 and Gemini)
+      - EMERGENT_LLM_KEY=${EMERGENT_LLM_KEY:-}
+      
+      # AWS Bedrock credentials (for Claude, Mistral, Llama, Qwen, Titan)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      
+      # Bedrock model IDs (optional - defaults provided)
+      - BEDROCK_CLAUDE_MODEL_ID=${BEDROCK_CLAUDE_MODEL_ID:-us.anthropic.claude-sonnet-4-5-20250929-v1:0}
+      - BEDROCK_MISTRAL_MODEL_ID=${BEDROCK_MISTRAL_MODEL_ID:-mistral.mistral-large-2407-v1:0}
+      - BEDROCK_LLAMA3_MODEL_ID=${BEDROCK_LLAMA3_MODEL_ID:-meta.llama3-1-70b-instruct-v1:0}
+      - BEDROCK_QWEN3_MODEL_ID=${BEDROCK_QWEN3_MODEL_ID:-qwen.qwen3-vl-235b-a22b}
+      - BEDROCK_TITAN_MODEL_ID=${BEDROCK_TITAN_MODEL_ID:-amazon.titan-text-premier-v1:0}
+      
+      # Tavily API key (for Bedrock web search)
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+      
+      # --- S3 Storage (optional - for production) ---
+      # - STORAGE_PROVIDER=s3
+      # - S3_BUCKET_NAME=${S3_BUCKET_NAME:-}
+      # - S3_ACCESS_KEY=${S3_ACCESS_KEY:-}
+      # - S3_SECRET_KEY=${S3_SECRET_KEY:-}
+      # - S3_REGION=${S3_REGION:-us-east-1}
+    volumes:
+      # Persist uploaded files
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/config/features"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mongodb_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+# For AWS ECS/Fargate deployment, you would:
+# 1. Push the image to ECR
+# 2. Use DocumentDB or MongoDB Atlas for the database
+# 3. Use S3 for file storage (set STORAGE_PROVIDER=s3)
+# 4. Use ECS Task Definition with the above environment variables
