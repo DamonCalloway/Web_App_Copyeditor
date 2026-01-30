@@ -736,7 +736,8 @@ async def call_bedrock_converse(
         
         # Only add temperature (not both temp and topP - Claude 4 doesn't allow both)
         if add_temp_params:
-            inference_config["temperature"] = 0.7
+            inference_config["temperature"] = temperature
+            # Note: Bedrock Converse API for Claude doesn't support topP when temperature is set
         
         # Call Converse API
         converse_params = {
@@ -1039,7 +1040,8 @@ async def call_bedrock_converse_with_tools(
         
         # Only add temperature (not both temp and topP - Claude 4 doesn't allow both)
         if add_temp_params:
-            inference_config["temperature"] = 0.7
+            inference_config["temperature"] = temperature
+            # Note: Bedrock Converse API for Claude doesn't support topP when temperature is set
         
         # Build tools list
         tools_list = []
