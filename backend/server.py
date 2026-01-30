@@ -1833,10 +1833,13 @@ async def get_feature_config():
     has_direct_anthropic = bool(os.environ.get('ANTHROPIC_API_KEY', ''))
     has_bedrock = bool(os.environ.get('AWS_ACCESS_KEY_ID', '')) and bool(os.environ.get('AWS_SECRET_ACCESS_KEY', ''))
     has_tavily = tavily_client is not None
+    has_emergent_key = bool(os.environ.get('EMERGENT_LLM_KEY', ''))
     
     available = ["anthropic"]
     if has_bedrock:
-        available.extend(["bedrock-claude", "bedrock-mistral"])
+        available.extend(["bedrock-claude", "bedrock-mistral", "bedrock-llama3", "bedrock-qwen3", "bedrock-titan"])
+    if has_emergent_key:
+        available.extend(["openai-gpt5", "gemini"])
     
     return {
         "extended_thinking_available": has_direct_anthropic,
@@ -1845,6 +1848,7 @@ async def get_feature_config():
         "bedrock_configured": has_bedrock,
         "tavily_configured": has_tavily,
         "bedrock_web_search_available": has_bedrock and has_tavily,
+        "emergent_key_configured": has_emergent_key,
         "available_providers": available
     }
 
