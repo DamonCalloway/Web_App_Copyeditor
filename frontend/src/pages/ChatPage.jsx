@@ -216,6 +216,8 @@ export default function ChatPage() {
         setInstructionsText(proj.instructions || "");
         setMemoryText(proj.memory || "");
         setLlmProvider(proj.llm_provider || "anthropic");
+        setTemperature(proj.temperature ?? 0.7);
+        setTopP(proj.top_p ?? 0.9);
         
         // Only use project defaults if conversation doesn't have settings yet
         if (conv.extended_thinking === undefined && conv.web_search === undefined) {
@@ -228,6 +230,8 @@ export default function ChatPage() {
         setInstructionsText("");
         setMemoryText("");
         setLlmProvider("anthropic");
+        setTemperature(0.7);
+        setTopP(0.9);
       }
     } catch (error) {
       toast.error("Failed to load conversation");
