@@ -1471,7 +1471,7 @@ When the user asks you to edit something or check against style guides, proactiv
             # Use Bedrock Converse API
             bedrock_model_id = extra_config.get("bedrock_model_id", model_name.replace("bedrock/", ""))
             
-            # Extended thinking is only supported for Bedrock Claude, not Mistral
+            # Extended thinking is only supported for Bedrock Claude, not other models
             bedrock_extended_thinking = use_extended_thinking and provider_type == "bedrock-claude"
             
             # Web search is supported for Bedrock Claude if Tavily is configured
@@ -1502,6 +1502,36 @@ When the user asks you to edit something or check against style guides, proactiv
                 temperature=project.get("temperature", 0.7),
                 top_p=project.get("top_p", 0.9)
             )
+        elif provider_type in ["openai-gpt5", "gemini"]:
+            # Use Emergent LLM Key with emergentintegrations library
+            emergent_provider = extra_config.get("emergent_provider", "openai")
+            emergent_model = extra_config.get("emergent_model", "gpt-5.2")
+            
+            logger.info(f"Using Emergent LLM: provider={emergent_provider}, model={emergent_model}")
+            
+            # Initialize Emergent chat
+            chat = LlmChat(
+                api_key=api_key,
+                session_id=request.conversation_id,
+                system_message=system_message_with_identity
+            ).with_model(emergent_provider, emergent_model)
+            
+            # Build the message with conversation history context
+            # Include recent history in the message for context
+            history_context = ""
+            if len(history) > 0:
+                history_msgs = []
+                for msg in history[-10:]:  # Last 10 messages for context
+                    role_prefix = "User" if msg["role"] == "user" else "Assistant"
+                    history_msgs.append(f"{role_prefix}: {msg['content'][:500]}")
+                history_context = "\n\n[Previous conversation context]\n" + "\n".join(history_msgs) + "\n\n[Current message]\n"
+            
+            user_message = UserMessage(text=history_context + request.message)
+            
+            # Send message and get response
+            response_text = await chat.send_message(user_message)
+            thinking_content = None
+            thinking_time = None
         else:
             # Use litellm for Anthropic Direct API
             logger.info(f"Using litellm: model={model_name}")
