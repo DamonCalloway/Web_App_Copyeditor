@@ -532,7 +532,7 @@ export default function ChatPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowSettings(true)}
-                  data-testid="settings-btn"
+                  data-testid="chat-settings-btn"
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
