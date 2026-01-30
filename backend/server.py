@@ -1062,13 +1062,58 @@ async def call_bedrock_converse_with_tools(
         for msg in messages:
             if msg['role'] == 'system':
                 continue
-            content_text = msg['content']
-            if isinstance(content_text, bytes):
-                content_text = content_text.decode('utf-8', errors='replace')
-            bedrock_messages.append({
-                "role": msg['role'],
-                "content": [{"text": str(content_text)}]
-            })
+            
+            content = msg['content']
+            
+            # Handle complex content (list with text and images from litellm format)
+            if isinstance(content, list):
+                bedrock_content = []
+                for item in content:
+                    if isinstance(item, dict):
+                        if item.get('type') == 'text':
+                            bedrock_content.append({"text": item.get('text', '')})
+                        elif item.get('type') == 'image_url':
+                            # Parse base64 image from data URL
+                            img_url = item.get('image_url', {}).get('url', '')
+                            if img_url.startswith('data:'):
+                                parts = img_url.split(',', 1)
+                                if len(parts) == 2:
+                                    header, b64_data = parts
+                                    media_type = header.replace('data:', '').replace(';base64', '')
+                                    # Map media type to Bedrock format
+                                    format_map = {
+                                        'image/png': 'png',
+                                        'image/jpeg': 'jpeg',
+                                        'image/jpg': 'jpeg',
+                                        'image/gif': 'gif',
+                                        'image/webp': 'webp'
+                                    }
+                                    img_format = format_map.get(media_type, 'png')
+                                    bedrock_content.append({
+                                        "image": {
+                                            "format": img_format,
+                                            "source": {
+                                                "bytes": base64.b64decode(b64_data)
+                                            }
+                                        }
+                                    })
+                    elif isinstance(item, str):
+                        bedrock_content.append({"text": item})
+                
+                if bedrock_content:
+                    bedrock_messages.append({
+                        "role": msg['role'],
+                        "content": bedrock_content
+                    })
+            else:
+                # Simple text content
+                content_text = content
+                if isinstance(content_text, bytes):
+                    content_text = content_text.decode('utf-8', errors='replace')
+                bedrock_messages.append({
+                    "role": msg['role'],
+                    "content": [{"text": str(content_text)}]
+                })
         
         # Find system message
         system_content = None
