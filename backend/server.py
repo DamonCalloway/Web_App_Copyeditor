@@ -1956,43 +1956,108 @@ async def chat_with_files(
     }
     await db.messages.insert_one(user_msg_data)
     
-    # API call
+    # API call - use appropriate provider
+    model_name, api_key_from_config, provider_type, extra_config = get_llm_config(project)
+    
+    # Extract images for crop tool
+    chat_images = []
+    for idx, fc in enumerate(file_contents):
+        if fc["type"] == "image_url":
+            # Parse the data URL to get base64 and media type
+            data_url = fc["image_url"]["url"]
+            if data_url.startswith("data:"):
+                parts = data_url.split(",", 1)
+                if len(parts) == 2:
+                    header, b64_data = parts
+                    media_type = header.replace("data:", "").replace(";base64", "")
+                    img_name = file_names[idx] if idx < len(file_names) else f"image_{idx+1}"
+                    chat_images.append({
+                        "name": img_name,
+                        "base64": b64_data,
+                        "media_type": media_type
+                    })
+    
+    if chat_images:
+        logger.info(f"Extracted {len(chat_images)} images for crop tool: {[img['name'] for img in chat_images]}")
+    
     anthropic_key = os.environ.get('ANTHROPIC_API_KEY', '')
     emergent_key = os.environ.get('EMERGENT_LLM_KEY', '')
-    use_direct = bool(anthropic_key)
-    api_key = anthropic_key if use_direct else emergent_key
-    
-    params = {
-        "model": "anthropic/claude-sonnet-4-20250514",
-        "messages": messages_for_llm,
-        "api_key": api_key,
-        "max_tokens": 4096
-    }
     
     thinking_content = None
     thinking_time = None
     
-    if use_direct and extended_thinking:
-        actual_budget = max(1024, thinking_budget)
-        params["thinking"] = {"type": "enabled", "budget_tokens": actual_budget}
-        params["max_tokens"] = max(16000, actual_budget + 4000)
-    
-    if use_direct and web_search:
-        params["web_search_options"] = {"search_context_size": "medium"}
-    
-    try:
-        start_time = time.time()
-        llm_response = await litellm.acompletion(**params)
-        elapsed = time.time() - start_time
+    # Use Bedrock for Bedrock providers
+    if provider_type.startswith("bedrock"):
+        bedrock_model_id = extra_config.get("bedrock_model_id")
         
-        response_text = ""
-        if llm_response.choices:
-            msg = llm_response.choices[0].message
-            response_text = msg.content or ""
+        # Extended thinking only for Bedrock Claude
+        bedrock_extended_thinking = extended_thinking and provider_type == "bedrock-claude"
+        
+        # Web search only for Bedrock Claude with Tavily
+        bedrock_web_search = web_search and provider_type == "bedrock-claude" and tavily_client is not None
+        
+        # Disable extended thinking if tools are in use (conflict)
+        if bedrock_extended_thinking and (bedrock_web_search or chat_images):
+            logger.warning("Extended thinking conflicts with tools - disabling extended thinking")
+            bedrock_extended_thinking = False
+        
+        logger.info(f"Using Bedrock with files: model={bedrock_model_id}, crop_images={len(chat_images)}")
+        
+        try:
+            start_time = time.time()
+            response_text, thinking_content, thinking_time = await call_bedrock_converse_with_tools(
+                model_id=bedrock_model_id,
+                messages=messages_for_llm,
+                aws_config=extra_config,
+                max_tokens=4000,
+                extended_thinking=bedrock_extended_thinking,
+                thinking_budget=thinking_budget,
+                enable_web_search=bedrock_web_search,
+                enable_kb_tools=False,  # KB tools use different system for file attachments
+                project_id=conv["project_id"],
+                temperature=project.get("temperature", 0.7),
+                top_p=project.get("top_p", 0.9),
+                chat_images=chat_images if chat_images else None
+            )
+        except Exception as e:
+            logger.error(f"Bedrock with files error: {e}")
+            raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
+    else:
+        # Use litellm for other providers (Anthropic Direct, GPT-5, Gemini)
+        use_direct = bool(anthropic_key) and provider_type == "anthropic"
+        api_key = anthropic_key if use_direct else emergent_key
+        
+        params = {
+            "model": "anthropic/claude-sonnet-4-20250514",
+            "messages": messages_for_llm,
+            "api_key": api_key,
+            "max_tokens": 4096
+        }
+        
+        if use_direct and extended_thinking:
+            actual_budget = max(1024, thinking_budget)
+            params["thinking"] = {"type": "enabled", "budget_tokens": actual_budget}
+            params["max_tokens"] = max(16000, actual_budget + 4000)
+        
+        if use_direct and web_search:
+            params["web_search_options"] = {"search_context_size": "medium"}
+        
+        try:
+            start_time = time.time()
+            llm_response = await litellm.acompletion(**params)
+            elapsed = time.time() - start_time
             
-            if hasattr(msg, 'reasoning_content') and msg.reasoning_content:
-                thinking_content = msg.reasoning_content
-                thinking_time = round(elapsed)
+            response_text = ""
+            if llm_response.choices:
+                msg = llm_response.choices[0].message
+                response_text = msg.content or ""
+                
+                if hasattr(msg, 'reasoning_content') and msg.reasoning_content:
+                    thinking_content = msg.reasoning_content
+                    thinking_time = round(elapsed)
+        except Exception as e:
+            logger.error(f"Chat with files error: {e}")
+            raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
         
         # Save assistant message
         asst_msg = {
