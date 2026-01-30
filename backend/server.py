@@ -1474,7 +1474,9 @@ When the user asks you to edit something or check against style guides, proactiv
                 thinking_budget=thinking_budget,
                 enable_web_search=bedrock_web_search,
                 enable_kb_tools=bedrock_kb_tools,
-                project_id=conv["project_id"]
+                project_id=conv["project_id"],
+                temperature=project.get("temperature", 0.7),
+                top_p=project.get("top_p", 0.9)
             )
         else:
             # Use litellm for Anthropic Direct API
