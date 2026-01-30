@@ -836,6 +836,55 @@ async def perform_web_search(query: str) -> str:
         return f"Web search failed: {str(e)}"
 
 
+def pil_to_base64(image: PILImage.Image) -> str:
+    """Convert PIL Image to base64 string."""
+    if image.mode in ("RGBA", "P"):
+        image = image.convert("RGB")
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    return base64.standard_b64encode(buffer.getvalue()).decode("utf-8")
+
+
+def handle_crop_image(image: PILImage.Image, x1: float, y1: float, x2: float, y2: float) -> dict:
+    """
+    Execute the crop and return the result for Claude.
+    Coordinates are normalized (0-1), where (0,0) is top-left and (1,1) is bottom-right.
+    """
+    # Validate coordinates
+    if not all(0 <= c <= 1 for c in [x1, y1, x2, y2]):
+        return {
+            "success": False,
+            "text": "Error: Coordinates must be between 0 and 1",
+            "image": None
+        }
+    if x1 >= x2 or y1 >= y2:
+        return {
+            "success": False,
+            "text": "Error: Invalid bounding box (need x1 < x2 and y1 < y2)",
+            "image": None
+        }
+    
+    # Crop the image
+    w, h = image.size
+    cropped = image.crop((int(x1 * w), int(y1 * h), int(x2 * w), int(y2 * h)))
+    
+    return {
+        "success": True,
+        "text": f"Cropped to ({x1:.2f},{y1:.2f})-({x2:.2f},{y2:.2f}): {cropped.width}x{cropped.height}px",
+        "image": {
+            "type": "base64",
+            "media_type": "image/png",
+            "data": pil_to_base64(cropped)
+        }
+    }
+
+
+def base64_to_pil(base64_data: str, media_type: str = "image/png") -> PILImage.Image:
+    """Convert base64 string to PIL Image."""
+    image_data = base64.b64decode(base64_data)
+    return PILImage.open(BytesIO(image_data))
+
+
 async def retrieve_kb_file_content(project_id: str, filename: str) -> str:
     """
     Retrieve the full content of a specific file from the knowledge base.
