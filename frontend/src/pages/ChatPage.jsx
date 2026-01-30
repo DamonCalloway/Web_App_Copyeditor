@@ -424,28 +424,36 @@ export default function ChatPage() {
       let newThinking = extendedThinking;
       let newWebSearch = webSearch;
       
-      if (newProvider === "bedrock-mistral") {
-        // Mistral doesn't support thinking or web search
+      // Extended Thinking and Web Search are only available for:
+      // - Anthropic Direct API (if has direct API key)
+      // - Bedrock Claude (thinking yes, web search if Tavily configured)
+      const supportsThinking = newProvider === "anthropic" || newProvider === "bedrock-claude";
+      const supportsWebSearch = (newProvider === "anthropic" && featuresAvailable) || 
+                                (newProvider === "bedrock-claude" && bedrockWebSearchAvailable);
+      
+      if (!supportsThinking) {
         newThinking = false;
-        newWebSearch = false;
         setExtendedThinking(false);
+      }
+      if (!supportsWebSearch) {
+        newWebSearch = false;
         setWebSearch(false);
-      } else if (newProvider === "bedrock-claude") {
-        // Bedrock Claude supports thinking, and web search if Tavily is configured
-        if (!bedrockWebSearchAvailable) {
-          newWebSearch = false;
-          setWebSearch(false);
-        }
       }
       
       // Save the updated settings
       await saveConversationSettings({ extended_thinking: newThinking, web_search: newWebSearch });
       
-      const providerName = 
-        newProvider === "bedrock-claude" ? "AWS Bedrock (Claude)" :
-        newProvider === "bedrock-mistral" ? "AWS Bedrock (Mistral)" :
-        "Anthropic Direct API";
-      toast.success(`Switched to ${providerName}`);
+      const providerNames = {
+        "anthropic": "Anthropic Direct API",
+        "bedrock-claude": "AWS Bedrock (Claude)",
+        "bedrock-mistral": "AWS Bedrock (Mistral)",
+        "bedrock-llama3": "AWS Bedrock (Llama 3)",
+        "bedrock-qwen3": "AWS Bedrock (Qwen3 VL)",
+        "bedrock-titan": "AWS Bedrock (Titan)",
+        "openai-gpt5": "OpenAI GPT-5",
+        "gemini": "Google Gemini"
+      };
+      toast.success(`Switched to ${providerNames[newProvider] || newProvider}`);
       loadChatData();
     } catch (error) {
       toast.error("Failed to update provider");
