@@ -1305,6 +1305,61 @@ async def call_bedrock_converse_with_tools(
                                 }
                             })
                         
+                        # Handle crop image tool
+                        elif tool_name == 'crop_image':
+                            image_name = tool_input.get('image_name', '')
+                            x1 = tool_input.get('x1', 0)
+                            y1 = tool_input.get('y1', 0)
+                            x2 = tool_input.get('x2', 1)
+                            y2 = tool_input.get('y2', 1)
+                            logger.info(f"Cropping image '{image_name}': ({x1:.2f},{y1:.2f})-({x2:.2f},{y2:.2f})")
+                            
+                            if image_name not in pil_images:
+                                # Try fuzzy match
+                                matched = None
+                                for name in pil_images:
+                                    if image_name.lower() in name.lower() or name.lower() in image_name.lower():
+                                        matched = name
+                                        break
+                                if matched:
+                                    image_name = matched
+                                else:
+                                    tool_results.append({
+                                        "toolResult": {
+                                            "toolUseId": tool_id,
+                                            "content": [{"text": f"Error: Image '{image_name}' not found. Available images: {list(pil_images.keys())}"}]
+                                        }
+                                    })
+                                    continue
+                            
+                            crop_result = handle_crop_image(pil_images[image_name], x1, y1, x2, y2)
+                            
+                            if crop_result['success']:
+                                # Return both text description and the cropped image
+                                tool_results.append({
+                                    "toolResult": {
+                                        "toolUseId": tool_id,
+                                        "content": [
+                                            {"text": crop_result['text']},
+                                            {
+                                                "image": {
+                                                    "format": "png",
+                                                    "source": {
+                                                        "bytes": base64.b64decode(crop_result['image']['data'])
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                })
+                            else:
+                                tool_results.append({
+                                    "toolResult": {
+                                        "toolUseId": tool_id,
+                                        "content": [{"text": crop_result['text']}]
+                                    }
+                                })
+                        
                     elif 'text' in block:
                         assistant_content.append(block)
                     elif 'thinking' in block:
