@@ -645,7 +645,9 @@ async def call_bedrock_converse(
     aws_config: dict, 
     max_tokens: int = 4000,
     extended_thinking: bool = False,
-    thinking_budget: int = 10000
+    thinking_budget: int = 10000,
+    temperature: float = 0.7,
+    top_p: float = 0.9
 ) -> tuple:
     """
     Call AWS Bedrock using the Converse API (newer, more reliable than InvokeModel)
@@ -966,7 +968,9 @@ async def call_bedrock_converse_with_tools(
     thinking_budget: int = 10000,
     enable_web_search: bool = False,
     enable_kb_tools: bool = False,
-    project_id: str = None
+    project_id: str = None,
+    temperature: float = 0.7,
+    top_p: float = 0.9
 ) -> tuple:
     """
     Call AWS Bedrock using the Converse API with optional tool use.
