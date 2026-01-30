@@ -51,7 +51,7 @@ However, do not rely ONLY on these authorities. Your background knowledge of gra
 - *The Gregg Reference Manual* (Tribute Edition)
 - *The American Heritage Dictionary* — <https://ahdictionary.com>
 - *EDL Core Vocabularies*
-- `eStyle_VASOL_Language_Only.md`
+- `eStyle_VASOL_Language_Section.md`
 - `VASOL_History_Notes_for_Editors_Style_and_Formatting.md`
 
 ---
@@ -241,10 +241,9 @@ Check answer choices against `answer options, capitalization`, `answer options, 
 
 #### Protocol F: Check Names and Terms Against VDOE Word Lists
 
-VDOE often styles terms in ways that clash with AHD and Gregg. Check:   cv
+VDOE often styles terms in ways that clash with AHD and Gregg. Check all word lists to verify spelling, hyphenation, capitalization, word choice, and so on.
 
-- `VASOL_History_Notes_for_Editors_Style_and_Formatting.md` (word list + names list)
-- `eStyle_VASOL_Language_Only.md` ("Word List — terms not in eStyle")
+**Capitalization Uncertainty Protocol:** Before querying any capitalization issue ("sun/Sun," "moon/Moon," "earth/Earth," etc.), first search the word lists in `eStyle_VASOL_Language_Section.md` and `VASOL_Science_(Notes_for_Editors)_Quick_Reference_(no_Images)` for the specific word. Query only if no entry exists.
 
 <example title="VDOE word list overrides">
 
