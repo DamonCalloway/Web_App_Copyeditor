@@ -10,7 +10,7 @@ import tempfile
 import os
 
 class AssessmentEditorAPITester:
-    def __init__(self, base_url="https://claude-rag-chat.preview.emergentagent.com"):
+    def __init__(self, base_url="https://rag-claude.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0

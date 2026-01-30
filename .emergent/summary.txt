@@ -6,7 +6,7 @@ The user wants to create a clone of the Claude Sonnet 4.5 Projects web applicati
 2.  **Knowledge Base File Types:** Must support PDF, TXT, MD, Word, and various image formats.
 3.  **Chat File Attachments:** The chat input must support attaching a wide range of file types.
 4.  **UI/UX:** Replicate the Claude.ai GUI, including light/dark mode, sidebars, project folders, and chat layout.
-5.  **LLM Integration:** Integrate with Claude Sonnet 4.5, with Extended Thinking and Web Search capabilities. The user later requested adding AWS Bedrock as an alternative provider for both Claude and Mistral models.
+5.  **LLM Integration:** Integrate with Claude Sonnet 4.5, with Extended Thinking and Web Search capabilities. The user also requested adding AWS Bedrock as an alternative provider for both Claude and Mistral models.
 6.  **Authentication:** A single-user mode is acceptable for the initial version.
 7.  **Separable File Storage:** Architect the app to allow file storage to be moved to a separate S3 bucket.
 8.  **RAG Implementation:** Use Retrieval-Augmented Generation (RAG) to query the knowledge base.
@@ -14,92 +14,87 @@ The user wants to create a clone of the Claude Sonnet 4.5 Projects web applicati
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application cloning the Claude.ai interface has been built and significantly enhanced.
-- **Backend (FastAPI):** Manages projects, conversations, and files. It uses a local  model for RAG embeddings. It supports three LLM providers:
-    1.  **Anthropic Direct API:** For Claude, enabling Extended Thinking & Web Search.
-    2.  **AWS Bedrock (Claude):** Integrated via  Converse API, pending user model access.
-    3.  **AWS Bedrock (Mistral):** Integrated via  Converse API. Currently suffers from a response corruption bug on long messages.
-- **Frontend (React):** A detailed UI mimicking Claude.ai, with a dark/light theme, project/chat navigation, file viewer, markdown rendering, and a feature-rich chat interface. The chat interface includes an LLM provider dropdown to switch between the three options.
-- **Features:** Projects (CRUD, archive), conversations (CRUD, archive), knowledge base (RAG), chat with file attachments, a file viewer, markdown rendering, and editable Memory/Instructions fields.
+A full-stack application (React/FastAPI/MongoDB) that clones the Claude.ai interface. The backend integrates with Anthropic's direct API and AWS Bedrock (for both Claude and Mistral models). The frontend provides a detailed UI with project/chat management, a file viewer, markdown rendering, and an LLM provider dropdown.
+
+Recent enhancements include a Clod Sarnit rebrand, an on-demand tool-based system for the Knowledge Base (mimicking Claude.ai Projects), a custom web search tool for Bedrock Claude using Tavily, and enabling Extended Thinking for Bedrock Claude. Numerous UI bugs and improvements have also been addressed.
 
 **Last working item**:
-    - Last item agent was working: The agent was addressing two new issues reported by the user:
-        1.  The Mistral LLM integration, which was thought to be fixed, is still producing garbled/corrupted responses for longer messages.
-        2.  In the UI's light mode, chat message text is white, rendering it invisible against the white background.
-        The agent had just acknowledged both issues and was about to start fixing the light mode UI bug.
+    - Last item agent was working: The agent was fixing three user-reported issues:
+        1.  Knowledge base document links opening in the same browser tab.
+        2.  The document viewer lacking a visible scrollbar for users without a scroll wheel.
+        3.  The Think and Web toggle selections not persisting when navigating between chats or sessions.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? For the UI bug, use the screenshot tool. For the Mistral corruption bug, create a Python script () to reproduce the issue with a long prompt using the  function, then use backend testing agent for verification after the fix.
+    - Which testing method agent to use? Frontend testing agent. The agent needs to verify that: 1) links in the doc viewer open in a new tab, 2) the doc viewer has a visible scrollbar, and 3) the 'Think'/'Web' selections are correctly saved and loaded for each conversation, persisting across page reloads.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Mistral responses via Bedrock are garbled for long messages. (P0)
-  - Issue 2: Chat message text is invisible in light mode. (P1)
+  - Issue 1: Persist Think and Web selection per conversation (P0)
 
   Issues Detail:
-  - Issue 1:
-     - Attempted fixes: The agent initially fixed a similar corruption issue by switching from 's  to a direct  implementation using the newer **Converse API**. This worked for short messages but failed for longer, more complex user prompts, indicating the fix was incomplete.
-     - Next debug checklist:
-        1.  Isolate the problem: Create a new test script () that directly calls the  function in  with a very long prompt to reliably reproduce the corruption, bypassing the frontend.
-        2.  Investigate the streaming logic: The  function uses response streaming. The corruption (e.g., th seCMOS, yor title) strongly suggests an issue with chunk decoding or reassembly.
-        3.  Temporarily disable streaming in the test script by modifying the  call. If the response is clean, the bug is definitively in our streaming implementation.
-        4.  Log the raw response chunks in  before they are processed to check for malformed data coming from the API.
-        5.  Ensure correct  decoding is happening for each chunk.
-     - Why fix this issue and what will be achieved with the fix? The Mistral integration is a critical requirement for the user, serving as a backup to Claude. It is currently unusable for any meaningful work.
-     - Status: IN PROGRESS
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? Backend
-     - Blocked on other issue: None
-  - Issue 2:
-     - Attempted fixes: None. The agent just acknowledged the issue.
-     - Next debug checklist:
-        1.  Locate the CSS for chat messages. This is in , within the  block.
-        2.  The  rendering the message content likely has a hardcoded color class like  or .
-        3.  Replace the hardcoded class with a theme-aware Tailwind CSS class, such as , which automatically adapts to light and dark modes. Alternatively, use explicit classes like .
-        4.  Verify the fix by taking a screenshot of the chat page in light mode.
-     - Why fix this issue and what will be achieved with the fix? It's a basic usability bug that makes the application unusable in light mode.
-     - Status: NOT STARTED
+  - Issue 1: 
+     - Attempted fixes: The agent has already implemented most of the required changes.
+        - **Backend ():** Added  and  fields to the  and  Pydantic models.
+        - **Frontend ():**
+            - Added logic to  to load the saved settings from the conversation object.
+            - Created a  helper function to send a  request to the backend.
+            - Updated the  handlers for the Think and Web toggles to call the save function.
+     - Next debug checklist: 
+        1. Restart backend and frontend services to ensure all changes are applied.
+        2. Test the full user flow:
+           - In a conversation, enable Think.
+           - Navigate to another conversation and then return. Verify Think is still enabled.
+           - Reload the page. Verify Think is still enabled.
+           - Repeat the process for the Web toggle.
+           - Confirm that the mutual exclusivity (enabling one disables the other) still functions correctly with the new persistence logic.
+     - Why fix this issue and what will be achieved with the fix? It will fix a UI state-loss bug, improving usability by remembering the user's preferred settings for each chat.
+     - Status:  IN PROGRESS
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
 
 **In progress Task List**:
-- None
+  - Task 1: Complete the implementation and testing of the three recently requested fixes. (P0)
+     - Where to resume: The agent has applied all code changes across , , , and . The next immediate step is to restart services and begin testing the implemented fixes.
+     - What will be achieved with this? This will resolve the user's latest bug reports regarding the document viewer and chat UI state persistence.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on something: None
 
 **Upcoming and Future Tasks**
 Upcoming Tasks:
--   **Task 1 (P1):** Implement a configurable storage backend to support both local storage and Amazon S3. This is a pending critical requirement from the original problem statement.
--   **Task 2 (P2):** Implement multi-user authentication.
+- **Task 1 (P0):** Create deployment files (, ) for an AWS environment (ECS, Elastic Beanstalk), as requested by the user for self-hosting.
+- **Task 2 (P1):** Implement a configurable storage backend to support Amazon S3, a critical original requirement.
+- **Task 3 (P2):** Add support for more Bedrock LLMs (Llama 3, Titan, etc.) to the provider dropdown.
+- **Task 4 (P2):** Implement multi-user authentication.
 
 Future Tasks:
--   **Task 3:** Add document version history to track changes.
--   **Task 4:** Add syntax highlighting for code blocks in the file viewer.
--   **Task 5:** Consider adding a slider in project settings to configure the .
+- Add document version history to track changes.
+- Add syntax highlighting for code blocks in the file viewer.
+- Add a slider in project settings to configure the .
+- **(Shelved)** Fully debug and fix the Mistral response corruption bug for long messages. The user explicitly asked to shelve this.
 
 **Completed work in this session**
-- **LLM Provider Flexibility:**
-    - Integrated AWS Bedrock as an LLM provider alongside the existing direct Anthropic API.
-    - Added UI in Settings to configure AWS credentials.
-    - Added a dropdown in the chat UI to switch between **Anthropic**, **Bedrock (Claude)**, and **Bedrock (Mistral)**.
-    - Implemented backend logic using  and the AWS **Converse API** to handle Bedrock requests.
-- **Core Feature Enhancements:**
-    - Implemented full CRUD (Create, Rename, Edit, Archive) for Projects and Conversations.
-    - Created a new Chats page to list all conversations.
-    - Added a project selector to the chat page to associate/disassociate chats with projects.
-- **UI/UX Fixes and Improvements:**
-    - **Fixed Bug:** Resolved the Failed to send message error when attaching files to a chat message.
-    - Made Memory and Instructions fields editable on both the Project Detail page and the Chat page's side panel.
-    - Fixed text truncation and wrapping issues in side panels.
-    - Implemented auto-scroll-to-bottom and a manual scroll to bottom button in the chat view.
-    - UI now correctly disables Extended Thinking and Web Search toggles when a Bedrock provider is selected.
+- **Knowledge Base Overhaul:** Re-architected the Knowledge Base from a stuff all content into the prompt system to an on-demand **Tool-based system**. Claude now sees a file list and uses  and  tools to retrieve content as needed, saving tokens and better mimicking Claude.ai Projects.
+- **Bedrock Web Search:** Integrated Tavily API to provide web search functionality for Bedrock Claude, making the Web toggle functional. Made Think and Web mutually exclusive to prevent API conflicts.
+- **Bedrock Extended Thinking:** Successfully enabled Extended Thinking for Claude Sonnet 4.5 on Bedrock, including debugging API parameter issues (, token limits, temperature constraints).
+- **Full Document Content:**
+  - Removed truncation limits for files attached directly to chat messages.
+  - Fixed the file viewer to load the full content of documents from the knowledge base, instead of a short preview.
+- **UI/UX Fixes:**
+  - **Document Viewer:** Made hyperlinks open in a new tab and added a permanently visible scrollbar.
+  - **Chat Input:** Implemented an auto-expanding textarea and ensured its height resets after sending a message.
+  - **Markdown Styling:** Fixed styling for blockquotes and code blocks in both user and assistant messages in light mode. Styled hyperlinks with a classic blue, underlined look.
+  - **Sidebar:** Fixed the conversation Rename functionality.
+- **Branding:** Changed the application title to Clod Sarnit and updated the font to EB Garamond.
 
 **Earlier issues found/mentioned but not fixed**
 - None
 
 **Known issue recurrence from previous fork**
-  - **Issue recurrence in previous fork:** The Mistral response corruption bug. It was marked as fixed after switching to the Converse API, but the fix was insufficient and the bug reappeared with longer prompts.
+  - **Issue recurrence in previous fork:** Mistral response corruption bug.
   - **Recurrence count:** 1
-  - **Status:** IN PROGRESS
+  - **Status:** NOT STARTED (User requested to shelve this issue for now).
 
 **Code Architecture**
 
@@ -108,85 +103,79 @@ Future Tasks:
 - **Backend:** FastAPI, Pydantic
 - **Frontend:** React, Tailwind CSS, Shadcn/UI
 - **Database:** MongoDB
-- **LLM Integration:**
-  -  library for direct Anthropic API calls.
-  -  library for AWS Bedrock, specifically using the **Converse API**.
-- **RAG:**  for local embeddings and MongoDB for vector search.
+- **LLM Integration:**  (for Anthropic Direct),  (for AWS Bedrock Converse API)
+- **Tool Use:** Implemented Bedrock's function calling capability for custom tools (, , ).
+- **Web Search:** Tavily API.
 
 **key DB schema**
 -   **projects**: 
 -   **files**: 
--   **conversations**: 
+-   **conversations**:  (new fields added)
 -   **messages**: 
 
 **changes in tech stack**
--   Added  to the backend stack to directly interact with the AWS Bedrock Converse API, moving away from  for Bedrock calls to resolve reliability issues.
+-   Added  dependency for web search.
 
 **All files of reference**
--   : Contains the logic for the Mistral corruption bug within the  function and the main chat endpoint.
--   : The file to modify to fix the light mode text color bug.
--   : Was recently modified to fix text wrapping and add edit buttons.
--   : Contains the UI for Bedrock credentials.
--   : Contains the user's API keys for Anthropic and AWS Bedrock.
+-   **/app/backend/server.py**: Heavily modified to implement the new tool-based Knowledge Base, add the Tavily web search tool, and support persisting conversation settings.
+-   **/app/frontend/src/pages/ChatPage.jsx**: Heavily modified to support persisting Think/Web settings, UI toggles, and an expanding textarea.
+-   **/app/frontend/src/pages/ProjectDetailPage.jsx**: Modified to fix file viewer links and scrollbar.
+-   **/app/frontend/src/App.css & /app/frontend/src/index.css**: Modified for various styling fixes (blockquotes, code blocks, scrollbars, links).
+-   **/app/frontend/src/components/Sidebar.jsx**: Modified to fix the conversation rename functionality.
+-   **/app/backend/requirements.txt**: Updated with .
+-   **/app/backend/.env**: Now requires .
 
 **Areas that need refactoring**:
-- The main chat endpoint in  () has grown very large. It contains complex conditional logic for handling RAG, three different LLM providers, and special features. It should be refactored into smaller, more manageable functions.
+- The main chat endpoint in  () and the new tool-use function () are extremely complex and contain deeply nested logic. They should be broken down into smaller, single-responsibility functions to improve readability and maintainability.
 
 **key api endpoints**
--   : Main chat endpoint, handles provider switching.
--   : For sending messages with file attachments.
--   : Updates project details (name, settings).
--   : Archives or un-archives a project.
--   : Updates conversation details (name, project association).
--   : Retrieves all non-archived conversations.
--   : Returns available LLM providers.
--   : Saves AWS credentials.
--   : Sets the LLM provider for a specific project.
+-   : Now accepts  and  booleans to update conversation settings.
+-   : Now reports if the Tavily web search feature is available.
+-   : The core logic was significantly changed to support the on-demand knowledge base tools.
 
 **Critical Info for New Agent**
--   **Mistral Corruption Bug:** This is the highest priority. The issue is NOT with the Bedrock connection itself but likely with our implementation of the **streaming response** in the  function in . The fix requires a deep dive into the  streaming logic.
--   **AWS Bedrock Access:** The user has provided valid credentials for Bedrock. They have access to Mistral models, but are still waiting for approval for Claude models on Bedrock.
--   **Anthropic-Only Features:** Extended Thinking and Web Search are only supported by the direct Anthropic provider. The UI correctly disables these when a Bedrock provider is active.
+-   The Knowledge Base has been fundamentally re-architected. It no longer sends all file content in the prompt. Instead, it uses a **tool-based approach** where Claude is given a list of files and can request their content on-demand using the  or  tools. This is a critical distinction from the previous implementation.
+-   The user is preparing for self-hosting on AWS and has requested deployment files (, etc.). This is a high-priority upcoming task.
+-   Think and Web Search are mutually exclusive for Bedrock models due to API limitations. The UI and backend have been coded to enforce this.
 
 **documents and test reports created in this job**
-- None
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Reports Mistral is still producing garbled text on long responses and that chat text is invisible in light mode. (PENDING)
-2.  **User:** Provides an example of a good, clean Mistral response, confirming the setup works for short prompts. (RESOLVED)
-3.  **User:** Closes an old tab and provides a screenshot showing a clean HELLO response from Mistral, suggesting the previous issue was due to the old tab. (RESOLVED)
-4.  **Agent:** Asks user to close old tabs and test Mistral in a fresh chat.
-5.  **User:** Reports another garbled response claiming to be Claude, even when Mistral is selected. (RESOLVED - due to old tab)
-6.  **Agent:** Disables Extended Thinking for Bedrock providers, suspecting it as the cause of corruption.
-7.  **User:** Suggests that Extended Thinking being enabled for Mistral might be the cause of the garbled output.
-8.  **Agent:** Asks user if they are testing in multiple tabs/windows.
-9.  **User:** Reports a very garbled response from the model, and asks for help troubleshooting the API routing confusion.
-10. **User:** Provides a different, newer model ID for Mistral Large on Bedrock. (IMPLEMENTED)
+1.  **User:** Asks for 3 fixes: KB links opening in new tabs, a visible scrollbar in the KB viewer, and persisting the Think/Web selection in chat. (IN PROGRESS)
+2.  **User:** Clarifies how they expect the Knowledge Base to work: Claude should access complete files on-demand, without the full content being loaded into every chat. (RESOLVED - new tool system implemented)
+3.  **User:** Asks if the 500k character limit was applied and clarifies their understanding of token usage. (RESOLVED)
+4.  **User:** Reports an error and provides a screenshot showing Claude still can't see the full KB file. (RESOLVED - due to file size hitting the 150k limit)
+5.  **User:** Reports Claude still can't see the entire KB file. (RESOLVED - agent found and fixed truncation issues)
+6.  **User:** Reports that Claude hallucinates examples when editing a document with the KB enabled. (RESOLVED - due to content truncation)
+7.  **User:** Asks for fixes to the expanding textarea and blockquote styling. (RESOLVED)
+8.  **User:** Asks for deployment files to host on AWS (S3/Bedrock). (PENDING)
+9.  **User:** Tries to import the app into Microsoft Power Apps and fails. (RESOLVED - agent explained incompatibility)
+10. **User:** Asks if they can export the app to deploy on a different server due to security concerns. (RESOLVED - agent explained how to use Save to GitHub)
 
 **Project Health Check:**
-- **Broken:**
-    - Mistral integration for long messages (response corruption).
-    - Chat UI in light mode (invisible text).
-- **Mocked:**
-    - None.
+- **Broken:** None.
+- **Mocked:** None.
 
 **3rd Party Integrations**
 -   **Anthropic Claude Sonnet 4.5:** Integrated via . Uses a User-provided API Key.
--   **AWS Bedrock (via ):** Uses a User-provided API Key.
-    -   **Claude 3.5 Sonnet:** Integrated but pending user access approval from AWS.
-    -   **Mistral Large 3:** Integrated and accessible, but suffers from a response corruption bug on long messages.
--   **:** Used for local text embeddings.
+-   **AWS Bedrock (via ):** Uses User-provided AWS credentials.
+    -   **Claude Sonnet 4.5:** Integrated with Extended Thinking and custom Web Search.
+    -   **Mistral Large:** Integrated, but has a known corruption bug on long messages (shelved by user).
+-   **:** Used for local text embeddings for the legacy RAG system.
+-   **Tavily:** Integrated for web search. Requires a User-provided API Key ().
 
 **Testing status**
   - Testing agent used after significant changes: YES
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: []
+  - Test files created:
+    - 
   - Known regressions:
-    - Mistral response corruption has recurred after an initial fix.
+    - Mistral response corruption remains but is on hold per user request.
 
 **Credentials to test flow:**
--   The user's Anthropic API key is stored in  as .
--   The user's AWS credentials for Bedrock are stored in  as  and .
+-   The user's Anthropic, AWS, and Tavily API keys are stored in .
 
 **What agent forgot to execute**
--   The agent has not yet started work on the **S3 storage backend** or **multi-user authentication**, which were part of the original product requirements and are listed in the upcoming tasks.</analysis>
+- The agent has not yet started work on creating deployment files (, etc.) for AWS, which the user recently requested.
+- The agent has not started on the S3 storage backend or multi-user authentication, which were part of the original product requirements.</analysis>
