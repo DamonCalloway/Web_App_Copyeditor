@@ -2058,36 +2058,32 @@ async def chat_with_files(
         except Exception as e:
             logger.error(f"Chat with files error: {e}")
             raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
-        
-        # Save assistant message
-        asst_msg = {
-            "id": str(uuid.uuid4()),
-            "conversation_id": conversation_id,
-            "role": "assistant",
-            "content": response_text,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        if thinking_content:
-            asst_msg["thinking"] = thinking_content
-            asst_msg["thinking_time"] = thinking_time
-        
-        await db.messages.insert_one(asst_msg)
-        
-        await db.conversations.update_one(
-            {"id": conversation_id},
-            {"$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
-        )
-        
-        result = {"response": response_text, "message_id": asst_msg["id"]}
-        if thinking_content:
-            result["thinking"] = thinking_content
-            result["thinking_time"] = thinking_time
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Chat with files error: {e}")
-        raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
+    
+    # Save assistant message
+    asst_msg = {
+        "id": str(uuid.uuid4()),
+        "conversation_id": conversation_id,
+        "role": "assistant",
+        "content": response_text,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    if thinking_content:
+        asst_msg["thinking"] = thinking_content
+        asst_msg["thinking_time"] = thinking_time
+    
+    await db.messages.insert_one(asst_msg)
+    
+    await db.conversations.update_one(
+        {"id": conversation_id},
+        {"$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    result = {"response": response_text, "message_id": asst_msg["id"]}
+    if thinking_content:
+        result["thinking"] = thinking_content
+        result["thinking_time"] = thinking_time
+    
+    return result
 
 # ============== STORAGE CONFIG ==============
 
