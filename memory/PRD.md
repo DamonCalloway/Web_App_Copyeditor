@@ -88,6 +88,10 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Fixed: Document viewer now has a permanently visible scrollbar for users without scroll wheels
 - [x] Fixed: "Think" and "Web" toggle selections now persist per conversation across navigation and page reloads
 - [x] Added: Temperature and Top P sliders in project settings dialog (accessible via gear icon in chat header)
+- [x] Added: Multiple new LLM providers:
+  - AWS Bedrock: Llama 3 (70B), Qwen3 VL 235B, Amazon Titan Premier
+  - Emergent LLM Key: OpenAI GPT-5, Google Gemini 2.5 Pro
+- [x] Added: Deployment files (Dockerfile, docker-compose.yml) for AWS self-hosting
 
 ## Prioritized Backlog
 
