@@ -525,6 +525,24 @@ export default function ChatPage() {
             </Tooltip>
           </TooltipProvider>
           
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSettings(true)}
+                  data-testid="settings-btn"
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Model Settings
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" data-testid="conversation-menu">
