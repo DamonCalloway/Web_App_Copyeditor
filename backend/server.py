@@ -1252,12 +1252,11 @@ def get_llm_config(project: dict):
     """
     llm_provider = project.get("llm_provider", "anthropic")
     
-    if llm_provider == "bedrock-claude":
-        # AWS Bedrock with Claude
+    # AWS Bedrock providers
+    if llm_provider.startswith("bedrock-"):
         aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID', '')
         aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
         aws_region = os.environ.get('AWS_REGION', 'us-east-1')
-        bedrock_model = os.environ.get('BEDROCK_CLAUDE_MODEL_ID', 'us.anthropic.claude-3-5-sonnet-20241022-v2:0')
         
         if not aws_access_key or not aws_secret_key:
             raise HTTPException(
@@ -1265,10 +1264,21 @@ def get_llm_config(project: dict):
                 detail="AWS credentials not configured. Please add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to settings."
             )
         
+        # Model ID mapping for Bedrock
+        bedrock_models = {
+            "bedrock-claude": os.environ.get('BEDROCK_CLAUDE_MODEL_ID', 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'),
+            "bedrock-mistral": os.environ.get('BEDROCK_MISTRAL_MODEL_ID', 'mistral.mistral-large-2407-v1:0'),
+            "bedrock-llama3": os.environ.get('BEDROCK_LLAMA3_MODEL_ID', 'meta.llama3-1-70b-instruct-v1:0'),
+            "bedrock-qwen3": os.environ.get('BEDROCK_QWEN3_MODEL_ID', 'qwen.qwen3-vl-235b-a22b'),
+            "bedrock-titan": os.environ.get('BEDROCK_TITAN_MODEL_ID', 'amazon.titan-text-premier-v1:0'),
+        }
+        
+        bedrock_model = bedrock_models.get(llm_provider, bedrock_models["bedrock-claude"])
+        
         return (
             f"bedrock/{bedrock_model}",
             None,
-            "bedrock-claude",
+            llm_provider,
             {
                 "aws_access_key_id": aws_access_key,
                 "aws_secret_access_key": aws_secret_key,
@@ -1276,30 +1286,36 @@ def get_llm_config(project: dict):
                 "bedrock_model_id": bedrock_model
             }
         )
-    elif llm_provider == "bedrock-mistral":
-        # AWS Bedrock with Mistral
-        aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID', '')
-        aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-        aws_region = os.environ.get('AWS_REGION', 'us-east-1')
-        mistral_model = os.environ.get('BEDROCK_MISTRAL_MODEL_ID', 'mistral.mistral-large-2407-v1:0')
+    
+    # Emergent LLM Key providers (GPT-5, Gemini)
+    elif llm_provider in ["openai-gpt5", "gemini"]:
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY', '')
         
-        if not aws_access_key or not aws_secret_key:
+        if not emergent_key:
             raise HTTPException(
                 status_code=400,
-                detail="AWS credentials not configured."
+                detail="EMERGENT_LLM_KEY not configured. Please add it to settings."
             )
         
+        # Model mapping for Emergent providers
+        emergent_models = {
+            "openai-gpt5": ("openai", "gpt-5.2"),
+            "gemini": ("gemini", "gemini-2.5-pro"),
+        }
+        
+        provider, model = emergent_models.get(llm_provider, ("openai", "gpt-5.2"))
+        
         return (
-            f"bedrock/{mistral_model}",
-            None,
-            "bedrock-mistral",
+            f"{provider}/{model}",
+            emergent_key,
+            llm_provider,
             {
-                "aws_access_key_id": aws_access_key,
-                "aws_secret_access_key": aws_secret_key,
-                "aws_region_name": aws_region,
-                "bedrock_model_id": mistral_model
+                "emergent_provider": provider,
+                "emergent_model": model,
+                "supports_extended_features": False
             }
         )
+    
     else:
         # Anthropic Direct API (default)
         anthropic_key = os.environ.get('ANTHROPIC_API_KEY', '')
