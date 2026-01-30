@@ -1023,16 +1023,31 @@ async def call_bedrock_converse_with_tools(
     enable_kb_tools: bool = False,
     project_id: str = None,
     temperature: float = 0.7,
-    top_p: float = 0.9
+    top_p: float = 0.9,
+    chat_images: List[dict] = None
 ) -> tuple:
     """
     Call AWS Bedrock using the Converse API with optional tool use.
-    Supports: web search (Tavily), knowledge base file retrieval.
+    Supports: web search (Tavily), knowledge base file retrieval, image cropping.
     Handles the tool use loop.
+    
+    chat_images: List of dicts with {'name': str, 'base64': str, 'media_type': str} for crop tool
+    
     Returns: (response_text, thinking_content, thinking_time)
     """
     import time
     start_time = time.time()
+    
+    # Store PIL images for cropping
+    pil_images = {}
+    if chat_images:
+        for img in chat_images:
+            try:
+                pil_img = base64_to_pil(img['base64'], img.get('media_type', 'image/png'))
+                pil_images[img['name']] = pil_img
+                logger.info(f"Loaded image for cropping: {img['name']} ({pil_img.width}x{pil_img.height})")
+            except Exception as e:
+                logger.warning(f"Failed to load image {img.get('name', 'unknown')}: {e}")
     
     try:
         bedrock_runtime = boto3.client(
