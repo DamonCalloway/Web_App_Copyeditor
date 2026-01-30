@@ -1432,9 +1432,17 @@ When the user asks you to edit something or check against style guides, proactiv
                 actual_budget = max(1024, thinking_budget)
                 params["thinking"] = {"type": "enabled", "budget_tokens": actual_budget}
                 params["max_tokens"] = max(16000, actual_budget + 4000)
+            else:
+                # Only add temperature/top_p when NOT using extended thinking
+                params["temperature"] = project.get("temperature", 0.7)
+                params["top_p"] = project.get("top_p", 0.9)
             
             if use_web_search:
                 params["web_search_options"] = {"search_context_size": "medium"}
+        elif provider_type == "anthropic":
+            # For non-extended features Anthropic, still use project settings
+            params["temperature"] = project.get("temperature", 0.7)
+            params["top_p"] = project.get("top_p", 0.9)
         
         # Make the API call - route based on provider type
         import time
