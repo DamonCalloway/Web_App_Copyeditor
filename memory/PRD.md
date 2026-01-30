@@ -77,6 +77,11 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Fixed: Bedrock Claude model identity confusion when switching providers
 - [x] Added: Extended Thinking support for AWS Bedrock Claude Sonnet 4.5
 
+### Bug Fixes (January 30, 2025)
+- [x] Fixed: Knowledge Base document links now open in new browser tabs (target="_blank")
+- [x] Fixed: Document viewer now has a permanently visible scrollbar for users without scroll wheels
+- [x] Fixed: "Think" and "Web" toggle selections now persist per conversation across navigation and page reloads
+
 ## Prioritized Backlog
 
 ### P0 (Critical - Done)
