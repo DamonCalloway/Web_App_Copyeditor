@@ -3,13 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Send, Loader2, Star, MoreHorizontal, 
   Trash2, FolderKanban, FileText, ChevronDown, Copy, Check,
-  Brain, Globe, ChevronRight, ChevronLeft, Paperclip, X, File, Image, Edit2, ArrowDown
+  Brain, Globe, ChevronRight, ChevronLeft, Paperclip, X, File, Image, Edit2, ArrowDown, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
