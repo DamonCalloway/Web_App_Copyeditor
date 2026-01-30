@@ -22,11 +22,17 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 3. **AI Chat Integration**
    - Multiple LLM providers supported:
      - Anthropic Claude Sonnet 4.5 (Direct API with Extended Thinking & Web Search)
-     - AWS Bedrock Claude
-     - AWS Bedrock Mistral
+     - AWS Bedrock Claude (with Extended Thinking & Web Search via Tavily)
+     - AWS Bedrock Mistral Large
+     - AWS Bedrock Llama 3 (70B)
+     - AWS Bedrock Qwen3 VL 235B
+     - AWS Bedrock Amazon Titan Premier
+     - OpenAI GPT-5 (via Emergent LLM Key)
+     - Google Gemini 2.5 Pro (via Emergent LLM Key)
    - Chat history within projects
    - Toggle to include/exclude knowledge base
    - File attachments in chat
+   - Adjustable Temperature and Top P settings
 
 4. **Configurable Storage**
    - Local storage (default for development)
