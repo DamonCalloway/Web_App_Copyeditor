@@ -57,6 +57,8 @@ class ProjectBase(BaseModel):
     thinking_budget: int = 10000
     web_search_enabled: bool = True  # Default to on as user requested
     llm_provider: str = "anthropic"  # "anthropic" or "bedrock"
+    temperature: float = 0.7  # 0.0 to 1.0, controls randomness/creativity
+    top_p: float = 0.9  # 0.0 to 1.0, controls diversity of output
 
 class ProjectCreate(ProjectBase):
     pass
@@ -71,6 +73,8 @@ class ProjectUpdate(BaseModel):
     web_search_enabled: Optional[bool] = None
     archived: Optional[bool] = None
     llm_provider: Optional[str] = None
+    temperature: Optional[float] = None
+    top_p: Optional[float] = None
 
 class Project(ProjectBase):
     model_config = ConfigDict(extra="ignore")
