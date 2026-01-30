@@ -1175,6 +1175,53 @@ async def call_bedrock_converse_with_tools(
             })
             logger.info("Knowledge base tools enabled")
         
+        # Crop image tool (only if images are available)
+        if pil_images:
+            image_names = list(pil_images.keys())
+            tools_list.append({
+                "toolSpec": {
+                    "name": "crop_image",
+                    "description": f"Crop a region of an image to examine it in more detail. Use this when you need to zoom in on a specific area of an image. Available images: {', '.join(image_names)}. Coordinates are normalized (0-1), where (0,0) is top-left and (1,1) is bottom-right.",
+                    "inputSchema": {
+                        "json": {
+                            "type": "object",
+                            "properties": {
+                                "image_name": {
+                                    "type": "string",
+                                    "description": f"Name of the image to crop. Available: {', '.join(image_names)}"
+                                },
+                                "x1": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                    "description": "Left edge of bounding box as normalized 0-1 value"
+                                },
+                                "y1": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                    "description": "Top edge of bounding box as normalized 0-1 value"
+                                },
+                                "x2": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                    "description": "Right edge of bounding box as normalized 0-1 value"
+                                },
+                                "y2": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                    "description": "Bottom edge of bounding box as normalized 0-1 value"
+                                }
+                            },
+                            "required": ["image_name", "x1", "y1", "x2", "y2"]
+                        }
+                    }
+                }
+            })
+            logger.info(f"Crop image tool enabled with {len(pil_images)} image(s): {image_names}")
+        
         tool_config = {"tools": tools_list} if tools_list else None
         
         # Build converse params
