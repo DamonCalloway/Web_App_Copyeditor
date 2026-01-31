@@ -1619,6 +1619,16 @@ When the user asks you to edit something or check against style guides, proactiv
         model_identity = "\n\n# Important: You are Claude, an AI assistant made by Anthropic, accessed via AWS Bedrock. Always identify yourself as Claude if asked."
     elif provider_type == "bedrock-mistral":
         model_identity = "\n\n# Important: You are Mistral, an AI assistant made by Mistral AI, accessed via AWS Bedrock. Always identify yourself as Mistral if asked."
+    elif provider_type == "bedrock-llama3":
+        model_identity = "\n\n# Important: You are Llama 3, an AI assistant made by Meta, accessed via AWS Bedrock. Always identify yourself as Llama if asked."
+    elif provider_type == "bedrock-qwen3":
+        model_identity = "\n\n# Important: You are Qwen3 VL, an AI assistant made by Alibaba Cloud, accessed via AWS Bedrock. Always identify yourself as Qwen if asked."
+    elif provider_type == "bedrock-titan":
+        model_identity = "\n\n# Important: You are Amazon Titan, an AI assistant made by Amazon, accessed via AWS Bedrock. Always identify yourself as Titan if asked."
+    elif provider_type == "openai-gpt5":
+        model_identity = "\n\n# Important: You are GPT-5, an AI assistant made by OpenAI. Always identify yourself as GPT-5 if asked."
+    elif provider_type == "gemini":
+        model_identity = "\n\n# Important: You are Gemini, an AI assistant made by Google. Always identify yourself as Gemini if asked."
     elif provider_type == "anthropic":
         model_identity = "\n\n# Important: You are Claude, an AI assistant made by Anthropic. Always identify yourself as Claude if asked."
     
