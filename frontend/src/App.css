@@ -252,21 +252,36 @@
 }
 
 .message-assistant .message-content pre {
-    background: hsl(var(--muted));
+    background: hsl(0 0% 95%); /* Light gray background for code blocks */
+    border: 1px solid hsl(0 0% 85%); /* Visible border */
     padding: 0.75rem 1rem;
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     margin: 0.5rem 0;
     white-space: pre-wrap;
     word-wrap: break-word;
+    overflow-x: auto;
+}
+
+.dark .message-assistant .message-content pre {
+    background: hsl(0 0% 15%); /* Dark background for dark mode */
+    border: 1px solid hsl(0 0% 25%);
 }
 
 .message-assistant .message-content pre code {
-    background: transparent;
-    padding: 0;
-    border: none; /* Remove border for code inside pre blocks */
-    color: hsl(var(--foreground)); /* Normal text color for code blocks */
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    color: hsl(var(--foreground)) !important;
     white-space: pre-wrap;
     word-wrap: break-word;
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875em;
+    line-height: 1.5;
+}
+
+.dark .message-assistant .message-content pre code {
+    color: hsl(0 0% 90%) !important;
 }
 
 /* Thinking block styles */
