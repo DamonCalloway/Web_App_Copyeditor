@@ -13,6 +13,11 @@
     display: flex;
     flex-direction: column;
     background: hsl(var(--card));
+    color: #000; /* True black text in light mode */
+}
+
+.dark .sidebar {
+    color: hsl(var(--foreground)); /* Use theme color in dark mode */
 }
 
 .sidebar-collapsed {
