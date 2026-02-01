@@ -266,11 +266,25 @@ export default function ChatPage() {
 
   const getFileIcon = (filename) => {
     const ext = filename.split('.').pop()?.toLowerCase();
-    const imageExts = ['png', 'jpg', 'jpeg', 'bmp', 'gif'];
+    const imageExts = ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp'];
     if (imageExts.includes(ext)) {
-      return <Image className="h-4 w-4" />;
+      return <Image className="h-4 w-4 text-blue-500" />;
     }
-    return <File className="h-4 w-4" />;
+    return <File className="h-4 w-4 text-muted-foreground" />;
+  };
+
+  // Check if file is an image
+  const isImageFile = (filename) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    return ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp'].includes(ext);
+  };
+
+  // Create thumbnail URL for image files
+  const getFileThumbnail = (file) => {
+    if (isImageFile(file.name)) {
+      return URL.createObjectURL(file);
+    }
+    return null;
   };
 
   const handleSend = async () => {
