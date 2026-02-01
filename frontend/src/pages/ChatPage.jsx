@@ -681,27 +681,27 @@ export default function ChatPage() {
                         return (
                           <div 
                             key={idx}
-                            className="attachment-card-sent w-[140px] h-[160px] flex flex-col bg-black/10 rounded-lg overflow-hidden"
+                            className="attachment-card-sent w-[140px] h-[160px] flex flex-col bg-white/15 rounded-lg overflow-hidden backdrop-blur-sm"
                             data-testid={`sent-attachment-${idx}`}
                           >
                             {/* Preview Area - Top section */}
-                            <div className="flex-1 bg-black/5 flex items-center justify-center overflow-hidden p-2">
+                            <div className="flex-1 bg-white/10 flex items-center justify-center overflow-hidden p-2">
                               {isImage ? (
-                                <Image className="h-8 w-8 text-primary-foreground/60" />
+                                <Image className="h-10 w-10 text-primary-foreground/70" />
                               ) : (
-                                <FileText className="h-8 w-8 text-primary-foreground/60" />
+                                <FileText className="h-10 w-10 text-primary-foreground/70" />
                               )}
                             </div>
                             
                             {/* File Info - Bottom section */}
-                            <div className="p-2 border-t border-black/10">
+                            <div className="p-2 border-t border-white/20">
                               {/* Filename */}
                               <p className="text-xs font-medium text-primary-foreground truncate mb-1.5" title={filename}>
                                 {filename.length > 16 ? filename.slice(0, 16) + '...' : filename}
                               </p>
                               
                               {/* File Type Badge */}
-                              <div className="inline-flex items-center px-2 py-0.5 border border-primary-foreground/30 rounded text-[10px] font-medium text-primary-foreground/80 uppercase">
+                              <div className="inline-flex items-center px-2 py-0.5 bg-white/20 border border-white/30 rounded text-[10px] font-medium text-primary-foreground uppercase">
                                 {fileExt}
                               </div>
                             </div>
