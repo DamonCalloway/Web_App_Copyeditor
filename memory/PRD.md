@@ -100,8 +100,15 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
   - Filename displayed in middle (auto-truncated for long names)
   - File type badge at bottom (MD, PDF, PNG, etc.)
   - Remove button (X) appears on hover
-  - Image files show actual thumbnail preview
+  - Image files show actual thumbnail preview in input area
   - Same card design applied to both input area and sent messages
+
+### AWS Deployment Setup (February 1, 2025)
+- [x] Fixed S3 storage provider to work with Knowledge Base file retrieval
+- [x] Created `docker-compose.aws.yml` for production AWS deployment
+- [x] Created comprehensive AWS deployment guide at `/app/deployment/AWS_DEPLOYMENT.md`
+- [x] Created `.env.aws.example` template with all required variables
+- [x] Updated README with deployment instructions
 
 ## Prioritized Backlog
 
