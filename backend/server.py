@@ -1612,8 +1612,9 @@ When the user asks you to edit something or check against style guides, proactiv
     )
     await db.messages.insert_one(user_msg.model_dump())
     
-    # Get LLM configuration based on project's provider setting
-    model_name, api_key, provider_type, extra_config = get_llm_config(project)
+    # Get LLM configuration - use conversation's provider if set, otherwise project's
+    conv_llm_provider = conv.get("llm_provider")
+    model_name, api_key, provider_type, extra_config = get_llm_config(project, conv_llm_provider)
     supports_extended_features = extra_config.get("supports_extended_features", False) if provider_type == "anthropic" else False
     
     # Add model identity to system message to prevent confusion when provider changes mid-conversation
