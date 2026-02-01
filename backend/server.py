@@ -1461,12 +1461,13 @@ async def call_bedrock_converse_with_tools(
         logger.error(f"Bedrock Converse API error: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=f"Bedrock API error: {str(e)}")
 
-def get_llm_config(project: dict):
+def get_llm_config(project: dict, llm_provider_override: str = None):
     """
-    Get LLM configuration based on project's provider setting.
+    Get LLM configuration based on provider setting.
+    If llm_provider_override is provided (from conversation), use that instead of project's setting.
     Returns: (model_name, api_key, provider_type, extra_config)
     """
-    llm_provider = project.get("llm_provider", "anthropic")
+    llm_provider = llm_provider_override or project.get("llm_provider", "anthropic")
     
     # AWS Bedrock providers
     if llm_provider.startswith("bedrock-"):
