@@ -199,6 +199,32 @@ export default function ChatPage() {
     'mpeg', 'mp3', 'mp4', 'mov', 'wav'
   ];
 
+  // Admin-only providers (pay-as-you-go)
+  const ADMIN_ONLY_PROVIDERS = ['anthropic', 'openai-gpt5', 'gemini'];
+  
+  // Check for admin mode from URL param or localStorage
+  const [isAdminMode, setIsAdminMode] = useState(() => {
+    // Check localStorage first
+    if (localStorage.getItem('clod_sarnit_admin') === 'true') {
+      return true;
+    }
+    // Check URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      localStorage.setItem('clod_sarnit_admin', 'true');
+      // Clean URL without reloading
+      window.history.replaceState({}, '', window.location.pathname);
+      return true;
+    }
+    return false;
+  });
+
+  // Filter providers based on admin mode
+  const getFilteredProviders = (providers) => {
+    if (isAdminMode) return providers;
+    return providers.filter(p => !ADMIN_ONLY_PROVIDERS.includes(p));
+  };
+
   useEffect(() => {
     loadChatData();
   }, [conversationId]);
