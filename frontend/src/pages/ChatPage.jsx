@@ -1060,12 +1060,10 @@ export default function ChatPage() {
                               src={thumbnail} 
                               alt={file.name}
                               className="max-h-full max-w-full object-contain rounded"
-                              onLoad={() => URL.revokeObjectURL(thumbnail)}
                             />
                           ) : (
-                            <div className="text-[10px] text-muted-foreground text-center leading-tight px-2 line-clamp-4 font-mono">
-                              {/* Show placeholder text for document preview */}
-                              <FileText className="h-8 w-8 mx-auto mb-1 text-muted-foreground/50" />
+                            <div className="flex flex-col items-center justify-center">
+                              <FileText className="h-10 w-10 text-muted-foreground/50" />
                             </div>
                           )}
                         </div>
