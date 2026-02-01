@@ -274,7 +274,20 @@ export default function ChatPage() {
       
       // Load LLM provider from conversation (persisted per conversation)
       if (conv.llm_provider) {
-        setLlmProvider(conv.llm_provider);
+        // If non-admin user has an admin-only provider selected, default to bedrock-claude
+        if (!isAdminMode && ADMIN_ONLY_PROVIDERS.includes(conv.llm_provider)) {
+          const fallbackProvider = featureConfig.available_providers?.includes('bedrock-claude') 
+            ? 'bedrock-claude' 
+            : featureConfig.available_providers?.find(p => !ADMIN_ONLY_PROVIDERS.includes(p)) || 'bedrock-claude';
+          setLlmProvider(fallbackProvider);
+        } else {
+          setLlmProvider(conv.llm_provider);
+        }
+      } else {
+        // Default new conversations to bedrock-claude for non-admin users
+        if (!isAdminMode && featureConfig.available_providers?.includes('bedrock-claude')) {
+          setLlmProvider('bedrock-claude');
+        }
       }
       
       // Load project and files
