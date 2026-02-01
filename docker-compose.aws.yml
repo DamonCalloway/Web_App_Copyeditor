@@ -36,7 +36,7 @@ services:
       - AWS_REGION=${AWS_REGION:-us-east-1}
       
       # Bedrock model IDs
-      - BEDROCK_CLAUDE_MODEL_ID=${BEDROCK_CLAUDE_MODEL_ID:-us.anthropic.claude-sonnet-4-5-20250929-v1:0}
+      - BEDROCK_CLAUDE_MODEL_ID=${BEDROCK_CLAUDE_MODEL_ID:-anthropic.claude-sonnet-4-5-20250929-v1:0}
       - BEDROCK_MISTRAL_MODEL_ID=${BEDROCK_MISTRAL_MODEL_ID:-mistral.mistral-large-2407-v1:0}
       - BEDROCK_LLAMA3_MODEL_ID=${BEDROCK_LLAMA3_MODEL_ID:-meta.llama3-1-70b-instruct-v1:0}
       - BEDROCK_QWEN3_MODEL_ID=${BEDROCK_QWEN3_MODEL_ID:-qwen.qwen3-vl-235b-a22b}
