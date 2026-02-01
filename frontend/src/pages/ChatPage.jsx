@@ -189,6 +189,7 @@ export default function ChatPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [temperature, setTemperature] = useState(0.7);
   const [topP, setTopP] = useState(0.9);
+  const [showThinkingWarning, setShowThinkingWarning] = useState(false);
 
   // Allowed file types for chat attachments
   const ALLOWED_EXTENSIONS = [
