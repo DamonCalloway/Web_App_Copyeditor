@@ -137,7 +137,7 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
     <aside className="sidebar" data-testid="sidebar">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <h1 className="font-garamond text-xl font-semibold tracking-tight">Clod Sarnit</h1>
+        <h1 className="text-2xl font-normal tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>Clod Sarnit</h1>
         <Button 
           variant="ghost" 
           size="icon"
