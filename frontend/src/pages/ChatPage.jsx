@@ -326,6 +326,20 @@ export default function ChatPage() {
     return null;
   };
 
+  // Get file extension for badge display
+  const getFileExtension = (filename) => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    return ext ? ext.toUpperCase() : 'FILE';
+  };
+
+  // Truncate filename for display
+  const truncateFilename = (filename, maxLength = 20) => {
+    const ext = filename.split('.').pop();
+    const nameWithoutExt = filename.slice(0, filename.lastIndexOf('.'));
+    if (nameWithoutExt.length <= maxLength) return filename;
+    return `${nameWithoutExt.slice(0, maxLength)}...${ext ? '.' + ext : ''}`;
+  };
+
   const handleSend = async () => {
     if ((!input.trim() && attachedFiles.length === 0) || sending) return;
     
