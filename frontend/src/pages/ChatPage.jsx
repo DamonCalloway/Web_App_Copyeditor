@@ -235,6 +235,11 @@ export default function ChatPage() {
         setWebSearch(conv.web_search);
       }
       
+      // Load LLM provider from conversation (persisted per conversation)
+      if (conv.llm_provider) {
+        setLlmProvider(conv.llm_provider);
+      }
+      
       // Load project and files
       if (conv.project_id) {
         const [proj, filesList] = await Promise.all([
@@ -245,9 +250,13 @@ export default function ChatPage() {
         setFiles(filesList);
         setInstructionsText(proj.instructions || "");
         setMemoryText(proj.memory || "");
-        setLlmProvider(proj.llm_provider || "anthropic");
         setTemperature(proj.temperature ?? 0.7);
         setTopP(proj.top_p ?? 0.9);
+        
+        // Use project's LLM provider only if conversation doesn't have one set yet
+        if (!conv.llm_provider) {
+          setLlmProvider(proj.llm_provider || "anthropic");
+        }
         
         // Only use project defaults if conversation doesn't have settings yet
         if (conv.extended_thinking === undefined && conv.web_search === undefined) {
