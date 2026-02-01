@@ -161,23 +161,36 @@ code {
 
 .prose-content code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9em;
+    font-size: 0.875em;
     padding: 0.2em 0.4em;
     border-radius: 4px;
     background: hsl(var(--muted));
+    color: hsl(15 80% 50%); /* Coral/salmon color for inline code in light mode */
+}
+
+.dark .prose-content code {
+    color: hsl(15 80% 65%); /* Lighter coral for dark mode */
 }
 
 .prose-content pre {
     background: hsl(var(--muted));
     padding: 1rem;
     border-radius: 8px;
-    overflow-x: auto;
     margin: 1em 0;
+    overflow-x: auto;
+    /* Enable text wrapping in code blocks */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .prose-content pre code {
     background: none;
     padding: 0;
+    color: inherit; /* Reset color for code inside pre blocks */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .prose-content ul,
