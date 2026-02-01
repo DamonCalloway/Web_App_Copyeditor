@@ -597,7 +597,20 @@ export default function ChatPage() {
                 </div>
               ) : (
                 <>
-                  {messages.map((msg) => (
+                  {messages.map((msg) => {
+                // Parse attachments from user messages
+                let messageText = msg.content;
+                let attachments = [];
+                
+                if (msg.role === 'user' && msg.content.includes('📎')) {
+                  const parts = msg.content.split('\n\n📎 ');
+                  messageText = parts[0];
+                  if (parts[1]) {
+                    attachments = parts[1].split(', ').map(name => name.trim());
+                  }
+                }
+                
+                return (
                 <div 
                   key={msg.id} 
                   className={`message group ${msg.role === 'user' ? 'message-user' : 'message-assistant'}`}
@@ -607,6 +620,35 @@ export default function ChatPage() {
                   {msg.role === 'assistant' && msg.thinking && (
                     <ThinkingBlock thinking={msg.thinking} thinkingTime={msg.thinking_time} />
                   )}
+                  
+                  {/* Attachment thumbnails for user messages */}
+                  {msg.role === 'user' && attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {attachments.map((filename, idx) => {
+                        const ext = filename.split('.').pop()?.toLowerCase();
+                        const isImage = ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp'].includes(ext);
+                        
+                        return (
+                          <div 
+                            key={idx}
+                            className="flex items-center gap-2 px-3 py-2 bg-black/20 rounded-lg text-sm"
+                          >
+                            <div className="h-8 w-8 rounded bg-black/20 flex items-center justify-center flex-shrink-0">
+                              {isImage ? (
+                                <Image className="h-4 w-4 text-primary-foreground/80" />
+                              ) : (
+                                <File className="h-4 w-4 text-primary-foreground/80" />
+                              )}
+                            </div>
+                            <span className="truncate max-w-[120px] text-primary-foreground">
+                              {filename}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  
                   <div className="message-content text-foreground">
                     {msg.role === 'assistant' ? (
                       <div className="prose-content text-foreground">
@@ -617,7 +659,7 @@ export default function ChatPage() {
                     ) : (
                       <div className="prose-content text-foreground">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content}
+                          {messageText}
                         </ReactMarkdown>
                       </div>
                     )}
@@ -626,7 +668,8 @@ export default function ChatPage() {
                     <CopyButton text={msg.content} />
                   </div>
                 </div>
-              ))}
+              );
+              })}
               <div ref={messagesEndRef} />
             </>
             )}
