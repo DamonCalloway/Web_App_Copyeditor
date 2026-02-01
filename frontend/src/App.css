@@ -234,6 +234,37 @@
     color: hsl(var(--foreground));
 }
 
+/* Code styling for assistant messages - coral/salmon colored inline code */
+.message-assistant .message-content code {
+    background: hsl(var(--muted));
+    color: hsl(15 80% 50%); /* Coral/salmon color for inline code */
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875em;
+}
+
+.dark .message-assistant .message-content code {
+    color: hsl(15 80% 65%); /* Lighter coral for dark mode */
+}
+
+.message-assistant .message-content pre {
+    background: hsl(var(--muted));
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    margin: 0.5rem 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.message-assistant .message-content pre code {
+    background: transparent;
+    padding: 0;
+    color: hsl(var(--foreground)); /* Normal text color for code blocks */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 /* Thinking block styles */
 .thinking-content {
     font-size: 0.875rem;
