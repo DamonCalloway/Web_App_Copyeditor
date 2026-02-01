@@ -226,7 +226,7 @@ code {
     border-left: 3px solid hsl(var(--primary));
     padding: 0.75rem 1rem;
     margin: 1rem 0;
-    font-style: italic;
+    font-style: normal; /* Roman/regular text, not italic */
     color: hsl(var(--muted-foreground));
     background: hsl(var(--secondary) / 0.5);
     border-radius: 0 0.5rem 0.5rem 0;
