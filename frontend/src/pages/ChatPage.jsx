@@ -465,12 +465,9 @@ export default function ChatPage() {
   };
 
   const handleProviderChange = async (newProvider) => {
-    if (!project) {
-      toast.error("Please associate chat with a project first");
-      return;
-    }
     try {
-      await updateProject(project.id, { llm_provider: newProvider });
+      // Save LLM provider to conversation (not project)
+      await updateConversation(conversationId, { llm_provider: newProvider });
       setLlmProvider(newProvider);
       
       // Auto-disable features based on provider capabilities
@@ -507,7 +504,6 @@ export default function ChatPage() {
         "gemini": "Google Gemini"
       };
       toast.success(`Switched to ${providerNames[newProvider] || newProvider}`);
-      loadChatData();
     } catch (error) {
       toast.error("Failed to update provider");
     }
