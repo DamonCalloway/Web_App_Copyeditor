@@ -109,6 +109,20 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Created comprehensive AWS deployment guide at `/app/deployment/AWS_DEPLOYMENT.md`
 - [x] Created `.env.aws.example` template with all required variables
 - [x] Updated README with deployment instructions
+- [x] Tested S3 integration successfully with Access Point
+
+### Admin Mode & Provider Access Control (February 1, 2025)
+- [x] Implemented secret URL parameter `?admin=true` to unlock premium providers
+- [x] Admin-only providers (Anthropic Direct API, OpenAI GPT-5, Google Gemini) hidden from regular users
+- [x] AWS Bedrock providers available to all users (company account)
+- [x] Admin flag persists in localStorage after first use
+- [x] Non-admin users automatically default to Bedrock Claude
+
+### Extended Thinking Improvements (February 1, 2025)
+- [x] Added warning dialog when enabling Extended Thinking on Bedrock Claude
+- [x] Warning explains KB access limitation due to Bedrock API constraint
+- [x] Fixed thinking content extraction for litellm (multiple location checks)
+- [x] Changed priority: Extended Thinking now disables tools instead of vice versa
 
 ## Prioritized Backlog
 
