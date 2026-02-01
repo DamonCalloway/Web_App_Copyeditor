@@ -1024,54 +1024,59 @@ export default function ChatPage() {
               </TooltipProvider>
             </div>
             
-            {/* Attached Files Preview - Claude-style thumbnails */}
+            {/* Attached Files Preview - Claude-style square cards */}
             {attachedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3 px-1">
+              <div className="flex flex-wrap gap-3 mb-3 px-1">
                 {attachedFiles.map((file, index) => {
                   const thumbnail = getFileThumbnail(file);
                   const isImage = isImageFile(file.name);
+                  const fileExt = getFileExtension(file.name);
                   
                   return (
                     <div 
                       key={index}
                       className="relative group"
+                      data-testid={`attachment-card-${index}`}
                     >
-                      {/* Thumbnail Card */}
-                      <div className={`
-                        flex items-center gap-2 px-3 py-2 
-                        bg-secondary/80 hover:bg-secondary 
-                        border border-border rounded-lg
-                        transition-colors cursor-default
-                        ${isImage ? 'pr-2' : ''}
-                      `}>
-                        {/* Image thumbnail or file icon */}
-                        {thumbnail ? (
-                          <div className="relative h-10 w-10 rounded overflow-hidden flex-shrink-0">
+                      {/* Square Card Container */}
+                      <div className="attachment-card w-[140px] h-[160px] flex flex-col bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors">
+                        {/* Preview Area - Top 60% */}
+                        <div className="flex-1 bg-muted/30 flex items-center justify-center overflow-hidden p-2">
+                          {thumbnail ? (
                             <img 
                               src={thumbnail} 
                               alt={file.name}
-                              className="h-full w-full object-cover"
+                              className="max-h-full max-w-full object-contain rounded"
                               onLoad={() => URL.revokeObjectURL(thumbnail)}
                             />
-                          </div>
-                        ) : (
-                          <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                            {getFileIcon(file.name)}
-                          </div>
-                        )}
+                          ) : (
+                            <div className="text-[10px] text-muted-foreground text-center leading-tight px-2 line-clamp-4 font-mono">
+                              {/* Show placeholder text for document preview */}
+                              <FileText className="h-8 w-8 mx-auto mb-1 text-muted-foreground/50" />
+                            </div>
+                          )}
+                        </div>
                         
-                        {/* Filename */}
-                        <span className="text-sm truncate max-w-[120px] text-foreground">
-                          {file.name}
-                        </span>
+                        {/* File Info - Bottom section */}
+                        <div className="p-2 border-t border-border/50">
+                          {/* Filename */}
+                          <p className="text-xs font-medium text-foreground truncate mb-1.5" title={file.name}>
+                            {truncateFilename(file.name, 16)}
+                          </p>
+                          
+                          {/* File Type Badge */}
+                          <div className="inline-flex items-center px-2 py-0.5 border border-border rounded text-[10px] font-medium text-muted-foreground uppercase">
+                            {fileExt}
+                          </div>
+                        </div>
                         
-                        {/* Remove button */}
+                        {/* Remove button - overlay on hover */}
                         <button
                           onClick={() => removeAttachedFile(index)}
-                          className="ml-1 p-1 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          className="absolute top-1 right-1 p-1 rounded-full bg-background/80 border border-border opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all"
                           data-testid={`remove-attachment-${index}`}
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
