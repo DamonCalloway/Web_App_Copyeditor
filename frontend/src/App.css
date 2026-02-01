@@ -151,6 +151,10 @@
 
 .conversation-item.active {
     background: hsl(var(--secondary));
+    color: #000; /* True black when active */
+}
+
+.dark .conversation-item.active {
     color: hsl(var(--foreground));
 }
 
