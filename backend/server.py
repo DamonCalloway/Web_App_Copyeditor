@@ -910,12 +910,12 @@ async def retrieve_kb_file_content(project_id: str, filename: str) -> str:
         if not file_record:
             return f"File '{filename}' not found in knowledge base."
         
-        # Read full content from storage
-        file_path = LOCAL_STORAGE_PATH / file_record['storage_path']
-        if not file_path.exists():
-            return f"File '{filename}' exists in database but file not found on disk."
+        # Read full content from storage (works with both local and S3)
+        try:
+            content_bytes = await storage.get_file(file_record['storage_path'])
+        except Exception as e:
+            return f"File '{filename}' exists in database but could not be read: {str(e)}"
         
-        content_bytes = file_path.read_bytes()
         ext = file_record['file_type'].lower()
         
         if ext in ['txt', 'md']:
