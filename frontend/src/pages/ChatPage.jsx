@@ -956,6 +956,13 @@ export default function ChatPage() {
                           }
                           if (thinkingEnabled) {
                             const newValue = !extendedThinking;
+                            
+                            // Show warning when enabling Think on Bedrock Claude
+                            if (newValue && llmProvider === "bedrock-claude") {
+                              setShowThinkingWarning(true);
+                              return;
+                            }
+                            
                             let newWebSearch = webSearch;
                             setExtendedThinking(newValue);
                             
@@ -963,7 +970,6 @@ export default function ChatPage() {
                             if (newValue && llmProvider === "bedrock-claude" && webSearch) {
                               newWebSearch = false;
                               setWebSearch(false);
-                              toast.info("Web Search disabled - cannot use both with Bedrock");
                             }
                             
                             // Save to conversation (persisted)
