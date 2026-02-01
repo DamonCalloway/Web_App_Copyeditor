@@ -130,14 +130,22 @@
     cursor: pointer;
     transition: background-color 0.15s ease;
     font-size: 0.875rem;
-    color: hsl(var(--muted-foreground));
+    color: #333; /* Dark gray, slightly lighter than black for hierarchy */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+.dark .conversation-item {
+    color: hsl(var(--muted-foreground));
+}
+
 .conversation-item:hover {
     background: hsl(var(--secondary));
+    color: #000; /* True black on hover */
+}
+
+.dark .conversation-item:hover {
     color: hsl(var(--foreground));
 }
 
