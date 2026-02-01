@@ -1977,6 +1977,8 @@ async def chat_with_files(
         if fc["type"] == "image_url":
             user_content.append(fc)
     
+    logger.info(f"Total file_contents: {len(file_contents)}, images in user_content: {len([fc for fc in user_content if fc.get('type') == 'image_url'])}")
+    
     # Add text content from files
     text_parts = []
     for fc in file_contents:
