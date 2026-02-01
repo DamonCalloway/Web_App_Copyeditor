@@ -124,6 +124,7 @@ export default function ChatPage() {
   const textareaRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const fileInputRef = useRef(null);
+  const { theme } = useTheme();
   
   const [conversation, setConversation] = useState(null);
   const [project, setProject] = useState(null);
