@@ -1899,6 +1899,7 @@ async def chat_with_files(
         content = await file.read()
         file_names.append(file.filename)
         ext = file.filename.lower().split('.')[-1] if '.' in file.filename else ''
+        logger.info(f"Processing file: {file.filename}, ext={ext}, size={len(content)} bytes")
         
         # Image files - convert to base64 for vision (OpenAI format for litellm)
         if ext in ['png', 'jpg', 'jpeg', 'gif', 'bmp']:
@@ -1911,6 +1912,7 @@ async def chat_with_files(
                     "url": f"data:{mime_type};base64,{b64_content}"
                 }
             })
+            logger.info(f"Added image to file_contents: {file.filename}")
         # Text-based files - extract FULL content
         elif ext in ['txt', 'md', 'json', 'csv', 'rtf']:
             text_content = content.decode('utf-8', errors='ignore')
