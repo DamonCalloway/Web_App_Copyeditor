@@ -215,11 +215,14 @@ class S3StorageProvider(StorageProvider):
 
 def get_storage_provider() -> StorageProvider:
     if STORAGE_PROVIDER == 's3':
+        # Use S3-specific keys if provided, otherwise fall back to standard AWS credentials
+        access_key = os.environ.get('S3_ACCESS_KEY') or os.environ.get('AWS_ACCESS_KEY_ID', '')
+        secret_key = os.environ.get('S3_SECRET_KEY') or os.environ.get('AWS_SECRET_ACCESS_KEY', '')
         return S3StorageProvider(
             bucket_name=os.environ.get('S3_BUCKET_NAME', ''),
-            access_key=os.environ.get('S3_ACCESS_KEY', ''),
-            secret_key=os.environ.get('S3_SECRET_KEY', ''),
-            region=os.environ.get('S3_REGION', 'us-east-1')
+            access_key=access_key,
+            secret_key=secret_key,
+            region=os.environ.get('S3_REGION') or os.environ.get('AWS_REGION', 'us-east-1')
         )
     return LocalStorageProvider(LOCAL_STORAGE_PATH)
 
