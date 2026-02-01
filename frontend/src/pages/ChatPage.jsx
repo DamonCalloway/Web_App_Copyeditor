@@ -906,25 +906,59 @@ export default function ChatPage() {
               </TooltipProvider>
             </div>
             
-            {/* Attached Files Preview */}
+            {/* Attached Files Preview - Claude-style thumbnails */}
             {attachedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
-                {attachedFiles.map((file, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center gap-1.5 px-2 py-1 bg-secondary rounded-md text-sm"
-                  >
-                    {getFileIcon(file.name)}
-                    <span className="truncate max-w-[150px]">{file.name}</span>
-                    <button
-                      onClick={() => removeAttachedFile(index)}
-                      className="hover:text-destructive transition-colors"
-                      data-testid={`remove-attachment-${index}`}
+              <div className="flex flex-wrap gap-2 mb-3 px-1">
+                {attachedFiles.map((file, index) => {
+                  const thumbnail = getFileThumbnail(file);
+                  const isImage = isImageFile(file.name);
+                  
+                  return (
+                    <div 
+                      key={index}
+                      className="relative group"
                     >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
+                      {/* Thumbnail Card */}
+                      <div className={`
+                        flex items-center gap-2 px-3 py-2 
+                        bg-secondary/80 hover:bg-secondary 
+                        border border-border rounded-lg
+                        transition-colors cursor-default
+                        ${isImage ? 'pr-2' : ''}
+                      `}>
+                        {/* Image thumbnail or file icon */}
+                        {thumbnail ? (
+                          <div className="relative h-10 w-10 rounded overflow-hidden flex-shrink-0">
+                            <img 
+                              src={thumbnail} 
+                              alt={file.name}
+                              className="h-full w-full object-cover"
+                              onLoad={() => URL.revokeObjectURL(thumbnail)}
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                            {getFileIcon(file.name)}
+                          </div>
+                        )}
+                        
+                        {/* Filename */}
+                        <span className="text-sm truncate max-w-[120px] text-foreground">
+                          {file.name}
+                        </span>
+                        
+                        {/* Remove button */}
+                        <button
+                          onClick={() => removeAttachedFile(index)}
+                          className="ml-1 p-1 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          data-testid={`remove-attachment-${index}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
             
