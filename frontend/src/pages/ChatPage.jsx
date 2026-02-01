@@ -601,6 +601,11 @@ export default function ChatPage() {
               <span className="text-sm text-muted-foreground">{project?.name}</span>
               <span className="text-muted-foreground">/</span>
               <span className="text-sm font-medium truncate">{conversation?.name}</span>
+              {isAdminMode && (
+                <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded border border-amber-500/30">
+                  Admin
+                </span>
+              )}
             </div>
           </div>
           
