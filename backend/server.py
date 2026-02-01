@@ -113,6 +113,7 @@ class ConversationUpdate(BaseModel):
     archived: Optional[bool] = None
     extended_thinking: Optional[bool] = None
     web_search: Optional[bool] = None
+    llm_provider: Optional[str] = None
 
 class Conversation(ConversationBase):
     model_config = ConfigDict(extra="ignore")
@@ -123,6 +124,7 @@ class Conversation(ConversationBase):
     archived: bool = False
     extended_thinking: bool = False
     web_search: bool = False
+    llm_provider: str = "anthropic"  # Default LLM provider per conversation
 
 class Message(BaseModel):
     model_config = ConfigDict(extra="ignore")
