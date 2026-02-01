@@ -56,7 +56,33 @@ Complete guide for deploying Clod Sarnit to AWS with S3 storage and Bedrock inte
 
 ---
 
-## Step 1: Create S3 Bucket
+## Step 1: Create S3 Bucket and Access Point
+
+### Option A: Using S3 Access Point (Recommended)
+
+Access Points provide simplified access management for S3 buckets.
+
+```bash
+# Create bucket
+aws s3 mb s3://your-clod-sarnit-bucket --region us-east-1
+
+# Create access point
+aws s3control create-access-point \
+  --account-id YOUR_ACCOUNT_ID \
+  --name clod-sarnit-access-point \
+  --bucket your-clod-sarnit-bucket
+
+# The access point alias will be generated automatically
+# Format: <name>-<account-id>-s3alias
+# Example: clod-sarnit-access-p-kghicfr1mec5pdg9u4hi1inmmzqphuse2b-s3alias
+```
+
+Use the **access point alias** as your `S3_BUCKET_NAME`:
+```bash
+S3_BUCKET_NAME=clod-sarnit-access-p-kghicfr1mec5pdg9u4hi1inmmzqphuse2b-s3alias
+```
+
+### Option B: Direct Bucket Access
 
 ```bash
 # Create bucket for file storage
