@@ -177,7 +177,7 @@
 /* Code styling for user messages - ensure readable contrast */
 .message-user .message-content code {
     background: rgba(0, 0, 0, 0.2);
-    color: hsl(var(--primary-foreground));
+    color: hsl(30 100% 85%); /* Light coral/peach for inline code on coral background */
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-family: 'JetBrains Mono', monospace;
@@ -190,12 +190,16 @@
     border-radius: 0.375rem;
     overflow-x: auto;
     margin: 0.5rem 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .message-user .message-content pre code {
     background: transparent;
     padding: 0;
-    color: hsl(var(--primary-foreground));
+    color: hsl(var(--primary-foreground)); /* Keep code blocks white for readability */
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .message-assistant {
