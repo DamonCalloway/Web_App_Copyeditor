@@ -859,7 +859,7 @@ export default function ChatPage() {
             )}
             
             {/* LLM Provider Selector */}
-            {availableProviders.length > 1 && project && (
+            {getFilteredProviders(availableProviders).length > 0 && project && (
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Label htmlFor="llm-provider" className="text-xs text-muted-foreground">LLM Provider:</Label>
                 <Select value={llmProvider} onValueChange={handleProviderChange}>
@@ -867,12 +867,14 @@ export default function ChatPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="anthropic">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                        <span>Anthropic Direct API</span>
-                      </div>
-                    </SelectItem>
+                    {(isAdminMode || !ADMIN_ONLY_PROVIDERS.includes("anthropic")) && availableProviders.includes("anthropic") && (
+                      <SelectItem value="anthropic">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                          <span>Anthropic Direct API</span>
+                        </div>
+                      </SelectItem>
+                    )}
                     {availableProviders.includes("bedrock-claude") && (
                       <SelectItem value="bedrock-claude">
                         <div className="flex items-center gap-2">
@@ -913,7 +915,7 @@ export default function ChatPage() {
                         </div>
                       </SelectItem>
                     )}
-                    {availableProviders.includes("openai-gpt5") && (
+                    {isAdminMode && availableProviders.includes("openai-gpt5") && (
                       <SelectItem value="openai-gpt5">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -921,7 +923,7 @@ export default function ChatPage() {
                         </div>
                       </SelectItem>
                     )}
-                    {availableProviders.includes("gemini") && (
+                    {isAdminMode && availableProviders.includes("gemini") && (
                       <SelectItem value="gemini">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-red-500"></div>
