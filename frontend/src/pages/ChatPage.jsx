@@ -648,7 +648,7 @@ export default function ChatPage() {
                 >
                   {/* Thinking block for assistant messages */}
                   {msg.role === 'assistant' && msg.thinking && (
-                    <ThinkingBlock thinking={msg.thinking} thinkingTime={msg.thinking_time} />
+                    <ThinkingBlock thinking={msg.thinking} thinkingTime={msg.thinking_time} currentTheme={theme} />
                   )}
                   
                   {/* Attachment thumbnails for user messages */}
