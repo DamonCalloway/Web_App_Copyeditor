@@ -236,19 +236,19 @@
 
 /* Code styling for assistant messages - coral/salmon colored inline code with darker background and border */
 .message-assistant .message-content code {
-    background: hsl(var(--muted) / 0.8);
-    color: hsl(15 80% 45%); /* Slightly darker coral for better contrast */
-    padding: 0.15rem 0.4rem;
-    border-radius: 0.25rem;
-    border: 1px solid hsl(var(--border) / 0.5); /* Subtle border */
+    background: hsl(0 0% 90%); /* Light gray background - distinct from message bubble */
+    color: hsl(15 80% 40%); /* Darker coral for better contrast */
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.3rem;
+    border: 1px solid hsl(0 0% 80%); /* Visible gray border */
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.875em;
 }
 
 .dark .message-assistant .message-content code {
-    background: hsl(var(--muted));
+    background: hsl(0 0% 25%); /* Dark gray background for dark mode */
     color: hsl(15 80% 65%); /* Lighter coral for dark mode */
-    border: 1px solid hsl(var(--border) / 0.4);
+    border: 1px solid hsl(0 0% 35%); /* Visible border in dark mode */
 }
 
 .message-assistant .message-content pre {
