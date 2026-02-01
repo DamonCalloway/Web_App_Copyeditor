@@ -61,7 +61,7 @@ services:
       
       # Bedrock model IDs (optional - defaults provided)
       - BEDROCK_CLAUDE_MODEL_ID=${BEDROCK_CLAUDE_MODEL_ID:-us.anthropic.claude-sonnet-4-5-20250929-v1:0}
-      - BEDROCK_MISTRAL_MODEL_ID=${BEDROCK_MISTRAL_MODEL_ID:-mistral.mistral-large-2407-v1:0}
+      - BEDROCK_MISTRAL_MODEL_ID=${BEDROCK_MISTRAL_MODEL_ID:-mistral.mistral-large-2411-v1:0}
       - BEDROCK_LLAMA3_MODEL_ID=${BEDROCK_LLAMA3_MODEL_ID:-meta.llama3-1-70b-instruct-v1:0}
       - BEDROCK_QWEN3_MODEL_ID=${BEDROCK_QWEN3_MODEL_ID:-qwen.qwen3-vl-235b-a22b}
       - BEDROCK_TITAN_MODEL_ID=${BEDROCK_TITAN_MODEL_ID:-amazon.titan-text-premier-v1:0}
