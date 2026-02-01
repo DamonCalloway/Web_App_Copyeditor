@@ -86,7 +86,7 @@ const CopyButton = ({ text }) => {
 };
 
 // Thinking block component - collapsible like Claude.ai
-const ThinkingBlock = ({ thinking, thinkingTime }) => {
+const ThinkingBlock = ({ thinking, thinkingTime, currentTheme }) => {
   const [isOpen, setIsOpen] = useState(false);
   
   if (!thinking) return null;
@@ -108,7 +108,33 @@ const ThinkingBlock = ({ thinking, thinkingTime }) => {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="mt-2 p-3 rounded-lg bg-secondary/30 border border-border/50 text-sm text-muted-foreground thinking-content">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]}
+            components={{
+              code({ node, inline, className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || '');
+                return !inline && match ? (
+                  <SyntaxHighlighter
+                    style={currentTheme === 'dark' ? oneDark : oneLight}
+                    language={match[1]}
+                    PreTag="div"
+                    customStyle={{
+                      margin: '0.5rem 0',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.8rem',
+                    }}
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                );
+              }
+            }}
+          >
             {thinking}
           </ReactMarkdown>
         </div>
