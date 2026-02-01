@@ -960,11 +960,12 @@ async def search_within_kb_files(project_id: str, search_term: str) -> str:
         results = []
         for file_record in all_files:
             try:
-                file_path = LOCAL_STORAGE_PATH / file_record['storage_path']
-                if not file_path.exists():
+                # Read content from storage (works with both local and S3)
+                try:
+                    content_bytes = await storage.get_file(file_record['storage_path'])
+                except Exception:
                     continue
                 
-                content_bytes = file_path.read_bytes()
                 ext = file_record['file_type'].lower()
                 
                 if ext in ['txt', 'md']:
