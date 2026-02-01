@@ -670,28 +670,41 @@ export default function ChatPage() {
                     <ThinkingBlock thinking={msg.thinking} thinkingTime={msg.thinking_time} currentTheme={theme} />
                   )}
                   
-                  {/* Attachment thumbnails for user messages */}
+                  {/* Attachment cards for user messages - Claude-style square cards */}
                   {msg.role === 'user' && attachments.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <div className="flex flex-wrap gap-3 mb-3">
                       {attachments.map((filename, idx) => {
                         const ext = filename.split('.').pop()?.toLowerCase();
                         const isImage = ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp'].includes(ext);
+                        const fileExt = ext ? ext.toUpperCase() : 'FILE';
                         
                         return (
                           <div 
                             key={idx}
-                            className="flex items-center gap-2 px-3 py-2 bg-black/20 rounded-lg text-sm"
+                            className="attachment-card-sent w-[140px] h-[160px] flex flex-col bg-black/10 rounded-lg overflow-hidden"
+                            data-testid={`sent-attachment-${idx}`}
                           >
-                            <div className="h-8 w-8 rounded bg-black/20 flex items-center justify-center flex-shrink-0">
+                            {/* Preview Area - Top section */}
+                            <div className="flex-1 bg-black/5 flex items-center justify-center overflow-hidden p-2">
                               {isImage ? (
-                                <Image className="h-4 w-4 text-primary-foreground/80" />
+                                <Image className="h-8 w-8 text-primary-foreground/60" />
                               ) : (
-                                <File className="h-4 w-4 text-primary-foreground/80" />
+                                <FileText className="h-8 w-8 text-primary-foreground/60" />
                               )}
                             </div>
-                            <span className="truncate max-w-[120px] text-primary-foreground">
-                              {filename}
-                            </span>
+                            
+                            {/* File Info - Bottom section */}
+                            <div className="p-2 border-t border-black/10">
+                              {/* Filename */}
+                              <p className="text-xs font-medium text-primary-foreground truncate mb-1.5" title={filename}>
+                                {filename.length > 16 ? filename.slice(0, 16) + '...' : filename}
+                              </p>
+                              
+                              {/* File Type Badge */}
+                              <div className="inline-flex items-center px-2 py-0.5 border border-primary-foreground/30 rounded text-[10px] font-medium text-primary-foreground/80 uppercase">
+                                {fileExt}
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
