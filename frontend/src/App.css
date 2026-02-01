@@ -205,13 +205,13 @@
 .message-assistant {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end; /* Align to right like user messages */
 }
 
 .message-assistant .message-content {
     background: hsl(var(--secondary));
     color: hsl(var(--foreground));
-    border-radius: 1rem 1rem 1rem 0.25rem;
+    border-radius: 1rem 1rem 0.25rem 1rem; /* Match user message style - rounded on right */
     max-width: 85%;
     padding: 1rem 1.25rem;
 }
@@ -234,18 +234,21 @@
     color: hsl(var(--foreground));
 }
 
-/* Code styling for assistant messages - coral/salmon colored inline code */
+/* Code styling for assistant messages - coral/salmon colored inline code with darker background and border */
 .message-assistant .message-content code {
-    background: hsl(var(--muted));
-    color: hsl(15 80% 50%); /* Coral/salmon color for inline code */
-    padding: 0.125rem 0.375rem;
+    background: hsl(var(--muted) / 0.8);
+    color: hsl(15 80% 45%); /* Slightly darker coral for better contrast */
+    padding: 0.15rem 0.4rem;
     border-radius: 0.25rem;
+    border: 1px solid hsl(var(--border) / 0.5); /* Subtle border */
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.875em;
 }
 
 .dark .message-assistant .message-content code {
+    background: hsl(var(--muted));
     color: hsl(15 80% 65%); /* Lighter coral for dark mode */
+    border: 1px solid hsl(var(--border) / 0.4);
 }
 
 .message-assistant .message-content pre {
@@ -260,6 +263,7 @@
 .message-assistant .message-content pre code {
     background: transparent;
     padding: 0;
+    border: none; /* Remove border for code inside pre blocks */
     color: hsl(var(--foreground)); /* Normal text color for code blocks */
     white-space: pre-wrap;
     word-wrap: break-word;
