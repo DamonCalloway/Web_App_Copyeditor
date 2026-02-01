@@ -656,7 +656,33 @@ export default function ChatPage() {
                   <div className="message-content text-foreground">
                     {msg.role === 'assistant' ? (
                       <div className="prose-content text-foreground">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            code({ node, inline, className, children, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '');
+                              return !inline && match ? (
+                                <SyntaxHighlighter
+                                  style={theme === 'dark' ? oneDark : oneLight}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  customStyle={{
+                                    margin: '0.5rem 0',
+                                    borderRadius: '0.5rem',
+                                    fontSize: '0.875rem',
+                                  }}
+                                  {...props}
+                                >
+                                  {String(children).replace(/\n$/, '')}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              );
+                            }
+                          }}
+                        >
                           {msg.content}
                         </ReactMarkdown>
                       </div>
