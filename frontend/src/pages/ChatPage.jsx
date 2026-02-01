@@ -1474,6 +1474,45 @@ export default function ChatPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bedrock Extended Thinking Warning Dialog */}
+      <AlertDialog open={showThinkingWarning} onOpenChange={setShowThinkingWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <span className="text-yellow-500">⚠️</span> Extended Thinking Limitation
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left space-y-2">
+              <p>
+                Turning on Extended Thinking will <strong>block Claude's access to all files in the Project knowledge base</strong>.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                This is a limitation of the AWS Bedrock API — it cannot use tools (like knowledge base retrieval) and Extended Thinking simultaneously.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Consider using <strong>Anthropic Direct API</strong> if you need both features together.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setExtendedThinking(true);
+                let newWebSearch = webSearch;
+                if (webSearch) {
+                  newWebSearch = false;
+                  setWebSearch(false);
+                }
+                await saveConversationSettings({ extended_thinking: true, web_search: newWebSearch });
+                setShowThinkingWarning(false);
+              }}
+            >
+              Enable Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
