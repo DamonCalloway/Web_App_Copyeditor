@@ -2064,12 +2064,13 @@ async def chat_with_files(
         # Web search only for Bedrock Claude with Tavily
         bedrock_web_search = web_search and provider_type == "bedrock-claude" and tavily_client is not None
         
-        # Disable extended thinking if tools are in use (conflict)
+        # When thinking is explicitly enabled, prioritize it over tools (can't use both)
         if bedrock_extended_thinking and (bedrock_web_search or chat_images):
-            logger.warning("Extended thinking conflicts with tools - disabling extended thinking")
-            bedrock_extended_thinking = False
+            logger.info("Extended thinking enabled - disabling web search to allow thinking to work")
+            bedrock_web_search = False
+            # Note: crop_tool for images is still useful but may conflict - user's choice to enable thinking
         
-        logger.info(f"Using Bedrock with files: model={bedrock_model_id}, crop_images={len(chat_images)}")
+        logger.info(f"Using Bedrock with files: model={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, crop_images={len(chat_images)}")
         
         try:
             start_time = time.time()
