@@ -1715,11 +1715,11 @@ When the user asks you to edit something or check against style guides, proactiv
             logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, web_search={bedrock_web_search}, kb_tools={bedrock_kb_tools}")
             
             # Note: Extended Thinking and tools (web search/KB) cannot be used together on Bedrock
-            # When thinking is enabled, tool use requires special handling of thinking blocks
-            # Prioritize tools over thinking if both are requested
+            # When thinking is explicitly enabled by user, prioritize thinking over tools
             if bedrock_extended_thinking and (bedrock_web_search or bedrock_kb_tools):
-                logger.warning("Extended thinking conflicts with tools - disabling extended thinking")
-                bedrock_extended_thinking = False
+                logger.info("Extended thinking enabled - disabling tools (KB/WebSearch) to allow thinking to work")
+                bedrock_web_search = False
+                bedrock_kb_tools = False
             
             response_text, thinking_content, thinking_time = await call_bedrock_converse_with_tools(
                 model_id=bedrock_model_id,
