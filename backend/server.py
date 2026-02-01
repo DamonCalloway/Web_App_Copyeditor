@@ -2019,8 +2019,9 @@ async def chat_with_files(
     }
     await db.messages.insert_one(user_msg_data)
     
-    # API call - use appropriate provider
-    model_name, api_key_from_config, provider_type, extra_config = get_llm_config(project)
+    # API call - use appropriate provider (respect conversation's LLM provider setting)
+    conv_llm_provider = conv.get("llm_provider")
+    model_name, api_key_from_config, provider_type, extra_config = get_llm_config(project, conv_llm_provider)
     
     # Extract images for crop tool
     chat_images = []
