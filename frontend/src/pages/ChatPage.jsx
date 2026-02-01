@@ -619,12 +619,12 @@ export default function ChatPage() {
           </div>
         </ScrollArea>
         
-        {/* Scroll to Bottom Button */}
+        {/* Scroll to Bottom Button - centered with white circle */}
         {showScrollButton && (
           <Button
-            variant="secondary"
+            variant="outline"
             size="icon"
-            className="absolute bottom-4 right-4 h-10 w-10 rounded-full shadow-lg hover:shadow-xl transition-all z-10"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 h-10 w-10 rounded-full shadow-lg hover:shadow-xl transition-all z-10 bg-white dark:bg-zinc-800 border-2 border-border"
             onClick={() => scrollToBottom(true)}
             data-testid="scroll-to-bottom-btn"
           >
