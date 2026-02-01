@@ -152,7 +152,7 @@
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     border-radius: 1rem 1rem 0.25rem 1rem;
-    max-width: 70%;
+    max-width: 95%;
     padding: 0.875rem 1rem;
 }
 
@@ -212,7 +212,7 @@
     background: hsl(var(--secondary));
     color: hsl(var(--foreground));
     border-radius: 1rem 1rem 0.25rem 1rem; /* Match user message style - rounded on right */
-    max-width: 85%;
+    max-width: 95%;
     padding: 1rem 1.25rem;
 }
 
