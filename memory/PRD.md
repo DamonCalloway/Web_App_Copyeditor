@@ -94,6 +94,15 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Added: Deployment files (Dockerfile, docker-compose.yml) for AWS self-hosting
 - [x] Added: Image Crop Tool for Bedrock Claude - allows Claude to request cropped regions of attached images for detailed analysis (uses normalized 0-1 coordinates)
 
+### UI Enhancements (February 1, 2025)
+- [x] New File Attachment UI: Redesigned attachment cards with Claude.ai-inspired square card layout
+  - 140x160px cards with file icon/preview at top
+  - Filename displayed in middle (auto-truncated for long names)
+  - File type badge at bottom (MD, PDF, PNG, etc.)
+  - Remove button (X) appears on hover
+  - Image files show actual thumbnail preview
+  - Same card design applied to both input area and sent messages
+
 ## Prioritized Backlog
 
 ### P0 (Critical - Done)
