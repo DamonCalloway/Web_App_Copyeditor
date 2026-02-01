@@ -106,8 +106,12 @@
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.15s ease;
-    color: hsl(var(--foreground));
+    color: #000; /* True black in light mode */
     font-size: 0.875rem; /* Smaller font size */
+}
+
+.dark .nav-item {
+    color: hsl(var(--foreground));
 }
 
 .nav-item:hover {
