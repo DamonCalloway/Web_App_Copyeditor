@@ -1,0 +1,75 @@
+# Docker Compose for AWS Production Deployment
+# Uses S3 for file storage and connects to external MongoDB/DocumentDB
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACKEND_URL=/api
+    container_name: clod-sarnit-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      # MongoDB connection (use MongoDB Atlas or DocumentDB connection string)
+      - MONGO_URL=${MONGO_URL}
+      - DB_NAME=${DB_NAME:-clod_sarnit}
+      
+      # CORS - set to your domain in production
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      
+      # ======= S3 Storage Configuration =======
+      - STORAGE_PROVIDER=s3
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      
+      # ======= AWS Bedrock Configuration =======
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      
+      # Bedrock model IDs
+      - BEDROCK_CLAUDE_MODEL_ID=${BEDROCK_CLAUDE_MODEL_ID:-us.anthropic.claude-sonnet-4-5-20250929-v1:0}
+      - BEDROCK_MISTRAL_MODEL_ID=${BEDROCK_MISTRAL_MODEL_ID:-mistral.mistral-large-2407-v1:0}
+      - BEDROCK_LLAMA3_MODEL_ID=${BEDROCK_LLAMA3_MODEL_ID:-meta.llama3-1-70b-instruct-v1:0}
+      - BEDROCK_QWEN3_MODEL_ID=${BEDROCK_QWEN3_MODEL_ID:-qwen.qwen3-vl-235b-a22b}
+      - BEDROCK_TITAN_MODEL_ID=${BEDROCK_TITAN_MODEL_ID:-amazon.titan-text-premier-v1:0}
+      
+      # ======= Optional API Keys =======
+      # Anthropic Direct API (for Extended Thinking & native Web Search)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      
+      # Emergent LLM Key (for GPT-5 and Gemini)
+      - EMERGENT_LLM_KEY=${EMERGENT_LLM_KEY:-}
+      
+      # Tavily API (for Bedrock web search)
+      - TAVILY_API_KEY=${TAVILY_API_KEY:-}
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/config/features"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Optional: Resource limits for container
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+# Note: For ECS/Fargate deployment:
+# - Remove the 'deploy' section (use ECS task definition)
+# - Use the image from ECR instead of build
+# - Configure ALB for load balancing
+# - Use Secrets Manager or Parameter Store for sensitive values
