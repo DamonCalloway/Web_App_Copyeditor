@@ -165,9 +165,9 @@ Create `.env.aws` with your configuration:
 MONGO_URL=mongodb+srv://user:pass@cluster.xxxxx.mongodb.net/clod_sarnit
 DB_NAME=clod_sarnit
 
-# S3 Storage
+# S3 Storage (using Access Point alias)
 STORAGE_PROVIDER=s3
-S3_BUCKET_NAME=your-clod-sarnit-files
+S3_BUCKET_NAME=clod-sarnit-access-p-kghicfr1mec5pdg9u4hi1inmmzqphuse2b-s3alias
 S3_REGION=us-east-1
 # If using IAM roles (ECS), leave these empty
 S3_ACCESS_KEY=
