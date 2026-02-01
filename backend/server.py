@@ -2120,9 +2120,30 @@ async def chat_with_files(
                 msg = llm_response.choices[0].message
                 response_text = msg.content or ""
                 
+                # Check for thinking content - litellm returns it in different places
+                # 1. Check reasoning_content (litellm normalized field)
                 if hasattr(msg, 'reasoning_content') and msg.reasoning_content:
                     thinking_content = msg.reasoning_content
                     thinking_time = round(elapsed)
+                    logger.info(f"Found thinking in reasoning_content: {len(thinking_content)} chars")
+                
+                # 2. Check thinking_blocks
+                elif hasattr(msg, 'thinking_blocks') and msg.thinking_blocks:
+                    thinking_blocks = msg.thinking_blocks
+                    if thinking_blocks and len(thinking_blocks) > 0:
+                        thinking_content = thinking_blocks[0].get('thinking', '')
+                        thinking_time = round(elapsed)
+                        logger.info(f"Found thinking in thinking_blocks: {len(thinking_content)} chars")
+                
+                # 3. Check provider_specific_fields
+                elif hasattr(msg, 'provider_specific_fields') and msg.provider_specific_fields:
+                    psf = msg.provider_specific_fields
+                    if psf.get('thinking_blocks'):
+                        tb = psf['thinking_blocks']
+                        if tb and len(tb) > 0:
+                            thinking_content = tb[0].get('thinking', '')
+                            thinking_time = round(elapsed)
+                            logger.info(f"Found thinking in provider_specific_fields: {len(thinking_content)} chars")
         except Exception as e:
             logger.error(f"Chat with files error: {e}")
             raise HTTPException(status_code=500, detail=f"AI chat error: {str(e)}")
