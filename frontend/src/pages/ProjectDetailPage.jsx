@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Plus, Upload, FileText, Image, File, Trash2, 
-  Download, Edit2, Save, X, MessageSquare, Loader2, Eye
+  Download, Edit2, Save, X, MessageSquare, Loader2, Eye, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
