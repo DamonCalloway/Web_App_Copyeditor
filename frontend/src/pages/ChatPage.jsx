@@ -1418,7 +1418,7 @@ export default function ChatPage() {
 
       {/* Model Settings Dialog */}
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
-        <DialogContent className="max-w-md" data-testid="settings-dialog" aria-describedby="settings-description">
+        <DialogContent className="sm:max-w-[425px]" data-testid="settings-dialog" aria-describedby="settings-description">
           <DialogHeader>
             <DialogTitle className="font-serif">Settings</DialogTitle>
             <p id="settings-description" className="text-sm text-muted-foreground">
@@ -1428,49 +1428,43 @@ export default function ChatPage() {
           <div className="py-4 space-y-6">
             {/* Temperature */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between items-center">
                 <Label className="text-sm font-medium">Temperature</Label>
-                <span className="text-sm text-muted-foreground">{temperature.toFixed(1)}</span>
+                <span className="text-sm text-muted-foreground w-12 text-right">{temperature.toFixed(2)}</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Adjust the creativity level of the AI's responses. Lower values make the text more predictable; higher values make it more creative but could impact accuracy.
-              </p>
-              <Slider
-                value={[temperature]}
-                onValueChange={(value) => setTemperature(value[0])}
-                min={0.0}
-                max={1.0}
-                step={0.1}
-                className="w-full"
-                data-testid="temperature-slider"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>0.0</span>
-                <span>1.0</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">0.0</span>
+                <Slider
+                  value={[temperature]}
+                  onValueChange={(value) => setTemperature(value[0])}
+                  min={0.0}
+                  max={1.0}
+                  step={0.01}
+                  className="flex-1"
+                  data-testid="temperature-slider"
+                />
+                <span className="text-xs text-muted-foreground">1.0</span>
               </div>
             </div>
 
             {/* Top P */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between items-center">
                 <Label className="text-sm font-medium">Top P</Label>
-                <span className="text-sm text-muted-foreground">{topP.toFixed(1)}</span>
+                <span className="text-sm text-muted-foreground w-12 text-right">{topP.toFixed(2)}</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Limit the diversity of the AI's output by considering only the most probable words. Lower values result in more predictable responses; higher values allow for a broader range of word choices and greater variation.
-              </p>
-              <Slider
-                value={[topP]}
-                onValueChange={(value) => setTopP(value[0])}
-                min={0.0}
-                max={1.0}
-                step={0.1}
-                className="w-full"
-                data-testid="top-p-slider"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>0.0</span>
-                <span>1.0</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">0.0</span>
+                <Slider
+                  value={[topP]}
+                  onValueChange={(value) => setTopP(value[0])}
+                  min={0.0}
+                  max={1.0}
+                  step={0.01}
+                  className="flex-1"
+                  data-testid="top-p-slider"
+                />
+                <span className="text-xs text-muted-foreground">1.0</span>
               </div>
             </div>
 
@@ -1481,23 +1475,22 @@ export default function ChatPage() {
               </p>
             )}
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter>
             <Button
               variant="link"
-              className="text-sm"
+              className="text-sm mr-auto"
               onClick={() => {
                 setTemperature(0.7);
                 setTopP(0.9);
               }}
               data-testid="reset-settings"
             >
-              Reset to default settings
+              Reset to defaults
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowSettings(false)}>
-                Cancel
-              </Button>
-              <Button
+            <Button variant="outline" onClick={() => setShowSettings(false)}>
+              Cancel
+            </Button>
+            <Button
                 onClick={async () => {
                   if (!project) {
                     toast.error("Please associate chat with a project first");
