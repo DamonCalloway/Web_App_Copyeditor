@@ -23,6 +23,7 @@ import { toast } from "sonner";
 export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
   const [recentConversations, setRecentConversations] = useState([]);
   const [starredConversations, setStarredConversations] = useState([]);
   const [projects, setProjects] = useState([]);
