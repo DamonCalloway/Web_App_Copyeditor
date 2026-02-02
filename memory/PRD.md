@@ -111,6 +111,17 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 - [x] Updated README with deployment instructions
 - [x] Tested S3 integration successfully with Access Point
 
+### Multi-User Authentication (February 2, 2025)
+- [x] Implemented email/password authentication with registration and login
+- [x] Implemented Google OAuth via Emergent-managed Auth
+- [x] Email domain allowlist - only @pearson.com emails can register
+- [x] Per-user data isolation - each user only sees their own projects and conversations
+- [x] Admin role system - admins see all LLM providers, regular users see only Bedrock
+- [x] Session management with cookies (7-day expiry)
+- [x] User menu in sidebar with profile info and logout
+- [x] Protected routes redirect to login page
+- [x] Backwards compatibility - existing data (no user_id) visible to all authenticated users
+
 ### Admin Mode & Provider Access Control (February 1, 2025)
 - [x] Implemented secret URL parameter `?admin=true` to unlock premium providers
 - [x] Admin-only providers (Anthropic Direct API, OpenAI GPT-5, Google Gemini) hidden from regular users
