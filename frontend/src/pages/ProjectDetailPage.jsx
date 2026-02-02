@@ -100,11 +100,35 @@ export default function ProjectDetailPage() {
       setConversations(convs);
       setInstructionsText(proj.instructions || "");
       setMemoryText(proj.memory || "");
+      // Load LLM parameters
+      setTemperature(proj.temperature ?? 0.7);
+      setTopP(proj.top_p ?? 0.9);
+      setMaxTokens(proj.max_tokens ?? 4096);
+      setFrequencyPenalty(proj.frequency_penalty ?? 0);
+      setPresencePenalty(proj.presence_penalty ?? 0);
+      setStopSequences(proj.stop_sequences || "");
     } catch (error) {
       toast.error("Failed to load project");
       navigate("/projects");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveLlmParams = async () => {
+    try {
+      await updateProject(projectId, {
+        temperature,
+        top_p: topP,
+        max_tokens: maxTokens,
+        frequency_penalty: frequencyPenalty,
+        presence_penalty: presencePenalty,
+        stop_sequences: stopSequences
+      });
+      toast.success("LLM parameters saved");
+      setShowLlmParams(false);
+    } catch (error) {
+      toast.error("Failed to save parameters");
     }
   };
 
