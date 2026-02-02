@@ -654,6 +654,142 @@ export default function ProjectDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* LLM Parameters Dialog */}
+      <Dialog open={showLlmParams} onOpenChange={setShowLlmParams}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>LLM Parameters</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Adjust the LLM parameters for this project
+            </p>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Temperature */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Temperature</Label>
+                <span className="text-sm text-muted-foreground w-12 text-right">{temperature.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">0.0</span>
+                <Slider
+                  value={[temperature]}
+                  onValueChange={([v]) => setTemperature(v)}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground">1.0</span>
+              </div>
+            </div>
+
+            {/* Top P */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Top P</Label>
+                <span className="text-sm text-muted-foreground w-12 text-right">{topP.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">0.0</span>
+                <Slider
+                  value={[topP]}
+                  onValueChange={([v]) => setTopP(v)}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground">1.0</span>
+              </div>
+            </div>
+
+            {/* Max Tokens */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Max Tokens</Label>
+                <span className="text-sm text-muted-foreground w-16 text-right">{maxTokens}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">256</span>
+                <Slider
+                  value={[maxTokens]}
+                  onValueChange={([v]) => setMaxTokens(v)}
+                  min={256}
+                  max={8192}
+                  step={256}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground">8192</span>
+              </div>
+            </div>
+
+            {/* Frequency Penalty */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Frequency Penalty</Label>
+                <span className="text-sm text-muted-foreground w-12 text-right">{frequencyPenalty.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">0.0</span>
+                <Slider
+                  value={[frequencyPenalty]}
+                  onValueChange={([v]) => setFrequencyPenalty(v)}
+                  min={0}
+                  max={2}
+                  step={0.01}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground">2.0</span>
+              </div>
+            </div>
+
+            {/* Presence Penalty */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Presence Penalty</Label>
+                <span className="text-sm text-muted-foreground w-12 text-right">{presencePenalty.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">0.0</span>
+                <Slider
+                  value={[presencePenalty]}
+                  onValueChange={([v]) => setPresencePenalty(v)}
+                  min={0}
+                  max={2}
+                  step={0.01}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground">2.0</span>
+              </div>
+            </div>
+
+            {/* Stop Sequences */}
+            <div className="space-y-2">
+              <Label>Stop Sequences</Label>
+              <Input
+                placeholder="Enter comma-separated stop sequences"
+                value={stopSequences}
+                onChange={(e) => setStopSequences(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Comma-separated list (e.g., "Human:", "\n\n")
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLlmParams(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveLlmParams}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
