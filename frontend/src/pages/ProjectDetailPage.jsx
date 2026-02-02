@@ -263,12 +263,13 @@ export default function ProjectDetailPage() {
             )}
           </div>
           <Button 
-            onClick={() => setShowNewConv(true)}
-            className="gap-2"
-            data-testid="start-chat-btn"
+            variant="outline"
+            onClick={() => setShowLlmParams(true)}
+            className="gap-2 text-blue-500 border-blue-500/50 hover:bg-blue-500/10 hover:text-blue-500"
+            data-testid="llm-params-btn"
           >
-            <MessageSquare className="h-4 w-4" />
-            Start Chat
+            <Settings className="h-4 w-4" />
+            LLM Parameters
           </Button>
         </header>
 
