@@ -302,14 +302,50 @@ export const Sidebar = ({ collapsed, onToggle, currentPath }) => {
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate("/settings")}
-            data-testid="settings-btn"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
+          
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="relative"
+                data-testid="user-menu-btn"
+              >
+                {user?.picture ? (
+                  <img 
+                    src={user.picture} 
+                    alt={user.name} 
+                    className="h-6 w-6 rounded-full"
+                  />
+                ) : (
+                  <User className="h-4 w-4" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/settings")}>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-destructive"
+                onClick={async () => {
+                  await logout();
+                  navigate("/login");
+                }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </aside>
