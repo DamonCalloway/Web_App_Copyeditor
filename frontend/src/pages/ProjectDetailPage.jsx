@@ -70,6 +70,15 @@ export default function ProjectDetailPage() {
   const [showNewConv, setShowNewConv] = useState(false);
   const [newConvName, setNewConvName] = useState("");
   
+  // LLM Parameters dialog
+  const [showLlmParams, setShowLlmParams] = useState(false);
+  const [temperature, setTemperature] = useState(0.7);
+  const [topP, setTopP] = useState(0.9);
+  const [maxTokens, setMaxTokens] = useState(4096);
+  const [frequencyPenalty, setFrequencyPenalty] = useState(0);
+  const [presencePenalty, setPresencePenalty] = useState(0);
+  const [stopSequences, setStopSequences] = useState("");
+  
   // File viewer
   const [viewingFile, setViewingFile] = useState(null);
   const [fileContent, setFileContent] = useState(null);
