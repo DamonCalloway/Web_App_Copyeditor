@@ -633,19 +633,29 @@ async def root():
     return {"message": "Assessment Editor API", "version": "1.0.0"}
 
 @api_router.post("/projects", response_model=Project)
-async def create_project(project: ProjectCreate):
+async def create_project(project: ProjectCreate, request: Request):
+    user = await get_current_user(request)
     project_obj = Project(**project.model_dump())
     doc = project_obj.model_dump()
+    if user:
+        doc["user_id"] = user.user_id
     await db.projects.insert_one(doc)
     return project_obj
 
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects(
+    request: Request,
     search: Optional[str] = Query(None),
     starred_only: bool = Query(False),
     archived: Optional[bool] = Query(None)
 ):
+    user = await get_current_user(request)
     query = {}
+    
+    # Filter by user_id if authenticated
+    if user:
+        query["$or"] = [{"user_id": user.user_id}, {"user_id": None}, {"user_id": {"$exists": False}}]
+    
     if search:
         query["name"] = {"$regex": search, "$options": "i"}
     if starred_only:
@@ -663,22 +673,36 @@ async def get_projects(
     return projects
 
 @api_router.get("/projects/{project_id}", response_model=Project)
-async def get_project(project_id: str):
+async def get_project(project_id: str, request: Request):
+    user = await get_current_user(request)
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Check ownership (allow if no user_id set for backwards compatibility)
+    if user and project.get("user_id") and project["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     count = await db.files.count_documents({"project_id": project_id})
     project["file_count"] = count
     return project
 
 @api_router.put("/projects/{project_id}", response_model=Project)
-async def update_project(project_id: str, update: ProjectUpdate):
+async def update_project(project_id: str, update: ProjectUpdate, request: Request):
+    user = await get_current_user(request)
+    project = await db.projects.find_one({"id": project_id}, {"_id": 0})
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Check ownership
+    if user and project.get("user_id") and project["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     
-    result = await db.projects.update_one({"id": project_id}, {"$set": update_data})
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Project not found")
+    await db.projects.update_one({"id": project_id}, {"$set": update_data})
     
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     count = await db.files.count_documents({"project_id": project_id})
@@ -686,17 +710,32 @@ async def update_project(project_id: str, update: ProjectUpdate):
     return project
 
 @api_router.put("/projects/{project_id}/star")
-async def toggle_star_project(project_id: str):
+async def toggle_star_project(project_id: str, request: Request):
+    user = await get_current_user(request)
     project = await db.projects.find_one({"id": project_id})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Check ownership
+    if user and project.get("user_id") and project["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
     
     new_starred = not project.get("starred", False)
     await db.projects.update_one({"id": project_id}, {"$set": {"starred": new_starred}})
     return {"starred": new_starred}
 
 @api_router.delete("/projects/{project_id}")
-async def delete_project(project_id: str):
+async def delete_project(project_id: str, request: Request):
+    user = await get_current_user(request)
+    project = await db.projects.find_one({"id": project_id})
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Check ownership
+    if user and project.get("user_id") and project["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     # Delete all files
     files = await db.files.find({"project_id": project_id}, {"_id": 0}).to_list(1000)
     for f in files:
@@ -710,9 +749,7 @@ async def delete_project(project_id: str):
     await db.conversations.delete_many({"project_id": project_id})
     
     # Delete project
-    result = await db.projects.delete_one({"id": project_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Project not found")
+    await db.projects.delete_one({"id": project_id})
     
     return {"success": True}
 
