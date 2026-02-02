@@ -80,6 +80,10 @@ class ProjectUpdate(BaseModel):
     llm_provider: Optional[str] = None
     temperature: Optional[float] = None
     top_p: Optional[float] = None
+    max_tokens: Optional[int] = None
+    frequency_penalty: Optional[float] = None
+    presence_penalty: Optional[float] = None
+    stop_sequences: Optional[str] = None
 
 class Project(ProjectBase):
     model_config = ConfigDict(extra="ignore")
