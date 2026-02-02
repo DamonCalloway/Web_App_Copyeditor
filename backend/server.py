@@ -920,26 +920,44 @@ async def get_rag_stats(project_id: str):
 # ============== CONVERSATION ROUTES ==============
 
 @api_router.post("/conversations", response_model=Conversation)
-async def create_conversation(conv: ConversationBase):
-    # Verify project exists
+async def create_conversation(conv: ConversationBase, request: Request):
+    user = await get_current_user(request)
+    
+    # Verify project exists and user has access
     project = await db.projects.find_one({"id": conv.project_id})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
+    if user and project.get("user_id") and project["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     conv_obj = Conversation(**conv.model_dump())
-    await db.conversations.insert_one(conv_obj.model_dump())
+    conv_doc = conv_obj.model_dump()
+    if user:
+        conv_doc["user_id"] = user.user_id
+    await db.conversations.insert_one(conv_doc)
     return conv_obj
 
 @api_router.get("/projects/{project_id}/conversations", response_model=List[Conversation])
-async def get_project_conversations(project_id: str):
-    convos = await db.conversations.find(
-        {"project_id": project_id}, {"_id": 0}
-    ).sort("updated_at", -1).to_list(100)
+async def get_project_conversations(project_id: str, request: Request):
+    user = await get_current_user(request)
+    
+    query = {"project_id": project_id}
+    if user:
+        query["$or"] = [{"user_id": user.user_id}, {"user_id": None}, {"user_id": {"$exists": False}}]
+    
+    convos = await db.conversations.find(query, {"_id": 0}).sort("updated_at", -1).to_list(100)
     return convos
 
 @api_router.get("/conversations/recent", response_model=List[Dict[str, Any]])
-async def get_recent_conversations(limit: int = Query(10, le=50)):
-    convos = await db.conversations.find({}, {"_id": 0}).sort("updated_at", -1).to_list(limit)
+async def get_recent_conversations(request: Request, limit: int = Query(10, le=50)):
+    user = await get_current_user(request)
+    
+    query = {}
+    if user:
+        query["$or"] = [{"user_id": user.user_id}, {"user_id": None}, {"user_id": {"$exists": False}}]
+    
+    convos = await db.conversations.find(query, {"_id": 0}).sort("updated_at", -1).to_list(limit)
     
     # Add project names
     result = []
@@ -951,29 +969,47 @@ async def get_recent_conversations(limit: int = Query(10, le=50)):
     return result
 
 @api_router.get("/conversations/{conversation_id}", response_model=Conversation)
-async def get_conversation(conversation_id: str):
+async def get_conversation(conversation_id: str, request: Request):
+    user = await get_current_user(request)
     conv = await db.conversations.find_one({"id": conversation_id}, {"_id": 0})
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Check ownership
+    if user and conv.get("user_id") and conv["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     return conv
 
 @api_router.put("/conversations/{conversation_id}", response_model=Conversation)
-async def update_conversation(conversation_id: str, update: ConversationUpdate):
+async def update_conversation(conversation_id: str, update: ConversationUpdate, request: Request):
     """Update conversation (rename, change project, etc.)"""
+    user = await get_current_user(request)
+    conv = await db.conversations.find_one({"id": conversation_id}, {"_id": 0})
+    
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Check ownership
+    if user and conv.get("user_id") and conv["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     update_data = {k: v for k, v in update.model_dump().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     
-    result = await db.conversations.update_one({"id": conversation_id}, {"$set": update_data})
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Conversation not found")
+    await db.conversations.update_one({"id": conversation_id}, {"$set": update_data})
     
     conv = await db.conversations.find_one({"id": conversation_id}, {"_id": 0})
     return conv
 
 @api_router.get("/conversations", response_model=List[Dict[str, Any]])
-async def get_all_conversations(starred: Optional[bool] = Query(None), archived: Optional[bool] = Query(None)):
+async def get_all_conversations(request: Request, starred: Optional[bool] = Query(None), archived: Optional[bool] = Query(None)):
     """Get all conversations with optional filtering"""
+    user = await get_current_user(request)
+    
     query = {}
+    if user:
+        query["$or"] = [{"user_id": user.user_id}, {"user_id": None}, {"user_id": {"$exists": False}}]
     if starred is not None:
         query["starred"] = starred
     if archived is not None:
@@ -991,21 +1027,34 @@ async def get_all_conversations(starred: Optional[bool] = Query(None), archived:
     return result
 
 @api_router.put("/conversations/{conversation_id}/star")
-async def toggle_star_conversation(conversation_id: str):
+async def toggle_star_conversation(conversation_id: str, request: Request):
+    user = await get_current_user(request)
     conv = await db.conversations.find_one({"id": conversation_id})
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Check ownership
+    if user and conv.get("user_id") and conv["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
     
     new_starred = not conv.get("starred", False)
     await db.conversations.update_one({"id": conversation_id}, {"$set": {"starred": new_starred}})
     return {"starred": new_starred}
 
 @api_router.delete("/conversations/{conversation_id}")
-async def delete_conversation(conversation_id: str):
-    await db.messages.delete_many({"conversation_id": conversation_id})
-    result = await db.conversations.delete_one({"id": conversation_id})
-    if result.deleted_count == 0:
+async def delete_conversation(conversation_id: str, request: Request):
+    user = await get_current_user(request)
+    conv = await db.conversations.find_one({"id": conversation_id})
+    
+    if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Check ownership
+    if user and conv.get("user_id") and conv["user_id"] != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    await db.messages.delete_many({"conversation_id": conversation_id})
+    await db.conversations.delete_one({"id": conversation_id})
     return {"success": True}
 
 # ============== MESSAGE ROUTES ==============
