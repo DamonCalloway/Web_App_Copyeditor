@@ -1509,7 +1509,6 @@ export default function ChatPage() {
               >
                 Save Changes
               </Button>
-            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
