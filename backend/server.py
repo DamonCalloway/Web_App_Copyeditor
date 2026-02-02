@@ -153,6 +153,36 @@ class StorageConfig(BaseModel):
     s3_secret_key: Optional[str] = None
     s3_region: Optional[str] = "us-east-1"
 
+# ============== AUTH MODELS ==============
+
+# Allowlist of email domains that can register
+ALLOWED_EMAIL_DOMAINS = ["pearson.com"]
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    email: str
+    name: str
+    picture: Optional[str] = None
+    role: str = "user"  # "user" or "admin"
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class UserSession(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    session_token: str
+    expires_at: datetime
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 # ============== STORAGE ABSTRACTION ==============
 
 class StorageProvider:
