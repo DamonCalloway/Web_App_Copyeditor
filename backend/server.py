@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException, Form, Query
+from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException, Form, Query, Request, Response, Depends
 from fastapi.responses import StreamingResponse, FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import aiofiles
 import json
 from emergentintegrations.llm.chat import LlmChat, UserMessage
@@ -20,6 +20,8 @@ from tavily import TavilyClient
 from PIL import Image as PILImage
 from io import BytesIO
 import base64
+import httpx
+import hashlib
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
