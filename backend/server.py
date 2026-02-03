@@ -2644,7 +2644,8 @@ async def get_feature_config():
     
     available = ["anthropic"]
     if has_bedrock:
-        available.extend(["bedrock-claude", "bedrock-mistral", "bedrock-llama3", "bedrock-qwen3", "bedrock-titan"])
+        # bedrock-claude-sonnet for all users, bedrock-claude-opus for admin only (handled in frontend)
+        available.extend(["bedrock-claude-sonnet", "bedrock-claude-opus", "bedrock-mistral", "bedrock-llama3", "bedrock-qwen3", "bedrock-titan"])
     if has_emergent_key:
         available.extend(["openai-gpt5", "gemini"])
     
