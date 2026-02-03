@@ -686,7 +686,7 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
         {/* Messages */}
         <div className="flex-1 relative overflow-hidden">
           <ScrollArea className="h-full" onScrollCapture={handleScroll}>
-            <div className="messages-area max-w-3xl mx-auto" ref={scrollContainerRef}>
+            <div className="messages-area max-w-5xl mx-auto px-4" ref={scrollContainerRef}>
               {messages.length === 0 ? (
                 <div className="text-center py-12">
                   <h2 className="font-serif text-xl mb-2">Start a conversation</h2>
