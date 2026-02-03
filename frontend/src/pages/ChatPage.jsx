@@ -999,7 +999,7 @@ export default function ChatPage() {
                             const newValue = !extendedThinking;
                             
                             // Show warning when enabling Think on Bedrock Claude
-                            if (newValue && llmProvider === "bedrock-claude") {
+                            if (newValue && llmProvider.startsWith("bedrock-claude")) {
                               setShowThinkingWarning(true);
                               return;
                             }
@@ -1008,7 +1008,7 @@ export default function ChatPage() {
                             setExtendedThinking(newValue);
                             
                             // On Bedrock Claude, Think and Web Search conflict - disable the other
-                            if (newValue && llmProvider === "bedrock-claude" && webSearch) {
+                            if (newValue && llmProvider.startsWith("bedrock-claude") && webSearch) {
                               newWebSearch = false;
                               setWebSearch(false);
                             }
