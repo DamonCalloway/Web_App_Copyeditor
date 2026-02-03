@@ -47,6 +47,15 @@
     padding: 1.5rem;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    /* Ensure content doesn't expand beyond parent */
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Fix Radix ScrollArea viewport overflow */
+[data-radix-scroll-area-viewport] > div {
+    display: block !important;
+    max-width: 100% !important;
 }
 
 .message-input-area {
