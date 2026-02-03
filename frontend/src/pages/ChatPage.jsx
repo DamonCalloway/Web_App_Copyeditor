@@ -804,16 +804,16 @@ export default function ChatPage() {
           </div>
         </ScrollArea>
         
-        {/* Scroll to Bottom Button - centered with white circle */}
+        {/* Scroll to Bottom Button - blue pill shape */}
         {showScrollButton && (
           <Button
             variant="outline"
             size="icon"
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 h-10 w-10 rounded-full shadow-lg hover:shadow-xl transition-all z-10 bg-white dark:bg-zinc-800 border-2 border-border"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 h-9 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-10 bg-blue-500 hover:bg-blue-600 border-0"
             onClick={() => scrollToBottom(true)}
             data-testid="scroll-to-bottom-btn"
           >
-            <ArrowDown className="h-5 w-5" />
+            <ArrowDown className="h-5 w-5 text-white" />
           </Button>
         )}
       </div>
