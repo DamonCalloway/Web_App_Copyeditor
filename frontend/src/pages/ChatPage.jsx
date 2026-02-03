@@ -1019,7 +1019,7 @@ export default function ChatPage() {
                             toast.info("Extended Thinking requires Anthropic API key or Bedrock Claude");
                           }
                         }}
-                        className={`gap-1.5 h-7 px-2 ${extendedThinking && (featuresAvailable || llmProvider === "bedrock-claude") ? 'bg-primary text-primary-foreground' : ''} ${(llmProvider !== "anthropic" && llmProvider !== "bedrock-claude") || (!featuresAvailable && llmProvider === "anthropic") ? 'opacity-50' : ''}`}
+                        className={`gap-1.5 h-7 px-2 ${extendedThinking && (featuresAvailable || llmProvider.startsWith("bedrock-claude")) ? 'bg-primary text-primary-foreground' : ''} ${(llmProvider !== "anthropic" && !llmProvider.startsWith("bedrock-claude")) || (!featuresAvailable && llmProvider === "anthropic") ? 'opacity-50' : ''}`}
                         disabled={(llmProvider !== "anthropic" && llmProvider !== "bedrock-claude") || (!featuresAvailable && llmProvider === "anthropic")}
                         data-testid="extended-thinking-toggle"
                       >
