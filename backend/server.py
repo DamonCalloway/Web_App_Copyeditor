@@ -1192,9 +1192,15 @@ async def call_bedrock_converse(
         
         elapsed_time = time.time() - start_time
         
+        # Debug log the response structure
+        logger.info(f"Bedrock response keys: {list(response.keys())}")
+        
         # Extract response text and thinking content
         output_message = response.get('output', {}).get('message', {})
         content_blocks = output_message.get('content', [])
+        
+        # Debug log content blocks
+        logger.info(f"Content blocks count: {len(content_blocks)}, types: {[list(block.keys()) for block in content_blocks]}")
         
         response_text = ""
         for block in content_blocks:
@@ -1212,6 +1218,12 @@ async def call_bedrock_converse(
                 thinking_content = block.get('text', '')
                 thinking_time = round(elapsed_time)
                 logger.info(f"Found thinking block: {len(thinking_content)} chars")
+            # Also check reasoningContent format
+            elif 'reasoningContent' in block:
+                rc = block['reasoningContent']
+                thinking_content = rc.get('reasoningText', {}).get('text', '') if isinstance(rc, dict) else str(rc)
+                thinking_time = round(elapsed_time)
+                logger.info(f"Found reasoningContent: {len(thinking_content)} chars")
         
         # Log response metadata for debugging
         stop_reason = response.get('stopReason', 'unknown')
