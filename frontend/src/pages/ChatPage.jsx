@@ -274,11 +274,11 @@ export default function ChatPage() {
       
       // Load LLM provider from conversation (persisted per conversation)
       if (conv.llm_provider) {
-        // If non-admin user has an admin-only provider selected, default to bedrock-claude
+        // If non-admin user has an admin-only provider selected, default to bedrock-claude-sonnet
         if (!isAdminMode && ADMIN_ONLY_PROVIDERS.includes(conv.llm_provider)) {
-          const fallbackProvider = featureConfig.available_providers?.includes('bedrock-claude') 
-            ? 'bedrock-claude' 
-            : featureConfig.available_providers?.find(p => !ADMIN_ONLY_PROVIDERS.includes(p)) || 'bedrock-claude';
+          const fallbackProvider = featureConfig.available_providers?.includes('bedrock-claude-sonnet') 
+            ? 'bedrock-claude-sonnet' 
+            : featureConfig.available_providers?.find(p => !ADMIN_ONLY_PROVIDERS.includes(p)) || 'bedrock-claude-sonnet';
           setLlmProvider(fallbackProvider);
         } else {
           setLlmProvider(conv.llm_provider);
