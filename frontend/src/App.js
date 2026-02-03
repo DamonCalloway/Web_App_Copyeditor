@@ -34,6 +34,10 @@ function ProtectedContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
 
+  // Auto-collapse sidebar when right panel opens (Claude-style behavior)
+  const collapseSidebar = () => setSidebarCollapsed(true);
+  const expandSidebar = () => setSidebarCollapsed(false);
+
   return (
     <ProtectedRoute>
       <div className="app-container" data-testid="app-container">
@@ -48,7 +52,13 @@ function ProtectedContent() {
             <Route path="/chats" element={<ChatsPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
-            <Route path="/chat/:conversationId" element={<ChatPage />} />
+            <Route path="/chat/:conversationId" element={
+              <ChatPage 
+                onRightPanelOpen={collapseSidebar}
+                onRightPanelClose={expandSidebar}
+                sidebarCollapsed={sidebarCollapsed}
+              />
+            } />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </main>
