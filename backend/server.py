@@ -2166,8 +2166,8 @@ When the user asks you to edit something or check against style guides, proactiv
             # Web search is supported for Bedrock Claude if Tavily is configured
             bedrock_web_search = use_web_search and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus") and tavily_client is not None
             
-            # KB tools are enabled when knowledge base toggle is ON for Bedrock Claude
-            bedrock_kb_tools = request.include_knowledge_base and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus") and len(kb_files_list) > 0
+            # KB tools are enabled when knowledge base toggle is ON for Bedrock Claude and Mistral
+            bedrock_kb_tools = request.include_knowledge_base and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus", "bedrock-mistral") and len(kb_files_list) > 0
             
             logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, web_search={bedrock_web_search}, kb_tools={bedrock_kb_tools}")
             
