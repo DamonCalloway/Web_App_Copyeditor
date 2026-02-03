@@ -186,7 +186,7 @@ export default function ChatPage() {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [llmProvider, setLlmProvider] = useState("anthropic");
   const [availableProviders, setAvailableProviders] = useState(["anthropic"]);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(false); // Keep for potential future use
   const [temperature, setTemperature] = useState(0.7);
   const [topP, setTopP] = useState(0.9);
   const [showThinkingWarning, setShowThinkingWarning] = useState(false);
