@@ -199,8 +199,8 @@ export default function ChatPage() {
     'mpeg', 'mp3', 'mp4', 'mov', 'wav'
   ];
 
-  // Admin-only providers (pay-as-you-go)
-  const ADMIN_ONLY_PROVIDERS = ['anthropic', 'openai-gpt5', 'gemini'];
+  // Admin-only providers (pay-as-you-go or premium)
+  const ADMIN_ONLY_PROVIDERS = ['anthropic', 'openai-gpt5', 'gemini', 'bedrock-claude-opus'];
   
   // Check for admin mode from URL param or localStorage
   const [isAdminMode, setIsAdminMode] = useState(() => {
