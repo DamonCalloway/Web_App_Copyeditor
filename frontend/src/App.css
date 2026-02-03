@@ -251,6 +251,9 @@
 
 .message-assistant .message-content .prose-content {
     color: hsl(var(--foreground));
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* Blockquote styling for assistant messages */
