@@ -186,13 +186,13 @@ export default function SettingsPage() {
               </div>
 
               <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription className="text-xs">
+                <Info className="h-4 w-4 flex-shrink-0" />
+                <AlertDescription className="text-xs overflow-hidden">
                   <strong>Note:</strong> These credentials are stored in your backend .env file. 
-                  You'll need to manually add them to <code>/app/backend/.env</code> and restart the backend service.
+                  You'll need to manually add them to <code className="break-all">/app/backend/.env</code> and restart the backend service.
                   <br/><br/>
                   Add these lines to your .env file:
-                  <pre className="mt-2 p-2 bg-muted rounded text-xs">
+                  <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-x-auto whitespace-pre-wrap break-all">
 AWS_ACCESS_KEY_ID=your_access_key_here
 AWS_SECRET_ACCESS_KEY=your_secret_key_here  
 AWS_REGION=us-east-1
