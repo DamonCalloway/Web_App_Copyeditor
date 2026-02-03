@@ -585,7 +585,7 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
   return (
     <div className="flex-1 flex overflow-hidden" data-testid="chat-page">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col chat-container">
+      <div className="flex-1 flex flex-col chat-container min-w-0">
         {/* Header */}
         <header className="flex items-center gap-3 px-4 py-3 border-b border-border">
           <Button 
