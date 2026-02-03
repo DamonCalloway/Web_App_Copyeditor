@@ -541,9 +541,9 @@ export default function ChatPage() {
       // Extended Thinking and Web Search are only available for:
       // - Anthropic Direct API (if has direct API key)
       // - Bedrock Claude (thinking yes, web search if Tavily configured)
-      const supportsThinking = newProvider === "anthropic" || newProvider === "bedrock-claude";
+      const supportsThinking = newProvider === "anthropic" || newProvider.startsWith("bedrock-claude");
       const supportsWebSearch = (newProvider === "anthropic" && featuresAvailable) || 
-                                (newProvider === "bedrock-claude" && bedrockWebSearchAvailable);
+                                (newProvider.startsWith("bedrock-claude") && bedrockWebSearchAvailable);
       
       if (!supportsThinking) {
         newThinking = false;
