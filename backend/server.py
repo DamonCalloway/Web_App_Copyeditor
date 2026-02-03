@@ -2080,7 +2080,7 @@ When the user asks you to edit something or check against style guides, proactiv
     
     # Add model identity to system message to prevent confusion when provider changes mid-conversation
     model_identity = ""
-    if provider_type == "bedrock-claude":
+    if provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus"):
         model_identity = "\n\n# Important: You are Claude, an AI assistant made by Anthropic, accessed via AWS Bedrock. Always identify yourself as Claude if asked."
     elif provider_type == "bedrock-mistral":
         model_identity = "\n\n# Important: You are Mistral, an AI assistant made by Mistral AI, accessed via AWS Bedrock. Always identify yourself as Mistral if asked."
@@ -2161,13 +2161,13 @@ When the user asks you to edit something or check against style guides, proactiv
             bedrock_model_id = extra_config.get("bedrock_model_id", model_name.replace("bedrock/", ""))
             
             # Extended thinking is only supported for Bedrock Claude, not other models
-            bedrock_extended_thinking = use_extended_thinking and provider_type == "bedrock-claude"
+            bedrock_extended_thinking = use_extended_thinking and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus")
             
             # Web search is supported for Bedrock Claude if Tavily is configured
-            bedrock_web_search = use_web_search and provider_type == "bedrock-claude" and tavily_client is not None
+            bedrock_web_search = use_web_search and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus") and tavily_client is not None
             
             # KB tools are enabled when knowledge base toggle is ON for Bedrock Claude
-            bedrock_kb_tools = request.include_knowledge_base and provider_type == "bedrock-claude" and len(kb_files_list) > 0
+            bedrock_kb_tools = request.include_knowledge_base and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus") and len(kb_files_list) > 0
             
             logger.info(f"Using Bedrock Converse API: bedrock_model_id={bedrock_model_id}, extended_thinking={bedrock_extended_thinking}, web_search={bedrock_web_search}, kb_tools={bedrock_kb_tools}")
             
@@ -2516,10 +2516,10 @@ async def chat_with_files(
         bedrock_model_id = extra_config.get("bedrock_model_id")
         
         # Extended thinking only for Bedrock Claude
-        bedrock_extended_thinking = extended_thinking and provider_type == "bedrock-claude"
+        bedrock_extended_thinking = extended_thinking and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus")
         
         # Web search only for Bedrock Claude with Tavily
-        bedrock_web_search = web_search and provider_type == "bedrock-claude" and tavily_client is not None
+        bedrock_web_search = web_search and provider_type in ("bedrock-claude", "bedrock-claude-sonnet", "bedrock-claude-opus") and tavily_client is not None
         
         # When thinking is explicitly enabled, prioritize it over tools (can't use both)
         if bedrock_extended_thinking and (bedrock_web_search or chat_images):
