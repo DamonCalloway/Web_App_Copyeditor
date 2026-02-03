@@ -273,7 +273,7 @@
     border-collapse: collapse;
     margin: 1rem 0;
     font-size: 0.875rem;
-    display: table;
+    table-layout: auto;
 }
 
 .message-assistant .message-content thead {
@@ -286,13 +286,19 @@
     padding: 0.5rem 0.75rem;
     text-align: left;
     vertical-align: top;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+}
+
+/* First column (Location) - prevent word breaking */
+.message-assistant .message-content td:first-child,
+.message-assistant .message-content th:first-child {
+    white-space: nowrap;
+    min-width: fit-content;
 }
 
 .message-assistant .message-content th {
     background: hsl(var(--secondary));
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .message-assistant .message-content tr:nth-child(even) {
