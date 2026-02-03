@@ -284,9 +284,9 @@ export default function ChatPage() {
           setLlmProvider(conv.llm_provider);
         }
       } else {
-        // Default new conversations to bedrock-claude for non-admin users
-        if (!isAdminMode && featureConfig.available_providers?.includes('bedrock-claude')) {
-          setLlmProvider('bedrock-claude');
+        // Default new conversations to bedrock-claude-sonnet for non-admin users
+        if (!isAdminMode && featureConfig.available_providers?.includes('bedrock-claude-sonnet')) {
+          setLlmProvider('bedrock-claude-sonnet');
         }
       }
       
