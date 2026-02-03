@@ -559,7 +559,8 @@ export default function ChatPage() {
       
       const providerNames = {
         "anthropic": "Anthropic Direct API",
-        "bedrock-claude": "AWS Bedrock (Claude)",
+        "bedrock-claude-sonnet": "AWS Bedrock (Claude Sonnet 4.5)",
+        "bedrock-claude-opus": "AWS Bedrock (Claude Opus 4.5)",
         "bedrock-mistral": "AWS Bedrock (Mistral)",
         "bedrock-llama3": "AWS Bedrock (Llama 3)",
         "bedrock-qwen3": "AWS Bedrock (Qwen3 VL)",
