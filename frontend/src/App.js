@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Sidebar } from "@/components/Sidebar";
 import { ProjectsPage } from "@/pages/ProjectsPage";
 import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
-import { ChatPage } from "@/pages/ChatPage";
+import ChatPage from "@/pages/ChatPage";
 import { ChatsPage } from "@/pages/ChatsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { LoginPage } from "@/pages/LoginPage";
