@@ -1941,14 +1941,17 @@ def get_llm_config(project: dict, llm_provider_override: str = None):
         
         # Model ID mapping for Bedrock
         bedrock_models = {
-            "bedrock-claude": os.environ.get('BEDROCK_CLAUDE_MODEL_ID', 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'),
+            "bedrock-claude-sonnet": os.environ.get('BEDROCK_CLAUDE_MODEL_ID', 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'),
+            "bedrock-claude-opus": os.environ.get('BEDROCK_CLAUDE_OPUS_MODEL_ID', 'us.anthropic.claude-opus-4-5-20250929-v1:0'),
             "bedrock-mistral": os.environ.get('BEDROCK_MISTRAL_MODEL_ID', 'mistral.mistral-large-3-2512'),
             "bedrock-llama3": os.environ.get('BEDROCK_LLAMA3_MODEL_ID', 'meta.llama3-1-70b-instruct-v1:0'),
             "bedrock-qwen3": os.environ.get('BEDROCK_QWEN3_MODEL_ID', 'qwen.qwen3-vl-235b-a22b'),
             "bedrock-titan": os.environ.get('BEDROCK_TITAN_MODEL_ID', 'amazon.titan-text-premier-v1:0'),
+            # Legacy alias for backwards compatibility
+            "bedrock-claude": os.environ.get('BEDROCK_CLAUDE_MODEL_ID', 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'),
         }
         
-        bedrock_model = bedrock_models.get(llm_provider, bedrock_models["bedrock-claude"])
+        bedrock_model = bedrock_models.get(llm_provider, bedrock_models["bedrock-claude-sonnet"])
         
         return (
             f"bedrock/{bedrock_model}",
