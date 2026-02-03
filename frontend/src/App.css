@@ -237,6 +237,8 @@
     border-radius: 1rem 1rem 0.25rem 1rem; /* Match user message style - rounded on right */
     max-width: 95%;
     padding: 1rem 1.25rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .message-assistant .message-content .prose-content {
