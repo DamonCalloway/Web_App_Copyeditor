@@ -267,6 +267,45 @@
     word-break: break-word;
 }
 
+/* Table styling for assistant messages */
+.message-assistant .message-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    overflow-x: auto;
+    display: block;
+}
+
+.message-assistant .message-content thead {
+    background: hsl(var(--muted));
+}
+
+.message-assistant .message-content th,
+.message-assistant .message-content td {
+    border: 1px solid hsl(var(--border));
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.message-assistant .message-content th {
+    background: hsl(var(--secondary));
+    font-weight: 600;
+}
+
+.message-assistant .message-content tr:nth-child(even) {
+    background: hsl(var(--muted) / 0.3);
+}
+
+.dark .message-assistant .message-content th {
+    background: hsl(var(--secondary));
+}
+
+.dark .message-assistant .message-content tr:nth-child(even) {
+    background: hsl(var(--muted) / 0.2);
+}
+
 /* Blockquote styling for assistant messages */
 .message-assistant .message-content blockquote {
     border-left: 3px solid hsl(var(--primary));
