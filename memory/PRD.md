@@ -103,6 +103,12 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
   - Image files show actual thumbnail preview in input area
   - Same card design applied to both input area and sent messages
 
+### UI Enhancements (February 3, 2025)
+- [x] Widened chat message area from max-w-3xl (768px) to max-w-5xl (1024px) for better screen utilization
+- [x] Widened input area to match the messages area width
+- [x] Claude-style sidebar behavior: Opening the right panel (Project Info) auto-collapses the left sidebar
+- [x] Auto-expand sidebar: Closing the right panel automatically restores the left sidebar to full width
+
 ### AWS Deployment Setup (February 1, 2025)
 - [x] Fixed S3 storage provider to work with Knowledge Base file retrieval
 - [x] Created `docker-compose.aws.yml` for production AWS deployment
