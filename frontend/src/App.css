@@ -274,6 +274,7 @@
     margin: 1rem 0;
     font-size: 0.875rem;
     table-layout: auto;
+    border: 1px solid hsl(0 0% 70%);
 }
 
 .message-assistant .message-content thead {
@@ -282,7 +283,7 @@
 
 .message-assistant .message-content th,
 .message-assistant .message-content td {
-    border: 1px solid hsl(var(--border));
+    border: 1px solid hsl(0 0% 70%);
     padding: 0.5rem 0.75rem;
     text-align: left;
     vertical-align: top;
@@ -303,6 +304,16 @@
 
 .message-assistant .message-content tr:nth-child(even) {
     background: hsl(var(--muted) / 0.3);
+}
+
+/* Dark mode table borders */
+.dark .message-assistant .message-content table {
+    border: 1px solid hsl(0 0% 40%);
+}
+
+.dark .message-assistant .message-content th,
+.dark .message-assistant .message-content td {
+    border: 1px solid hsl(0 0% 40%);
 }
 
 .dark .message-assistant .message-content th {
