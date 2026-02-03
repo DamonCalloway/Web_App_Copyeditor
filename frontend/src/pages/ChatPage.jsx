@@ -946,7 +946,8 @@ export default function ChatPage() {
                   </SelectContent>
                 </Select>
                 <span className={`text-xs px-2 py-1 rounded ${
-                  llmProvider === "bedrock-claude" ? "bg-orange-500/20 text-orange-500" :
+                  llmProvider === "bedrock-claude-sonnet" ? "bg-orange-500/20 text-orange-500" :
+                  llmProvider === "bedrock-claude-opus" ? "bg-orange-600/20 text-orange-600" :
                   llmProvider === "bedrock-mistral" ? "bg-purple-500/20 text-purple-500" :
                   llmProvider === "bedrock-llama3" ? "bg-indigo-500/20 text-indigo-500" :
                   llmProvider === "bedrock-qwen3" ? "bg-cyan-500/20 text-cyan-500" :
