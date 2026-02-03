@@ -9,7 +9,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ai-assistant-hub-77.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://claude-projects-1.preview.emergentagent.com')
 
 class TestAPIHealth:
     """Basic API health checks"""
