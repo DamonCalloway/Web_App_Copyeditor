@@ -186,6 +186,9 @@
 
 .message-user .message-content .prose-content {
     color: hsl(var(--primary-foreground));
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 /* Blockquote styling for user messages - ensure readable contrast */
