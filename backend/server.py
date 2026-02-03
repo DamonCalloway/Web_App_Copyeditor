@@ -1873,6 +1873,10 @@ async def call_bedrock_converse_with_tools(
             
             # No more tool use, extract final response
             response_text = ""
+            
+            # Debug: log all content block types
+            logger.info(f"Final content blocks ({len(content_blocks)}): {[{k: (v[:50] + '...' if isinstance(v, str) and len(v) > 50 else v) for k, v in block.items()} for block in content_blocks]}")
+            
             for block in content_blocks:
                 if 'text' in block:
                     text_content = block['text']
@@ -1882,9 +1886,19 @@ async def call_bedrock_converse_with_tools(
                 elif 'thinking' in block:
                     thinking_content = block.get('thinking', '')
                     thinking_time = round(time.time() - start_time)
+                    logger.info(f"Found thinking block in response: {len(thinking_content)} chars")
                 elif block.get('type') == 'thinking':
                     thinking_content = block.get('text', '')
                     thinking_time = round(time.time() - start_time)
+                    logger.info(f"Found type=thinking block: {len(thinking_content)} chars")
+                elif 'reasoningContent' in block:
+                    rc = block['reasoningContent']
+                    if isinstance(rc, dict):
+                        thinking_content = rc.get('reasoningText', {}).get('text', '')
+                    else:
+                        thinking_content = str(rc)
+                    thinking_time = round(time.time() - start_time)
+                    logger.info(f"Found reasoningContent: {len(thinking_content)} chars")
             
             usage = response.get('usage', {})
             logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}, iterations={iteration}, usage={usage}")
