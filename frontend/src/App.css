@@ -273,8 +273,7 @@
     border-collapse: collapse;
     margin: 1rem 0;
     font-size: 0.875rem;
-    overflow-x: auto;
-    display: block;
+    display: table;
 }
 
 .message-assistant .message-content thead {
@@ -287,6 +286,8 @@
     padding: 0.5rem 0.75rem;
     text-align: left;
     vertical-align: top;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .message-assistant .message-content th {
