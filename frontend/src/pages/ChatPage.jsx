@@ -830,7 +830,7 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
 
         {/* Input Area */}
         <div className="message-input-area">
-          <div className="max-w-5xl mx-auto px-4">
+          <div className="w-full max-w-5xl mx-auto px-4">
             {/* Project Indicator */}
             {project && (
               <div className="flex items-center justify-center mb-2">
