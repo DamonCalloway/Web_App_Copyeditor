@@ -43,7 +43,10 @@
 .messages-area {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 1.5rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .message-input-area {
