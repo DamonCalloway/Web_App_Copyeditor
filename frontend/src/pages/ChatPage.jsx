@@ -634,7 +634,16 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowProjectInfo(!showProjectInfo)}
+                  onClick={() => {
+                    const newState = !showProjectInfo;
+                    setShowProjectInfo(newState);
+                    // Auto-collapse/expand sidebar when toggling right panel (Claude-style)
+                    if (newState && onRightPanelOpen) {
+                      onRightPanelOpen();
+                    } else if (!newState && onRightPanelClose) {
+                      onRightPanelClose();
+                    }
+                  }}
                   className="gap-1"
                   data-testid="toggle-project-info"
                 >
