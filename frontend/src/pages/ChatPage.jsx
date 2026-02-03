@@ -153,7 +153,7 @@ const ThinkingBlock = ({ thinking, thinkingTime, currentTheme }) => {
   );
 };
 
-export default function ChatPage() {
+export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarCollapsed }) {
   const { conversationId } = useParams();
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
