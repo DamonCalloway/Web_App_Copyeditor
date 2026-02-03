@@ -652,21 +652,6 @@ export default function ChatPage() {
           </TooltipProvider>
           
           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowSettings(true)}
-                  data-testid="chat-settings-btn"
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Model Settings
-              </TooltipContent>
-            </Tooltip>
           </TooltipProvider>
           
           <DropdownMenu>
