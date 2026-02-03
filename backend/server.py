@@ -1875,7 +1875,7 @@ async def call_bedrock_converse_with_tools(
             response_text = ""
             
             # Debug: log all content block types
-            logger.info(f"Final content blocks ({len(content_blocks)}): {[{k: (v[:50] + '...' if isinstance(v, str) and len(v) > 50 else v) for k, v in block.items()} for block in content_blocks]}")
+            logger.info(f"Final content blocks ({len(content_blocks)}): {[{k: (str(v)[:100] + '...' if len(str(v)) > 100 else v) for k, v in block.items()} for block in content_blocks]}")
             
             for block in content_blocks:
                 if 'text' in block:
@@ -1883,6 +1883,17 @@ async def call_bedrock_converse_with_tools(
                     if isinstance(text_content, bytes):
                         text_content = text_content.decode('utf-8', errors='replace')
                     response_text += str(text_content)
+                elif 'reasoningContent' in block:
+                    # AWS Bedrock returns thinking as reasoningContent.reasoningText.text
+                    rc = block['reasoningContent']
+                    if isinstance(rc, dict) and 'reasoningText' in rc:
+                        thinking_content = rc['reasoningText'].get('text', '')
+                    elif isinstance(rc, dict):
+                        thinking_content = rc.get('text', str(rc))
+                    else:
+                        thinking_content = str(rc)
+                    thinking_time = round(time.time() - start_time)
+                    logger.info(f"Found reasoningContent: {len(thinking_content)} chars")
                 elif 'thinking' in block:
                     thinking_content = block.get('thinking', '')
                     thinking_time = round(time.time() - start_time)
@@ -1891,14 +1902,6 @@ async def call_bedrock_converse_with_tools(
                     thinking_content = block.get('text', '')
                     thinking_time = round(time.time() - start_time)
                     logger.info(f"Found type=thinking block: {len(thinking_content)} chars")
-                elif 'reasoningContent' in block:
-                    rc = block['reasoningContent']
-                    if isinstance(rc, dict):
-                        thinking_content = rc.get('reasoningText', {}).get('text', '')
-                    else:
-                        thinking_content = str(rc)
-                    thinking_time = round(time.time() - start_time)
-                    logger.info(f"Found reasoningContent: {len(thinking_content)} chars")
             
             usage = response.get('usage', {})
             logger.info(f"Bedrock Converse API success: model={model_id}, response_length={len(response_text)}, iterations={iteration}, usage={usage}")
