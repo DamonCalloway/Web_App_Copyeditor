@@ -988,8 +988,8 @@ export default function ChatPage() {
                         size="sm"
                         onClick={async () => {
                           // Extended Thinking is only available for Anthropic Direct and Bedrock Claude
-                          const supportsThinking = llmProvider === "anthropic" || llmProvider === "bedrock-claude";
-                          const thinkingEnabled = (featuresAvailable && llmProvider === "anthropic") || llmProvider === "bedrock-claude";
+                          const supportsThinking = llmProvider === "anthropic" || llmProvider.startsWith("bedrock-claude");
+                          const thinkingEnabled = (featuresAvailable && llmProvider === "anthropic") || llmProvider.startsWith("bedrock-claude");
                           
                           if (!supportsThinking) {
                             toast.info("Extended Thinking only available for Claude models");
