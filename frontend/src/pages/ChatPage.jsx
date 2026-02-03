@@ -879,11 +879,19 @@ export default function ChatPage() {
                         </div>
                       </SelectItem>
                     )}
-                    {availableProviders.includes("bedrock-claude") && (
-                      <SelectItem value="bedrock-claude">
+                    {availableProviders.includes("bedrock-claude-sonnet") && (
+                      <SelectItem value="bedrock-claude-sonnet">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                          <span>AWS Bedrock (Claude)</span>
+                          <span>AWS Bedrock (Claude Sonnet 4.5)</span>
+                        </div>
+                      </SelectItem>
+                    )}
+                    {isAdminMode && availableProviders.includes("bedrock-claude-opus") && (
+                      <SelectItem value="bedrock-claude-opus">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-orange-600"></div>
+                          <span>AWS Bedrock (Claude Opus 4.5)</span>
                         </div>
                       </SelectItem>
                     )}
