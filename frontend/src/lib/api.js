@@ -69,6 +69,20 @@ export const getFileDownloadUrl = (fileId) => {
   return `${API}/files/${fileId}/download`;
 };
 
+export const getFileVersions = async (fileId) => {
+  const response = await api.get(`/files/${fileId}/versions`);
+  return response.data;
+};
+
+export const downloadFileVersion = (fileId, versionId) => {
+  return `${API}/files/${fileId}/versions/${versionId}/download`;
+};
+
+export const restoreFileVersion = async (fileId, versionId) => {
+  const response = await api.post(`/files/${fileId}/restore/${versionId}`);
+  return response.data;
+};
+
 // Conversations
 export const getProjectConversations = async (projectId) => {
   const response = await api.get(`/projects/${projectId}/conversations`);
