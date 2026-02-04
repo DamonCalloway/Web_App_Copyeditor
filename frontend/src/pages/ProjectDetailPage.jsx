@@ -85,6 +85,12 @@ export default function ProjectDetailPage() {
   const [viewingFile, setViewingFile] = useState(null);
   const [fileContent, setFileContent] = useState(null);
   const [loadingFileContent, setLoadingFileContent] = useState(false);
+  
+  // Version history
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [versionHistoryFile, setVersionHistoryFile] = useState(null);
+  const [fileVersions, setFileVersions] = useState(null);
+  const [loadingVersions, setLoadingVersions] = useState(false);
 
   useEffect(() => {
     loadProjectData();
