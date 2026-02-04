@@ -108,6 +108,7 @@ export default function ProjectDetailPage() {
       setFrequencyPenalty(proj.frequency_penalty ?? 0);
       setPresencePenalty(proj.presence_penalty ?? 0);
       setStopSequences(proj.stop_sequences || "");
+      setThinkingBudget(proj.thinking_budget ?? 10000);
     } catch (error) {
       toast.error("Failed to load project");
       navigate("/projects");
