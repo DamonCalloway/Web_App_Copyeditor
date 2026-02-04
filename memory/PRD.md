@@ -150,16 +150,17 @@ Create a clone of Claude Sonnet 4.5 Projects that allows editing of assessment m
 
 ### P1 (High Priority)
 - [x] S3 storage backend implementation (architecture exists, tested and fixed)
-- [ ] Multi-user authentication
+- [x] Multi-user authentication
 
 ### P2 (Medium Priority)
 - [ ] File preview (PDF viewer, image viewer)
 - [ ] Bulk file upload with progress
 - [ ] Search within files/conversations
-- [ ] Document version history
+- [x] Document version history (implemented Feb 4, 2025)
 - [ ] Syntax highlighting for code blocks
 
 ### P3 (Nice to Have)
+- [x] Thinking budget slider (implemented Feb 4, 2025)
 - [ ] Export conversation to document
 - [ ] Templates for common assessment types
 - [ ] Analytics dashboard
