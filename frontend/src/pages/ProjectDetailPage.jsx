@@ -729,6 +729,29 @@ export default function ProjectDetailPage() {
               </div>
             </div>
 
+            {/* Thinking Budget */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Thinking Budget</Label>
+                <span className="text-sm text-muted-foreground w-20 text-right">{thinkingBudget.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground">1K</span>
+                <Slider
+                  value={[thinkingBudget]}
+                  onValueChange={([v]) => setThinkingBudget(v)}
+                  min={1000}
+                  max={100000}
+                  step={1000}
+                  className="flex-1"
+                />
+                <span className="text-xs text-muted-foreground">100K</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Max tokens for extended thinking (when enabled)
+              </p>
+            </div>
+
             {/* Frequency Penalty */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
