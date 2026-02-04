@@ -125,7 +125,8 @@ export default function ProjectDetailPage() {
         max_tokens: maxTokens,
         frequency_penalty: frequencyPenalty,
         presence_penalty: presencePenalty,
-        stop_sequences: stopSequences
+        stop_sequences: stopSequences,
+        thinking_budget: thinkingBudget
       });
       toast.success("LLM parameters saved");
       setShowLlmParams(false);
