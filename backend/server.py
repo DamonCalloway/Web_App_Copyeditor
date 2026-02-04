@@ -946,10 +946,153 @@ async def delete_file(file_id: str):
     except Exception as e:
         logger.error(f"Failed to remove from RAG index: {e}")
     
+    # Delete version history for this file
+    await db.file_versions.delete_many({"file_id": file_id})
+    
     await storage.delete_file(file_meta["storage_path"])
     await db.files.delete_one({"id": file_id})
     
     return {"success": True}
+
+
+@api_router.get("/files/{file_id}/versions")
+async def get_file_versions(file_id: str):
+    """Get version history for a file"""
+    file_meta = await db.files.find_one({"id": file_id}, {"_id": 0})
+    if not file_meta:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Get all versions
+    versions = await db.file_versions.find(
+        {"file_id": file_id}, 
+        {"_id": 0}
+    ).sort("version", -1).to_list(100)
+    
+    # Add current version info
+    current = {
+        "version": file_meta.get("version", 1),
+        "file_size": file_meta["file_size"],
+        "created_at": file_meta.get("updated_at", file_meta["created_at"]),
+        "is_current": True
+    }
+    
+    # Format historical versions
+    history = [current]
+    for v in versions:
+        history.append({
+            "version": v["version"],
+            "file_size": v["file_size"],
+            "created_at": v["created_at"],
+            "is_current": False,
+            "version_id": v["id"]
+        })
+    
+    return {
+        "file_id": file_id,
+        "filename": file_meta["original_filename"],
+        "current_version": file_meta.get("version", 1),
+        "versions": history
+    }
+
+
+@api_router.get("/files/{file_id}/versions/{version_id}/download")
+async def download_file_version(file_id: str, version_id: str):
+    """Download a specific version of a file"""
+    version = await db.file_versions.find_one(
+        {"id": version_id, "file_id": file_id}, 
+        {"_id": 0}
+    )
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found")
+    
+    try:
+        content = await storage.get_file(version["storage_path"])
+        return StreamingResponse(
+            iter([content]),
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f'attachment; filename="{version["original_filename"]}_v{version["version"]}"'}
+        )
+    except Exception as e:
+        logger.error(f"Failed to download version: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve file version")
+
+
+@api_router.post("/files/{file_id}/restore/{version_id}")
+async def restore_file_version(file_id: str, version_id: str):
+    """Restore a file to a previous version"""
+    file_meta = await db.files.find_one({"id": file_id}, {"_id": 0})
+    if not file_meta:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    version = await db.file_versions.find_one(
+        {"id": version_id, "file_id": file_id}, 
+        {"_id": 0}
+    )
+    if not version:
+        raise HTTPException(status_code=404, detail="Version not found")
+    
+    # Save current as a new version
+    current_version = file_meta.get("version", 1)
+    version_entry = FileVersion(
+        file_id=file_id,
+        project_id=file_meta["project_id"],
+        version=current_version,
+        original_filename=file_meta["original_filename"],
+        file_size=file_meta["file_size"],
+        storage_path=file_meta["storage_path"],
+        content_preview=file_meta.get("content_preview")
+    )
+    await db.file_versions.insert_one(version_entry.model_dump())
+    
+    # Read old version content
+    try:
+        old_content = await storage.get_file(version["storage_path"])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to read version content")
+    
+    # Save as new file
+    unique_filename = f"{uuid.uuid4()}_{file_meta['original_filename']}"
+    storage_path = await storage.save_file(old_content, unique_filename, file_meta["project_id"])
+    
+    # Update file metadata
+    new_version = current_version + 1
+    update_data = {
+        "filename": unique_filename,
+        "file_size": version["file_size"],
+        "storage_path": storage_path,
+        "content_preview": version.get("content_preview"),
+        "version": new_version,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "indexed": False
+    }
+    
+    await db.files.update_one({"id": file_id}, {"$set": update_data})
+    
+    # Re-index for RAG
+    if version.get("content_preview"):
+        try:
+            api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+            rag_index = RAGIndex(db, file_meta["project_id"])
+            await rag_index.remove_document(file_id)
+            chunks_indexed = await rag_index.index_document(
+                file_id=file_id,
+                filename=file_meta["original_filename"],
+                content=version["content_preview"],
+                api_key=api_key
+            )
+            if chunks_indexed > 0:
+                await db.files.update_one(
+                    {"id": file_id},
+                    {"$set": {"indexed": True, "chunks_count": chunks_indexed}}
+                )
+        except Exception as e:
+            logger.error(f"RAG re-indexing failed after restore: {e}")
+    
+    return {
+        "success": True,
+        "message": f"Restored to version {version['version']}",
+        "new_version": new_version
+    }
 
 
 @api_router.post("/projects/{project_id}/reindex")
