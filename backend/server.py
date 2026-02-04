@@ -107,7 +107,23 @@ class FileMetadata(BaseModel):
     storage_path: str
     indexed: bool = False
     content_preview: Optional[str] = None
+    version: int = 1  # Current version number
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class FileVersion(BaseModel):
+    """Stores historical versions of files"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    file_id: str  # Reference to the current file
+    project_id: str
+    version: int
+    original_filename: str
+    file_size: int
+    storage_path: str
+    content_preview: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_by: Optional[str] = None  # User who created this version
 
 class ConversationBase(BaseModel):
     project_id: str
