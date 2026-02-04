@@ -859,6 +859,77 @@ export default function ProjectDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Version History Dialog */}
+      <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Version History
+            </DialogTitle>
+            {versionHistoryFile && (
+              <p className="text-sm text-muted-foreground">
+                {versionHistoryFile.original_filename}
+              </p>
+            )}
+          </DialogHeader>
+          
+          <div className="py-4">
+            {loadingVersions ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : fileVersions ? (
+              <div className="space-y-2">
+                {fileVersions.versions.map((version, index) => (
+                  <div 
+                    key={version.version_id || `current-${index}`}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          Version {version.version}
+                        </span>
+                        {version.is_current && (
+                          <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded">
+                            Current
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {new Date(version.created_at).toLocaleString()} • {formatFileSize(version.file_size)}
+                      </div>
+                    </div>
+                    {!version.is_current && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRestoreVersion(version.version_id)}
+                        data-testid={`restore-version-${version.version}`}
+                      >
+                        Restore
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                {fileVersions.versions.length === 1 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No previous versions available. Upload a new version of this file to create history.
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowVersionHistory(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
