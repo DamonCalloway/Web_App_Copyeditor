@@ -198,6 +198,33 @@ BEDROCK_MISTRAL_MODEL_ID=mistral.mistral-large-3-675b-instruct
 - **Temperature**: Extended thinking is NOT compatible with temperature, top_p, or top_k parameters
 - **Inference Profile**: Claude Sonnet 4.5 requires cross-region inference profile (us.anthropic.* prefix)
 
+## RAG (Knowledge Base) Implementation
+
+### How it Works
+The Knowledge Base uses **Retrieval-Augmented Generation (RAG)** with semantic chunking and embedding-based retrieval:
+
+1. **Document Indexing** (on upload):
+   - Documents are split into semantic chunks (target: 500 tokens with 50 token overlap)
+   - Each chunk is embedded using OpenAI's `text-embedding-3-small` model (via Emergent LLM Key)
+   - Embeddings stored in MongoDB `rag_chunks` collection with metadata (file_id, project_id, chunk_index)
+
+2. **Query Retrieval** (during chat):
+   - User's query is embedded using the same model
+   - Cosine similarity search finds top-k most relevant chunks (default: 5)
+   - Only chunks above similarity threshold (0.3) are returned
+
+3. **Context Injection**:
+   - Retrieved chunks are formatted with source citations
+   - Added to system prompt as "Relevant context from knowledge base"
+   - LLM responds with awareness of the retrieved content
+
+### Key Files
+- `/app/backend/rag.py` - Core RAG logic: `RAGIndex` class with `index_document()`, `search()`, `retrieve_context_for_query()`
+- MongoDB collections: `rag_chunks` (stores embeddings), `files` (stores indexed status)
+
+### NOT Loading All Documents
+The system does **NOT** load all KB documents into context for every message. Only relevant chunks are retrieved via semantic search, making it efficient for large knowledge bases.
+
 ## Key Files Reference
 - `/app/backend/server.py` - Main API, LLM integration
 - `/app/backend/rag.py` - RAG implementation
@@ -206,8 +233,13 @@ BEDROCK_MISTRAL_MODEL_ID=mistral.mistral-large-3-675b-instruct
 - `/app/frontend/src/index.css` - Theme variables and prose styling
 - `/app/frontend/src/App.css` - Message styling
 
+## Document Version History (Feb 4, 2025)
+- Re-uploading a file with the same name creates a new version
+- Previous versions stored in `file_versions` collection
+- API endpoints: `GET /files/{id}/versions`, `POST /files/{id}/restore/{version_id}`
+- UI: History icon on file cards, version history dialog with restore option
+
 ## Next Tasks List
-1. Test and enable S3 storage backend
-2. Implement multi-user authentication
-3. Add file preview for PDFs and images
-4. Add search functionality across files
+1. Add file preview for PDFs and images
+2. Add search functionality across files
+3. Export conversation to document
