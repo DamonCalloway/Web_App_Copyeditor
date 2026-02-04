@@ -21,7 +21,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { 
   getProject, updateProject, getProjectFiles, uploadFile, deleteFile,
-  getProjectConversations, createConversation, getFileDownloadUrl
+  getProjectConversations, createConversation, getFileDownloadUrl,
+  getFileVersions, restoreFileVersion
 } from "@/lib/api";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
