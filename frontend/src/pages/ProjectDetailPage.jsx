@@ -78,6 +78,7 @@ export default function ProjectDetailPage() {
   const [frequencyPenalty, setFrequencyPenalty] = useState(0);
   const [presencePenalty, setPresencePenalty] = useState(0);
   const [stopSequences, setStopSequences] = useState("");
+  const [thinkingBudget, setThinkingBudget] = useState(10000);
   
   // File viewer
   const [viewingFile, setViewingFile] = useState(null);
