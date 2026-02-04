@@ -788,8 +788,76 @@ async def upload_file(project_id: str, file: UploadFile = File(...)):
     if ext not in allowed_extensions:
         raise HTTPException(status_code=400, detail=f"File type not allowed. Allowed: {', '.join(allowed_extensions)}")
     
-    # Read and save file
+    # Read file content
     content = await file.read()
+    
+    # Check if file with same name exists in project (for versioning)
+    existing_file = await db.files.find_one({
+        "project_id": project_id,
+        "original_filename": file.filename
+    }, {"_id": 0})
+    
+    if existing_file:
+        # Create version history entry for the existing file
+        current_version = existing_file.get("version", 1)
+        version_entry = FileVersion(
+            file_id=existing_file["id"],
+            project_id=project_id,
+            version=current_version,
+            original_filename=existing_file["original_filename"],
+            file_size=existing_file["file_size"],
+            storage_path=existing_file["storage_path"],
+            content_preview=existing_file.get("content_preview")
+        )
+        await db.file_versions.insert_one(version_entry.model_dump())
+        logger.info(f"Created version {current_version} backup for {file.filename}")
+        
+        # Update existing file with new content
+        unique_filename = f"{uuid.uuid4()}_{file.filename}"
+        storage_path = await storage.save_file(content, unique_filename, project_id)
+        
+        mime_type = get_mime_type(file.filename)
+        content_preview = await extract_text_content(content, file.filename, mime_type)
+        
+        new_version = current_version + 1
+        update_data = {
+            "filename": unique_filename,
+            "file_size": len(content),
+            "storage_path": storage_path,
+            "content_preview": content_preview,
+            "version": new_version,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "indexed": False
+        }
+        
+        await db.files.update_one({"id": existing_file["id"]}, {"$set": update_data})
+        
+        # Re-index for RAG
+        if content_preview:
+            try:
+                api_key = os.environ.get('EMERGENT_LLM_KEY', '')
+                rag_index = RAGIndex(db, project_id)
+                await rag_index.remove_document(existing_file["id"])
+                chunks_indexed = await rag_index.index_document(
+                    file_id=existing_file["id"],
+                    filename=file.filename,
+                    content=content_preview,
+                    api_key=api_key
+                )
+                if chunks_indexed > 0:
+                    await db.files.update_one(
+                        {"id": existing_file["id"]},
+                        {"$set": {"indexed": True, "chunks_count": chunks_indexed}}
+                    )
+                    logger.info(f"RAG re-indexed {chunks_indexed} chunks for {file.filename} v{new_version}")
+            except Exception as e:
+                logger.error(f"RAG indexing failed for {file.filename}: {e}")
+        
+        # Return updated file metadata
+        updated_file = await db.files.find_one({"id": existing_file["id"]}, {"_id": 0})
+        return FileMetadata(**updated_file)
+    
+    # New file - original logic
     unique_filename = f"{uuid.uuid4()}_{file.filename}"
     storage_path = await storage.save_file(content, unique_filename, project_id)
     
@@ -804,13 +872,14 @@ async def upload_file(project_id: str, file: UploadFile = File(...)):
         file_size=len(content),
         mime_type=mime_type,
         storage_path=storage_path,
-        indexed=False,  # Will be set to True after RAG indexing
-        content_preview=content_preview
+        indexed=False,
+        content_preview=content_preview,
+        version=1
     )
     
     await db.files.insert_one(file_meta.model_dump())
     
-    # RAG indexing (async, non-blocking for text documents)
+    # RAG indexing
     if content_preview:
         try:
             api_key = os.environ.get('EMERGENT_LLM_KEY', '')
