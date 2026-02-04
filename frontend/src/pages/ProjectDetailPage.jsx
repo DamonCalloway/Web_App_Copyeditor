@@ -142,6 +142,32 @@ export default function ProjectDetailPage() {
     }
   };
 
+  const openVersionHistory = async (file) => {
+    setVersionHistoryFile(file);
+    setShowVersionHistory(true);
+    setLoadingVersions(true);
+    try {
+      const versions = await getFileVersions(file.id);
+      setFileVersions(versions);
+    } catch (error) {
+      toast.error("Failed to load version history");
+    } finally {
+      setLoadingVersions(false);
+    }
+  };
+
+  const handleRestoreVersion = async (versionId) => {
+    if (!versionHistoryFile) return;
+    try {
+      await restoreFileVersion(versionHistoryFile.id, versionId);
+      toast.success("File restored to previous version");
+      setShowVersionHistory(false);
+      await loadProjectData();
+    } catch (error) {
+      toast.error("Failed to restore version");
+    }
+  };
+
   const handleFileUpload = async (e) => {
     const uploadFiles = Array.from(e.target.files);
     if (uploadFiles.length === 0) return;
