@@ -94,8 +94,12 @@ export const getRecentConversations = async (limit = 10) => {
   return response.data;
 };
 
-export const createConversation = async (projectId, name = "New conversation") => {
-  const response = await api.post("/conversations", { project_id: projectId, name });
+export const createConversation = async (projectId, name = "New conversation", llmProvider = null) => {
+  const payload = { project_id: projectId, name };
+  if (llmProvider) {
+    payload.llm_provider = llmProvider;
+  }
+  const response = await api.post("/conversations", payload);
   return response.data;
 };
 
