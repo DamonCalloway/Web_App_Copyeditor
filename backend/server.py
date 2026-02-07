@@ -36,6 +36,10 @@ STORAGE_PROVIDER = os.environ.get('STORAGE_PROVIDER', 'local')
 LOCAL_STORAGE_PATH = Path(os.environ.get('LOCAL_STORAGE_PATH', '/app/uploads'))
 LOCAL_STORAGE_PATH.mkdir(parents=True, exist_ok=True)
 
+# Cookie security settings (set SECURE_COOKIES=false for HTTP deployments)
+SECURE_COOKIES = os.environ.get('SECURE_COOKIES', 'false').lower() == 'true'
+COOKIE_SAMESITE = "none" if SECURE_COOKIES else "lax"
+
 # Create the main app
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -399,8 +403,8 @@ async def register(request: RegisterRequest, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=SECURE_COOKIES,
+        samesite=COOKIE_SAMESITE,
         path="/",
         max_age=7*24*60*60
     )
@@ -444,8 +448,8 @@ async def login(request: LoginRequest, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=SECURE_COOKIES,
+        samesite=COOKIE_SAMESITE,
         path="/",
         max_age=7*24*60*60
     )
@@ -537,8 +541,8 @@ async def google_auth_session(request: Request, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=SECURE_COOKIES,
+        samesite=COOKIE_SAMESITE,
         path="/",
         max_age=7*24*60*60
     )
@@ -577,8 +581,8 @@ async def logout(request: Request, response: Response):
     response.delete_cookie(
         key="session_token",
         path="/",
-        secure=True,
-        samesite="none"
+        secure=SECURE_COOKIES,
+        samesite=COOKIE_SAMESITE
     )
     
     return {"message": "Logged out"}
