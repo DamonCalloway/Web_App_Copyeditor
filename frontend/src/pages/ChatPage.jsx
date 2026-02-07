@@ -184,8 +184,8 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
   const [memoryText, setMemoryText] = useState("");
   const [showFullMemory, setShowFullMemory] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [llmProvider, setLlmProvider] = useState("anthropic");
-  const [availableProviders, setAvailableProviders] = useState(["anthropic"]);
+  const [llmProvider, setLlmProvider] = useState("bedrock-claude-sonnet");  // Default for non-admin
+  const [availableProviders, setAvailableProviders] = useState(["bedrock-claude-sonnet"]);
   const [showSettings, setShowSettings] = useState(false); // Keep for potential future use
   const [temperature, setTemperature] = useState(0.7);
   const [topP, setTopP] = useState(0.9);
@@ -260,7 +260,8 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
       setMessages(msgs);
       setFeaturesAvailable(featureConfig.extended_thinking_available);
       setBedrockWebSearchAvailable(featureConfig.bedrock_web_search_available || false);
-      setAvailableProviders(featureConfig.available_providers || ["anthropic"]);
+      setAvailableProviders(featureConfig.available_providers || ["bedrock-claude-sonnet"]);
+
       setAllProjects(projList);
       
       // Load Think/Web settings from conversation (persisted per conversation)
@@ -305,7 +306,7 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
         
         // Use project's LLM provider only if conversation doesn't have one set yet
         if (!conv.llm_provider) {
-          setLlmProvider(proj.llm_provider || "anthropic");
+          setLlmProvider(proj.llm_provider || "bedrock-claude-sonnet");
         }
         
         // Only use project defaults if conversation doesn't have settings yet
@@ -318,7 +319,7 @@ export default function ChatPage({ onRightPanelOpen, onRightPanelClose, sidebarC
         setFiles([]);
         setInstructionsText("");
         setMemoryText("");
-        setLlmProvider("anthropic");
+        setLlmProvider("bedrock-claude-sonnet");
         setTemperature(0.7);
         setTopP(0.9);
       }
