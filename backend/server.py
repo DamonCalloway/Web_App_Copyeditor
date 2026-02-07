@@ -132,6 +132,7 @@ class FileVersion(BaseModel):
 class ConversationBase(BaseModel):
     project_id: str
     name: str = "New conversation"
+    llm_provider: Optional[str] = None  # LLM provider for this conversation
 
 class ConversationUpdate(BaseModel):
     name: Optional[str] = None
@@ -152,7 +153,8 @@ class Conversation(ConversationBase):
     archived: bool = False
     extended_thinking: bool = False
     web_search: bool = False
-    llm_provider: str = "anthropic"  # Default LLM provider per conversation
+    llm_provider: str = "bedrock-claude-sonnet"  # Default for non-admin users
+
 
 class Message(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -1167,7 +1169,16 @@ async def create_conversation(conv: ConversationBase, request: Request):
     if user and project.get("user_id") and project["user_id"] != user.user_id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    conv_obj = Conversation(**conv.model_dump())
+    conv_data = conv.model_dump()
+    
+    # Set default llm_provider based on user role if not explicitly provided
+    if not conv_data.get("llm_provider"):
+        if user and user.role == "admin":
+            conv_data["llm_provider"] = "anthropic"  # Admin gets direct Anthropic
+        else:
+            conv_data["llm_provider"] = "bedrock-claude-sonnet"  # Non-admin gets Bedrock
+    
+    conv_obj = Conversation(**conv_data)
     conv_doc = conv_obj.model_dump()
     if user:
         conv_doc["user_id"] = user.user_id
