@@ -43,6 +43,7 @@ python-dotenv==1.2.1
 pydantic==2.12.5
 email-validator==2.3.0
 PyYAML==6.0.3
+numpy==2.0.0
 
 # Web search
 tavily-python==0.7.17
